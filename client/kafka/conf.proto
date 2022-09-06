@@ -1,0 +1,37 @@
+syntax = "proto3";
+package pkg.client.kafka;
+
+option go_package = "edu/pkg/client/kafka;kafka";
+
+import "google/protobuf/duration.proto";
+
+message Net {
+  message SASL {
+    bool enable = 1;
+    string user = 2;
+    string password = 3;
+  }
+  message TLS {
+    bool enable = 1;
+    string rootCa = 2;
+    string jks = 3;
+    string password = 4;
+    string cert = 5;
+    string key = 6;
+
+  }
+  SASL sasl = 1;
+  TLS tls = 2;
+}
+
+message Conf {
+  repeated string brokers = 1;
+  Net net = 2;
+  string topic = 3;
+  string group = 4;
+  google.protobuf.Duration read_timeout = 5;
+  google.protobuf.Duration write_timeout = 6;
+  int32 acks = 7;
+}
+
+

@@ -1,0 +1,12 @@
+syntax = "proto3";
+package pkg.rpc;
+
+option go_package = "edu/pkg/rpc;rpc";
+
+import "google/protobuf/duration.proto";
+
+message Conf {
+  string network = 1;
+  string address = 2;
+  google.protobuf.Duration timeout = 3;
+}

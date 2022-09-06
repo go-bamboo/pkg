@@ -1,0 +1,12 @@
+syntax = "proto3";
+package pkg.store.gormx;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "edu/pkg/store/gormx;gormx";
+
+message Conf {
+  string driver = 1;
+  string source = 2;
+  int32 logLevel = 3;
+}

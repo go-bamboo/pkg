@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package pkg.meta;
+
+option go_package = "bls/pkg/meta;meta";
+
+message DataPermission {
+  string dataScope = 1;
+	uint64 userId = 2;
+	int32 roleId = 3;
+  string roleKey = 4;
+}

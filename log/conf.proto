@@ -1,0 +1,28 @@
+syntax = "proto3";
+package pkg.log;
+
+option go_package = "edu/pkg/log;log";
+
+message StdoutConf {
+  bool enable = 1;
+  int32 level = 2;
+}
+
+message FileConf {
+  bool enable = 1;
+  int32 level = 2;
+  string path = 3;
+  string name = 4;
+}
+
+message FluentConf {
+  bool enable = 1;
+  int32 level = 2;
+  string addr = 3;
+}
+
+message LoggerConf {
+  StdoutConf stdout = 1;
+  FileConf file = 2;
+  FluentConf fluent = 3;
+}

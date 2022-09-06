@@ -1,0 +1,15 @@
+syntax = "proto3";
+package pkg.rest;
+
+option go_package = "edu/pkg/rest;rest";
+
+import "google/protobuf/duration.proto";
+
+message Conf {
+  string network = 1;
+  string address = 2;
+  google.protobuf.Duration timeout = 3;
+}
+
+
+

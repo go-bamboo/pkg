@@ -1,0 +1,21 @@
+syntax = "proto3";
+package pkg.registry;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "bls/pkg/registry;registry";
+
+message Etcd {
+  repeated string endpoints = 1;
+  google.protobuf.Duration dialTimeout = 2;
+}
+
+message Consul {
+  string address = 1;
+  google.protobuf.Duration dialTimeout = 2;
+}
+
+message Conf {
+  Etcd etcd = 1;
+  Consul consul = 2;
+}

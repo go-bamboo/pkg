@@ -1,0 +1,18 @@
+syntax = "proto3";
+package pkg.client.redis;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "edu/pkg/client/redis;redis";
+
+message Conf {
+  string network = 1;
+  string addr = 2;
+  google.protobuf.Duration read_timeout = 3;
+  google.protobuf.Duration write_timeout = 4;
+  google.protobuf.Duration dial_timeout = 5;
+  google.protobuf.Duration expire_timeout = 6;
+  string username = 7;
+  string password = 8;
+  int32 db = 9;
+}

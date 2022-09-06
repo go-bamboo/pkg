@@ -1,0 +1,9 @@
+syntax = "proto3";
+package pkg.tracing;
+
+option go_package = "edu/pkg/tracing;tracing";
+
+message Conf {
+  bool enable = 1;
+  string endpoint = 2;
+}

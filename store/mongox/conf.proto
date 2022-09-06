@@ -1,0 +1,14 @@
+syntax = "proto3";
+package pkg.store.mongox;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "bls/pkg/store/mongox;mongox";
+
+message Conf {
+  string driver = 1;
+  string source = 2;
+  int32 logLevel = 3;
+  string db = 4;
+  google.protobuf.Duration timeout = 5;
+}

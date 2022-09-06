@@ -1,0 +1,37 @@
+syntax = "proto3";
+package pkg.client.rabbitmq;
+
+option go_package = "bls/pkg/client/rabbitmq;rabbitmq";
+
+message RabbitConf {
+  string username = 1;
+  string password = 2;
+  string host = 3;
+  int32 port = 4;
+  string vHost = 5;
+  string address = 6;
+}
+
+message ConsumerConf {
+  string name = 1;
+  string consumer = 2;
+}
+
+message ListenerConf {
+  RabbitConf rabbit = 1;
+  repeated ConsumerConf queues = 2;
+}
+
+message ProducerConf {
+  RabbitConf rabbit = 1;
+  string contentType = 2;
+}
+
+message ExchangeConf {
+  string exchange = 1;
+  string key = 2;
+}
+
+message QueueConf {
+  string name = 1;
+}
