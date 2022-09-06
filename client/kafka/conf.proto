@@ -1,7 +1,7 @@
 syntax = "proto3";
 package pkg.client.kafka;
 
-option go_package = "edu/pkg/client/kafka;kafka";
+option go_package = "github.com/emberfarkas/pkg/client/kafka;kafka";
 
 import "google/protobuf/duration.proto";
 

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package pkg.rest;
 
-option go_package = "edu/pkg/rest;rest";
+option go_package = "github.com/emberfarkas/pkg/rest;rest";
 
 import "google/protobuf/duration.proto";
 

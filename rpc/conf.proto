@@ -1,7 +1,7 @@
 syntax = "proto3";
 package pkg.rpc;
 
-option go_package = "edu/pkg/rpc;rpc";
+option go_package = "github.com/emberfarkas/pkg/rpc;rpc";
 
 import "google/protobuf/duration.proto";
 

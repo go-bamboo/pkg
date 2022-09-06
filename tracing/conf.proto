@@ -1,7 +1,7 @@
 syntax = "proto3";
 package pkg.tracing;
 
-option go_package = "edu/pkg/tracing;tracing";
+option go_package = "github.com/emberfarkas/pkg/tracing;tracing";
 
 message Conf {
   bool enable = 1;

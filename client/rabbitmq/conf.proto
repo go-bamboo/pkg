@@ -1,7 +1,7 @@
 syntax = "proto3";
 package pkg.client.rabbitmq;
 
-option go_package = "bls/pkg/client/rabbitmq;rabbitmq";
+option go_package = "github.com/emberfarkas/pkg/client/rabbitmq;rabbitmq";
 
 message RabbitConf {
   string username = 1;

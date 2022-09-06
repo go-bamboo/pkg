@@ -3,7 +3,7 @@ package pkg.registry;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "bls/pkg/registry;registry";
+option go_package = "github.com/emberfarkas/pkg/registry;registry";
 
 message Etcd {
   repeated string endpoints = 1;
