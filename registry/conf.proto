@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.registry;
+package registry;
 
 import "google/protobuf/duration.proto";
 

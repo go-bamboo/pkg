@@ -32,7 +32,7 @@ func _Status_Status0_HTTP_Handler(srv StatusHTTPServer) func(ctx http.Context) e
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, "/pkg.handler.Status/Status")
+		http.SetOperation(ctx, "/handler.Status/Status")
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.Status(ctx, req.(*StatusRequest))
 		})
@@ -61,7 +61,7 @@ func (c *StatusHTTPClientImpl) Status(ctx context.Context, in *StatusRequest, op
 	var out StatusReply
 	pattern := "/status"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation("/pkg.handler.Status/Status"))
+	opts = append(opts, http.Operation("/handler.Status/Status"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

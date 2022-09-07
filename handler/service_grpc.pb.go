@@ -35,7 +35,7 @@ func NewStatusClient(cc grpc.ClientConnInterface) StatusClient {
 
 func (c *statusClient) Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusReply, error) {
 	out := new(StatusReply)
-	err := c.cc.Invoke(ctx, "/pkg.handler.Status/Status", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/handler.Status/Status", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func _Status_Status_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pkg.handler.Status/Status",
+		FullMethod: "/handler.Status/Status",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StatusServer).Status(ctx, req.(*StatusRequest))
@@ -92,7 +92,7 @@ func _Status_Status_Handler(srv interface{}, ctx context.Context, dec func(inter
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Status_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pkg.handler.Status",
+	ServiceName: "handler.Status",
 	HandlerType: (*StatusServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

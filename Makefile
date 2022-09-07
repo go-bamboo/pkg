@@ -19,12 +19,10 @@ proto:
 		   --proto_path=$(KRATOS) \
            --proto_path=$(KRATOS)/api \
            --proto_path=$(KRATOS)/third_party \
-           --proto_path=$(GOPATH)/src \
            --proto_path=$(PWD)/../third_party \
            --go_out=paths=source_relative:. \
            --go-grpc_out=paths=source_relative:. \
            --go-http_out=paths=source_relative:. \
-           --grpc-gateway_out=paths=source_relative:. \
            --openapiv2_out=. \
            --go-errors_out=paths=source_relative:. $(PROTO_FILES)
 

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.log;
+package log;
 
 option go_package = "github.com/emberfarkas/pkg/log;log";
 
@@ -21,7 +21,7 @@ message FluentConf {
   string addr = 3;
 }
 
-message LoggerConf {
+message Conf {
   StdoutConf stdout = 1;
   FileConf file = 2;
   FluentConf fluent = 3;

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.client.kafka;
+package client.kafka;
 
 option go_package = "github.com/emberfarkas/pkg/client/kafka;kafka";
 

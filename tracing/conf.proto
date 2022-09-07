@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.tracing;
+package tracing;
 
 option go_package = "github.com/emberfarkas/pkg/tracing;tracing";
 

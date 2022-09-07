@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.rpc;
+package rpc;
 
 option go_package = "github.com/emberfarkas/pkg/rpc;rpc";
 

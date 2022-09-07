@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package ecode;
 
-option go_package = "bls/pkg/ecode;ecode";
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/emberfarkas/pkg/ecode;ecode";
 option java_multiple_files = true;
 option java_package = "com.github.kratos.errors";
 option objc_class_prefix = "KratosErrors";
-
-import "google/protobuf/descriptor.proto";
 
 message Status {
   int32 code = 1;

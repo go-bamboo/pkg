@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.store.mongox;
+package store.mongox;
 
 import "google/protobuf/duration.proto";
 

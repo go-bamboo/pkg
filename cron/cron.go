@@ -1,10 +1,10 @@
 package cron
 
 import (
-	"bls/pkg/log"
-	"bls/pkg/rescue"
 	"context"
 
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/rescue"
 	"github.com/robfig/cron/v3"
 )
 

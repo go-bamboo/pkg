@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.client.rabbitmq;
+package client.rabbitmq;
 
 option go_package = "github.com/emberfarkas/pkg/client/rabbitmq;rabbitmq";
 

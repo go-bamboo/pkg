@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/go-kratos/kratos/v2/errors"
-	"bls/pkg/client/eth"
+	"github.com/onrik/ethrpc"
 )
 
 func TestWrapError(t *testing.T) {

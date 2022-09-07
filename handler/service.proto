@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pkg.handler;
+package handler;
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";

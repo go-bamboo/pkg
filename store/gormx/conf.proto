@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.store.gormx;
+package store.gormx;
 
 import "google/protobuf/duration.proto";
 

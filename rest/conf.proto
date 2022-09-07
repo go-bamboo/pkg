@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.rest;
+package rest;
 
 option go_package = "github.com/emberfarkas/pkg/rest;rest";
 

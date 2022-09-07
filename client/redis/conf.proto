@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pkg.client.redis;
+package client.redis;
 
 import "google/protobuf/duration.proto";
 
