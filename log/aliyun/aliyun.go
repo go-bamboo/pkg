@@ -5,10 +5,9 @@ import (
 	"math"
 	"time"
 
-	"edu/pkg/log/core"
-
 	sls "github.com/aliyun/aliyun-log-go-sdk"
 	"github.com/aliyun/aliyun-log-go-sdk/producer"
+	"github.com/emberfarkas/pkg/log/core"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/protobuf/proto"
 )

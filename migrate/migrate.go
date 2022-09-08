@@ -3,8 +3,7 @@ package migrate
 import (
 	"database/sql"
 
-	"bls/pkg/ecode"
-
+	"github.com/emberfarkas/pkg/ecode"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

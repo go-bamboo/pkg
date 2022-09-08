@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"bls/pkg/ecode"
-
+	"github.com/emberfarkas/pkg/ecode"
 	"github.com/go-kratos/kratos/v2/metadata"
 )
 

@@ -3,9 +3,8 @@ package tracing
 import (
 	"os"
 
-	"edu/pkg/log"
-	"edu/pkg/net/ip"
-
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/net/ip"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"

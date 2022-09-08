@@ -23,8 +23,7 @@ import (
 	"errors"
 	"math/big"
 
-	"bls/pkg/contracts/checkpointoracle/contract"
-
+	"github.com/emberfarkas/pkg/contracts/checkpointoracle/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

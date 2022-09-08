@@ -1,5 +1,7 @@
 package redis
 
+import "github.com/go-redis/redis/v8"
+
 //import (
 //	"context"
 //	"time"
@@ -385,3 +387,5 @@ package redis
 //	GeoDist(ctx context.Context, key string, member1, member2, unit string) *FloatCmd
 //	GeoHash(ctx context.Context, key string, members ...string) *StringSliceCmd
 //}
+
+type StringStringMapCmd = redis.StringStringMapCmd

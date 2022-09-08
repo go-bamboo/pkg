@@ -1,7 +1,7 @@
 package elasticsearch
 
 import (
-	"bls/pkg/ecode"
+	"github.com/emberfarkas/pkg/ecode"
 	"github.com/go-kratos/kratos/v2/errors"
 )
 
@@ -17,7 +17,7 @@ func WrapEsError(err error) error {
 }
 
 func ErrEs(msg string) error {
-	return ecode.InternalServer("ErrEs", msg)
+	return errors.InternalServer("ErrEs", msg)
 }
 
 func IsErrEs(err error) bool {

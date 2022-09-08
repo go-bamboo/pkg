@@ -4,9 +4,8 @@ import (
 	"context"
 	"time"
 
-	"edu/pkg/log"
-	"edu/pkg/tracing"
-
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/tracing"
 	"go.opentelemetry.io/otel/attribute"
 )
 

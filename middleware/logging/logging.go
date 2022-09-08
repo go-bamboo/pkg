@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"edu/pkg/log"
-
+	"github.com/emberfarkas/pkg/log"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"

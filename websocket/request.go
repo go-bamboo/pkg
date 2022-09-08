@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"bls/pkg/bufio"
+	"github.com/emberfarkas/pkg/bufio"
 )
 
 // Request request.

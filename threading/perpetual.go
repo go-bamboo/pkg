@@ -1,11 +1,12 @@
 package threading
 
 import (
-	"bls/pkg/log"
-	"bls/pkg/rescue"
 	"context"
 	"sync"
 	"time"
+
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/rescue"
 )
 
 // A PerpetualMotion is used to run given number of workers to process jobs.

@@ -3,8 +3,7 @@ package redis
 import (
 	"context"
 
-	"edu/pkg/tracing"
-
+	"github.com/emberfarkas/pkg/tracing"
 	"github.com/go-redis/redis/extra/rediscmd/v8"
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel/attribute"
@@ -13,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-//RedisTracingHook redis的hook
+// RedisTracingHook redis的hook
 type RedisTracingHook struct {
 	tracer *tracing.Tracer
 }

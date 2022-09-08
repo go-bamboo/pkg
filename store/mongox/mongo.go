@@ -1,9 +1,9 @@
 package mongox
 
 import (
-	"bls/pkg/log"
 	"context"
 
+	"github.com/emberfarkas/pkg/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

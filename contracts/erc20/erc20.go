@@ -3,10 +3,10 @@ package erc20
 //go:generate abigen --sol contract/USDT.sol --pkg contract --out contract/usdt.go
 
 import (
-	"bls/pkg/contracts/erc20/contract"
 	"context"
 	"math/big"
 
+	"github.com/emberfarkas/pkg/contracts/erc20/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-kratos/kratos/v2/errors"

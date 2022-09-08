@@ -2,6 +2,7 @@ package redis
 
 import (
 	"fmt"
+
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-redis/redis/v8"
 )
@@ -31,6 +32,11 @@ func RedisNil(err redis.Error) error {
 }
 
 func IsRedisNil(err error) bool {
+	se := errors.FromError(err)
+	return se.Reason == "RedisNil" && se.Code == 500
+}
+
+func IsNil(err error) bool {
 	se := errors.FromError(err)
 	return se.Reason == "RedisNil" && se.Code == 500
 }

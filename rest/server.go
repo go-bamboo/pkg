@@ -3,12 +3,11 @@ package rest
 import (
 	_ "net/http/pprof"
 
-	"edu/pkg/handler"
-	"edu/pkg/middleware/logging"
-	"edu/pkg/middleware/metadata"
-	"edu/pkg/middleware/metrics/prometheus"
-	"edu/pkg/tracing"
-
+	"github.com/emberfarkas/pkg/handler"
+	"github.com/emberfarkas/pkg/middleware/logging"
+	"github.com/emberfarkas/pkg/middleware/metadata"
+	"github.com/emberfarkas/pkg/middleware/metrics/prometheus"
+	"github.com/emberfarkas/pkg/tracing"
 	"github.com/felixge/fgprof"
 	"github.com/go-kratos/aegis/ratelimit/bbr"
 	"github.com/go-kratos/kratos/v2/middleware"

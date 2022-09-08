@@ -1,9 +1,10 @@
 package redis
 
 import (
+	"time"
+
 	"github.com/go-redis/cache/v8"
 	"github.com/go-redis/redis/v8"
-	"time"
 )
 
 const KeepTTL = redis.KeepTTL

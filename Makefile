@@ -23,8 +23,9 @@ proto:
            --go_out=paths=source_relative:. \
            --go-grpc_out=paths=source_relative:. \
            --go-http_out=paths=source_relative:. \
-           --openapiv2_out=. \
-           --go-errors_out=paths=source_relative:. $(PROTO_FILES)
+           --go-errors_out=paths=source_relative:. \
+           --validate_out=lang=go,paths=source_relative:. \
+           --openapiv2_out=. $(PROTO_FILES)
 
 .PHONY: build
 build:

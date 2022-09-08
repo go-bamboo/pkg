@@ -1,11 +1,11 @@
 package threading
 
 import (
-	"bls/pkg/log"
-	"bls/pkg/rescue"
 	"context"
 	"sync"
 
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/rescue"
 	"github.com/panjf2000/ants/v2"
 )
 

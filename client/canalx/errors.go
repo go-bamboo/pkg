@@ -1,9 +1,9 @@
 package canalx
 
 import (
-	"bls/pkg/ecode"
+	"fmt"
+
 	"github.com/go-kratos/kratos/v2/errors"
-	pingcaperr "github.com/pingcap/errors"
 )
 
 // WrapPingcapError 转换错误
@@ -15,8 +15,5 @@ func WrapPingcapError(err error) error {
 	if se := new(errors.Error); errors.As(err, &se) {
 		return err
 	}
-	if se := new(pingcaperr.Error); errors.As(err, &se) {
-		return errors.InternalServer(string(se.ID()), se.GetMsg())
-	}
-	return ecode.Unknown(err.Error())
+	return errors.InternalServer("PingErr", fmt.Sprintf("%+x", err))
 }

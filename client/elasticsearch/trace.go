@@ -1,9 +1,9 @@
 package elasticsearch
 
 import (
-	"bls/pkg/tracing"
 	"net/http"
 
+	"github.com/emberfarkas/pkg/tracing"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )

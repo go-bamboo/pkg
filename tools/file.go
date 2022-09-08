@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"bls/pkg/ecode"
+	"github.com/emberfarkas/pkg/ecode"
 )
 
 func PathExists(path string) (bool, error) {
@@ -163,7 +163,7 @@ func FileCheckPermission(src string) (bool, error) {
 	return false, nil
 }
 
-//IsNotExistMkDir 如果不存在则新建文件夹
+// IsNotExistMkDir 如果不存在则新建文件夹
 func IsNotExistMkDir(src string) error {
 	exist, err := FileCheckExist(src)
 	if err != nil {
@@ -177,7 +177,7 @@ func IsNotExistMkDir(src string) error {
 	return nil
 }
 
-//MkDir 新建文件夹
+// MkDir 新建文件夹
 func MkDir(src string) error {
 	err := os.Mkdir(src, os.ModePerm)
 	if err != nil {
@@ -196,7 +196,7 @@ func Open(name string, flag int, perm os.FileMode) (f *os.File, err error) {
 	return
 }
 
-//GetCurrentPath 获取当前路径，比如：E:/abc/data/test
+// GetCurrentPath 获取当前路径，比如：E:/abc/data/test
 func GetCurrentPath() string {
 	dir, err := os.Getwd()
 	if err != nil {

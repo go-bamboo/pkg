@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"bls/pkg/bufio"
+	"github.com/emberfarkas/pkg/bufio"
 )
 
 const (

@@ -1,45 +1,40 @@
 package captcha
 
 import (
-	"image/color"
-
-	"github.com/google/uuid"
 	"github.com/mojocn/base64Captcha"
+	"image/color"
 )
 
 var store = base64Captcha.DefaultMemStore
 
-//configJsonBody json request body.
-type configJsonBody struct {
-	Id            string
-	CaptchaType   string
-	VerifyValue   string
-	DriverAudio   *base64Captcha.DriverAudio
-	DriverString  *base64Captcha.DriverString
-	DriverChinese *base64Captcha.DriverChinese
-	DriverMath    *base64Captcha.DriverMath
-	DriverDigit   *base64Captcha.DriverDigit
+func DriverAudioFunc() (id, b64s string, err error) {
+	driver := base64Captcha.DefaultDriverAudio
+	cap := base64Captcha.NewCaptcha(driver, store)
+	return cap.Generate()
 }
 
 func DriverStringFunc() (id, b64s string, err error) {
-	e := configJsonBody{}
-	e.Id = uuid.New().String()
-	e.DriverString = base64Captcha.NewDriverString(46, 140, 2, 2, 4, "234567890abcdefghjkmnpqrstuvwxyz", &color.RGBA{240, 240, 246, 246}, []string{"wqy-microhei.ttc"})
-	driver := e.DriverString.ConvertFonts()
-	cap := base64Captcha.NewCaptcha(driver, store)
+	height := 46
+	width := 140
+	noiseCount := 2
+	showLineOptions := 2
+	length := 4
+	source := "234567890abcdefghjkmnpqrstuvwxyz"
+	bgColor := &color.RGBA{240, 240, 246, 246}
+	var fontsStorage base64Captcha.FontsStorage = base64Captcha.DefaultEmbeddedFonts
+	var fonts []string = []string{"wqy-microhei.ttc"}
+	driver := base64Captcha.NewDriverString(height, width, noiseCount, showLineOptions, length, source, bgColor, fontsStorage, fonts)
+	cap := base64Captcha.NewCaptcha(driver.ConvertFonts(), store)
 	return cap.Generate()
 }
 
 func DriverDigitFunc() (id, b64s string, err error) {
-	e := configJsonBody{}
-	e.Id = uuid.New().String()
-	e.DriverDigit = base64Captcha.DefaultDriverDigit
-	driver := e.DriverDigit
+	driver := base64Captcha.DefaultDriverDigit
 	cap := base64Captcha.NewCaptcha(driver, store)
 	return cap.Generate()
 }
 
-//Verify captcha's answer directly
+// Verify captcha's answer directly
 func Verify(id, answer string, clear bool) bool {
 	return store.Verify(id, answer, clear)
 }

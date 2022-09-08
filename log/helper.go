@@ -1,11 +1,11 @@
 package log
 
 import (
-	"edu/pkg/log/core"
-	"edu/pkg/log/file"
-	"edu/pkg/log/fluent"
-	"edu/pkg/log/multi"
-	"edu/pkg/log/tee"
+	"github.com/emberfarkas/pkg/log/core"
+	"github.com/emberfarkas/pkg/log/file"
+	"github.com/emberfarkas/pkg/log/fluent"
+	"github.com/emberfarkas/pkg/log/multi"
+	"github.com/emberfarkas/pkg/log/tee"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -24,7 +24,7 @@ func With(c zapcore.Core, kv ...interface{}) zapcore.Core {
 	return c.With(keysAndValues)
 }
 
-func NewLoggerCore(c *LoggerConf) (core.Logger, error) {
+func NewLoggerCore(c *Conf) (core.Logger, error) {
 	hooks := make([]core.Logger, 0)
 	if c.Stdout.Enable {
 		c := tee.NewStdCore(zapcore.Level(c.Stdout.Level))
@@ -56,7 +56,7 @@ func NewLoggerCore(c *LoggerConf) (core.Logger, error) {
 	return logger, nil
 }
 
-func Init(c *LoggerConf) core.Logger {
+func Init(c *Conf) core.Logger {
 	core, err := NewLoggerCore(c)
 	if err != nil {
 		Fatal(err)

@@ -1,13 +1,13 @@
 package forwardauth
 
 import (
-	"bls/pkg/log"
 	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	ssopb "bls/api/sys"
+	ssopb "github.com/emberfarkas/pkg/api/sys"
+	"github.com/emberfarkas/pkg/log"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"

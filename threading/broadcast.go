@@ -1,10 +1,11 @@
 package threading
 
 import (
-	"bls/pkg/log"
-	"bls/pkg/rescue"
 	"context"
 	"sync"
+
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/rescue"
 )
 
 // A Broadcast is used to run given number of workers to process jobs.

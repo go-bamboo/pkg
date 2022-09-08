@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	pkgstrings "bls/pkg/strings"
+	pkgstrings "github.com/emberfarkas/pkg/strings"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -125,7 +125,7 @@ func GetDirFiles(dir string) ([]string, error) {
 	return filesRet, nil
 }
 
-//slice去重
+// slice去重
 func RemoveRepByMap(slc []string) []string {
 	result := []string{}
 	tempMap := map[string]byte{}
@@ -149,7 +149,7 @@ func IdsStrToIdsIntGroup(keys string) []int {
 	return IDS
 }
 
-//截取字符串-将字符串前面的0去掉
+// 截取字符串-将字符串前面的0去掉
 func SubByZero(str string) string {
 	arr := []byte(str)
 	for i, str1 := range arr {
@@ -161,13 +161,13 @@ func SubByZero(str string) string {
 	return str
 }
 
-//精度处理
+// 精度处理
 func Round(f float64, n int) float64 {
 	n10 := math.Pow10(n)
 	return math.Trunc((f+0.5/n10)*n10) / n10
 }
 
-//浮点数精度处理转换整数
+// 浮点数精度处理转换整数
 func Float2Int(f float64, decimal int) uint64 {
 	value := ChangeNumber(f, 8)
 	split := strings.Split(value, ".")
@@ -182,7 +182,7 @@ func Float2Int(f float64, decimal int) uint64 {
 	return uint64(i)
 }
 
-//保留小数位
+// 保留小数位
 func ChangeNumber(f float64, m int) string {
 	n := strconv.FormatFloat(f, 'f', -1, 64)
 	if n == "" {
@@ -198,7 +198,7 @@ func ChangeNumber(f float64, m int) string {
 	return newn[0] + "." + newn[1][:m]
 }
 
-//将字符串float进行精度处理
+// 将字符串float进行精度处理
 func Float2String(value string, decimal int) string {
 	split := strings.Split(value, ".")
 	if len(split) > 1 {
@@ -212,7 +212,7 @@ func Float2String(value string, decimal int) string {
 	return SubByZero(value)
 }
 
-//精度处理
+// 精度处理
 func ChangeInt2Float(f string, m int) string {
 	i := len(f)
 	if i <= m {
@@ -233,7 +233,7 @@ func ChangeInt2Float(f string, m int) string {
 	}
 }
 
-//精度处理
+// 精度处理
 func ChangeFloat2Float(f string, m int) string {
 	if strings.Contains(f, ".") {
 		index := strings.Index(f, ".")
@@ -289,7 +289,7 @@ func ToHex(b []byte) string {
 	return "0x" + hex
 }
 
-//小数点位数校验
+// 小数点位数校验
 func CheckFloat(value string, decimal int) bool {
 	values := strings.Split(value, ".")
 	if len(values) == 2 {
@@ -306,7 +306,7 @@ func GetOrderid() string {
 	return s
 }
 
-//结构体转为map
+// 结构体转为map
 func Struct2Map(obj interface{}) map[string]interface{} {
 	t := reflect.TypeOf(obj)
 	v := reflect.ValueOf(obj)

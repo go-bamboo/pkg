@@ -5,9 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"bls/pkg/log"
-	"bls/pkg/rescue"
-
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/rescue"
 	"github.com/streadway/amqp"
 )
 

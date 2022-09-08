@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"net/url"
 
-	syspb "bls/api/sys"
+	syspb "github.com/emberfarkas/pkg/api/sys"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 )
@@ -25,14 +24,6 @@ func IsErrUnauthorizedPath(err error) bool {
 type Option func(*options)
 
 type options struct {
-	logger log.Logger
-}
-
-// WithLogger with sys client
-func WithLogger(logger log.Logger) Option {
-	return func(o *options) {
-		o.logger = logger
-	}
 }
 
 func Server(opts ...Option) middleware.Middleware {

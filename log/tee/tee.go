@@ -3,10 +3,9 @@ package tee
 import (
 	"time"
 
-	"edu/pkg/log/core"
-	"edu/pkg/log/file"
-	"edu/pkg/log/fluent"
-
+	"github.com/emberfarkas/pkg/log/core"
+	"github.com/emberfarkas/pkg/log/file"
+	"github.com/emberfarkas/pkg/log/fluent"
 	"go.uber.org/zap/zapcore"
 )
 

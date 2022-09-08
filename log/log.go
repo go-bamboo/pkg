@@ -5,8 +5,7 @@ import (
 	"os"
 	"time"
 
-	"edu/pkg/log/tee"
-
+	"github.com/emberfarkas/pkg/log/tee"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -172,7 +171,6 @@ func (s *ZapLogger) Fatalw(msg string, keyvals ...interface{}) {
 }
 
 // LogRoundTrip prints the information about request and response.
-//
 func (s *ZapLogger) LogRoundTrip(
 	req *http.Request,
 	res *http.Response,

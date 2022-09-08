@@ -7,11 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"edu/pkg/log"
-	"edu/pkg/rescue"
-	"edu/pkg/stat/prom"
-	"edu/pkg/tracing"
-
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/rescue"
+	"github.com/emberfarkas/pkg/stat/prom"
+	"github.com/emberfarkas/pkg/tracing"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/attribute"

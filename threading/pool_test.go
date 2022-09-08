@@ -2,9 +2,10 @@ package threading
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPool(t *testing.T) {

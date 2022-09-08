@@ -9,8 +9,7 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
-	"bls/pkg/contracts/bridge/contract"
-
+	"github.com/emberfarkas/pkg/contracts/bridge/contract"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

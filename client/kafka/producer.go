@@ -5,16 +5,15 @@ import (
 	"crypto/tls"
 	"time"
 
-	"edu/pkg/log"
-	"edu/pkg/tracing"
-
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/tracing"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
-//TracingProducer 生产者
+// TracingProducer 生产者
 type TracingProducer struct {
 	tracer *tracing.Tracer
 	pub    *kafka.Writer

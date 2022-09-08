@@ -3,8 +3,7 @@ package tee
 import (
 	"os"
 
-	"edu/pkg/log/core"
-
+	"github.com/emberfarkas/pkg/log/core"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

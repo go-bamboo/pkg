@@ -5,9 +5,8 @@ import (
 	"encoding/hex"
 	"math/big"
 
-	"bls/pkg/contracts/flattened/contract"
-	"bls/pkg/ecode"
-
+	"github.com/emberfarkas/pkg/contracts/flattened/contract"
+	"github.com/emberfarkas/pkg/ecode"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"

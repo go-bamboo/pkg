@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"bls/pkg/bufio"
+	"github.com/emberfarkas/pkg/bufio"
 )
 
 var (

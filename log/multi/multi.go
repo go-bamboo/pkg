@@ -1,8 +1,7 @@
 package multi
 
 import (
-	"edu/pkg/log/core"
-
+	"github.com/emberfarkas/pkg/log/core"
 	"go.uber.org/zap/zapcore"
 )
 

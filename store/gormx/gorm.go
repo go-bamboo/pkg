@@ -1,8 +1,7 @@
 package gormx
 
 import (
-	"edu/pkg/log"
-
+	"github.com/emberfarkas/pkg/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	gormlog "gorm.io/gorm/logger"
