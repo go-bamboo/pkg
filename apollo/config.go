@@ -3,6 +3,7 @@ package apollo
 import (
 	"context"
 
+	"github.com/emberfarkas/pkg/log"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/philchia/agollo/v4"
 )
@@ -40,7 +41,9 @@ type Config struct {
 }
 
 func NewConfigSource(c *agollo.Conf, opts ...Option) config.Source {
-	_options := options{}
+	_options := options{
+		logger: log.GetLogger(),
+	}
 	for _, o := range opts {
 		o(&_options)
 	}
@@ -99,7 +102,7 @@ func newWatcher(logger agollo.Logger, namespaceID string) *Watcher {
 	return w
 }
 
-//OnChange 增加变更监控
+// OnChange 增加变更监控
 func (w *Watcher) onChange(ce *agollo.ChangeEvent) {
 	if w.namespaceID == ce.Namespace {
 		for _, change := range ce.Changes {

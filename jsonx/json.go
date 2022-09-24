@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/errors"
 	"io"
 	"strings"
+
+	"github.com/go-kratos/kratos/v2/errors"
 )
 
 // Marshal marshals v into json bytes.

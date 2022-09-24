@@ -1,4 +1,4 @@
-package log
+package gormx
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/emberfarkas/pkg/log"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -27,8 +28,8 @@ const (
 	YellowBold  = "\033[33;1m"
 )
 
-type ZapGormLogger struct {
-	ZapLogger
+type Logger struct {
+	log.ZapLogger
 
 	// grom
 	logger.Config
@@ -36,7 +37,7 @@ type ZapGormLogger struct {
 	traceStr, traceErrStr, traceWarnStr string
 }
 
-func NewZapGormLogger(config logger.Config, core zapcore.Core) *ZapGormLogger {
+func NewLogger(config logger.Config, core zapcore.Core) *Logger {
 	// gorm
 	var (
 		infoStr      = "%s\n"
@@ -56,8 +57,8 @@ func NewZapGormLogger(config logger.Config, core zapcore.Core) *ZapGormLogger {
 		traceErrStr = RedBold + "%s " + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
 	}
 
-	logger := NewLogger(core, 1)
-	l := &ZapGormLogger{
+	logger := log.NewLogger(core, 1)
+	l := &Logger{
 		ZapLogger: *logger,
 		Config:    config,
 
@@ -73,35 +74,35 @@ func NewZapGormLogger(config logger.Config, core zapcore.Core) *ZapGormLogger {
 }
 
 // LogMode log mode
-func (l *ZapGormLogger) LogMode(level logger.LogLevel) logger.Interface {
+func (l *Logger) LogMode(level logger.LogLevel) logger.Interface {
 	newlogger := *l
 	newlogger.LogLevel = level
 	return &newlogger
 }
 
 // Info print info
-func (l *ZapGormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
+func (l *Logger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger.Info {
-		l.slogger.Infof(l.infoStr+msg, data...)
+		l.ZapLogger.Infof(l.infoStr+msg, data...)
 	}
 }
 
 // Warn print warn messages
-func (l *ZapGormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
+func (l *Logger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger.Warn {
-		l.slogger.Warnf(l.warnStr+msg, data...)
+		l.ZapLogger.Warnf(l.warnStr+msg, data...)
 	}
 }
 
 // Error print error messages
-func (l *ZapGormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
+func (l *Logger) Error(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger.Error {
-		l.slogger.Errorf(l.errStr+msg, data...)
+		l.ZapLogger.Errorf(l.errStr+msg, data...)
 	}
 }
 
 // Trace print sql message
-func (l *ZapGormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	if l.LogLevel <= logger.Silent {
 		return
 	}
@@ -111,24 +112,24 @@ func (l *ZapGormLogger) Trace(ctx context.Context, begin time.Time, fc func() (s
 	case err != nil && l.LogLevel >= logger.Error && (!errors.Is(err, gorm.ErrRecordNotFound) || !l.IgnoreRecordNotFoundError):
 		sql, rows := fc()
 		if rows == -1 {
-			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+			l.ZapLogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 		} else {
-			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
+			l.ZapLogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
 	case elapsed > l.SlowThreshold && l.SlowThreshold != 0 && l.LogLevel >= logger.Warn:
 		sql, rows := fc()
 		slowLog := fmt.Sprintf("SLOW SQL >= %v", l.SlowThreshold)
 		if rows == -1 {
-			l.slogger.Warnf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+			l.ZapLogger.Warnf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 		} else {
-			l.slogger.Warnf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, rows, sql)
+			l.ZapLogger.Warnf(l.traceWarnStr, slowLog, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
 	case l.LogLevel == logger.Info:
 		sql, rows := fc()
 		if rows == -1 {
-			l.slogger.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+			l.ZapLogger.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 		} else {
-			l.slogger.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, rows, sql)
+			l.ZapLogger.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
 	}
 }

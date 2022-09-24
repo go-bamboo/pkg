@@ -22,7 +22,7 @@ func New(c *Conf) (*DB, error) {
 	gormlogConfig := gormlog.Config{Colorful: true, LogLevel: gormlog.LogLevel(c.LogLevel)}
 	core := log.GetCore()
 	db, err := gorm.Open(dialector, &gorm.Config{
-		Logger: log.NewZapGormLogger(gormlogConfig, core),
+		Logger: NewLogger(gormlogConfig, core),
 	})
 	if err != nil {
 		return nil, err

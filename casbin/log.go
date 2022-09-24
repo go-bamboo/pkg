@@ -1,20 +1,21 @@
-package log
+package casbin
 
 import (
 	"fmt"
 	"strings"
 
+	"github.com/emberfarkas/pkg/log"
 	"go.uber.org/zap/zapcore"
 )
 
-type CasbinCronLogger struct {
-	ZapLogger
+type Logger struct {
+	log.ZapLogger
 	enabled bool
 }
 
-func NewCasbinCronLogger(core zapcore.Core, enabled bool) *CasbinCronLogger {
-	logger := NewLogger(core, 1)
-	l := &CasbinCronLogger{
+func NewLogger(core zapcore.Core, enabled bool) *Logger {
+	logger := log.NewLogger(core, 1)
+	l := &Logger{
 		ZapLogger: *logger,
 		enabled:   enabled,
 	}
@@ -22,17 +23,17 @@ func NewCasbinCronLogger(core zapcore.Core, enabled bool) *CasbinCronLogger {
 }
 
 // EnableLog controls whether print the message.
-func (l *CasbinCronLogger) EnableLog(enabled bool) {
+func (l *Logger) EnableLog(enabled bool) {
 	l.enabled = enabled
 }
 
 // IsEnabled returns if logger is enabled.
-func (l *CasbinCronLogger) IsEnabled() bool {
+func (l *Logger) IsEnabled() bool {
 	return l.enabled
 }
 
 // LogModel log info related to model.
-func (l *CasbinCronLogger) LogModel(model [][]string) {
+func (l *Logger) LogModel(model [][]string) {
 	if !l.enabled {
 		return
 	}
@@ -41,11 +42,11 @@ func (l *CasbinCronLogger) LogModel(model [][]string) {
 	for _, v := range model {
 		str.WriteString(fmt.Sprintf("%v\n", v))
 	}
-	l.slogger.Infof("%v", str.String())
+	l.ZapLogger.Infof("%v", str.String())
 }
 
 // LogEnforce log info related to enforce.
-func (l *CasbinCronLogger) LogEnforce(matcher string, request []interface{}, result bool, explains [][]string) {
+func (l *Logger) LogEnforce(matcher string, request []interface{}, result bool, explains [][]string) {
 	if !l.enabled {
 		return
 	}
@@ -70,20 +71,20 @@ func (l *CasbinCronLogger) LogEnforce(matcher string, request []interface{}, res
 		}
 	}
 
-	l.slogger.Infof("%v", reqStr.String())
+	l.ZapLogger.Infof("%v", reqStr.String())
 }
 
 // LogRole log info related to role.
-func (l *CasbinCronLogger) LogRole(roles []string) {
+func (l *Logger) LogRole(roles []string) {
 	if !l.enabled {
 		return
 	}
 
-	l.slogger.Infof("Roles: %v", roles)
+	l.ZapLogger.Infof("Roles: %v", roles)
 }
 
 // LogPolicy log info related to policy.
-func (l *CasbinCronLogger) LogPolicy(policy map[string][][]string) {
+func (l *Logger) LogPolicy(policy map[string][][]string) {
 	if !l.enabled {
 		return
 	}
@@ -94,5 +95,5 @@ func (l *CasbinCronLogger) LogPolicy(policy map[string][][]string) {
 		str.WriteString(fmt.Sprintf("%s : %v\n", k, v))
 	}
 
-	l.slogger.Infof("%v", str.String())
+	l.ZapLogger.Infof("%v", str.String())
 }
