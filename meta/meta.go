@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/emberfarkas/pkg/ecode"
 	"github.com/go-kratos/kratos/v2/metadata"
 )
 
@@ -33,12 +32,12 @@ func GetDataPermissions(ctx context.Context) (permission *DataPermission, err er
 func GetToken(ctx context.Context) (token string, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
-		err = ecode.Unknown("不存在md")
+		err = ErrNotExistMd("不存在md")
 		return
 	}
 	v := md.Get("x-md-global-token")
 	if len(v) <= 0 {
-		err = ecode.Unknown("不存在token")
+		err = ErrNotExistDp("不存在token")
 		return
 	}
 	token = v
@@ -48,12 +47,12 @@ func GetToken(ctx context.Context) (token string, err error) {
 func GetUA(ctx context.Context) (ua string, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
-		err = ecode.Unknown("不存在md")
+		err = ErrNotExistMd("不存在md")
 		return
 	}
 	v := md.Get("x-md-global-ua")
 	if len(v) <= 0 {
-		err = ecode.Unknown("meta")
+		err = ErrNotExistDp("meta")
 		return
 	}
 	ua = v
@@ -63,12 +62,12 @@ func GetUA(ctx context.Context) (ua string, err error) {
 func GetRemoteAddr(ctx context.Context) (remoteAddr string, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
-		err = ecode.Unknown("不存在md")
+		err = ErrNotExistMd("不存在md")
 		return
 	}
 	v := md.Get("x-md-global-token-remote_addr")
 	if len(v) <= 0 {
-		err = ecode.Unknown("meta")
+		err = ErrNotExistDp("meta")
 		return
 	}
 	remoteAddr = v

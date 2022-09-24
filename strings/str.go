@@ -30,7 +30,7 @@ func FormatTimeStr(timeStr string) (string, error) {
 	return theTime.Format("2006/01/02 15:04:05"), err
 }
 
-//Str2Str 精度处理
+// Str2Str 精度处理
 func Str2Str(f string, m int) string {
 	i := len(f)
 	if i <= m {
@@ -51,7 +51,7 @@ func Str2Str(f string, m int) string {
 	}
 }
 
-//String2Hex 将字符串转十六进制
+// String2Hex 将字符串转十六进制
 func String2Hex(value string) string {
 	int := new(big.Int)
 	int.SetString(value, 0)

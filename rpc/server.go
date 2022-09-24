@@ -1,6 +1,8 @@
 package rpc
 
 import (
+	"time"
+
 	"github.com/emberfarkas/pkg/middleware/logging"
 	"github.com/emberfarkas/pkg/middleware/metadata"
 	"github.com/emberfarkas/pkg/middleware/metrics/prometheus"
@@ -12,6 +14,8 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"go.opentelemetry.io/otel/propagation"
+	ggrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 type Server = grpc.Server
@@ -35,6 +39,15 @@ func NewServer(c *Conf) *Server {
 				ratelimit.Server(),
 				validate.Validator(),
 			),
+		),
+		grpc.Options(
+			ggrpc.KeepaliveParams(keepalive.ServerParameters{
+				MaxConnectionIdle:     time.Second * 120,
+				MaxConnectionAgeGrace: time.Second * 15,
+				Time:                  time.Second * 30,
+				Timeout:               time.Second * 10,
+				MaxConnectionAge:      time.Hour * 4,
+			}),
 		),
 	}
 	if c.Network != "" {

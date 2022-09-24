@@ -7,9 +7,9 @@ import (
 	gormlog "gorm.io/gorm/logger"
 )
 
-type DB gorm.DB
+type DB = gorm.DB
 
-func MustNew(c *Conf) *gorm.DB {
+func MustNew(c *Conf) *DB {
 	db, err := New(c)
 	if err != nil {
 		log.Fatal(err)
@@ -17,7 +17,7 @@ func MustNew(c *Conf) *gorm.DB {
 	return db
 }
 
-func New(c *Conf) (*gorm.DB, error) {
+func New(c *Conf) (*DB, error) {
 	dialector := mysql.Open(c.Source)
 	gormlogConfig := gormlog.Config{Colorful: true, LogLevel: gormlog.LogLevel(c.LogLevel)}
 	core := log.GetCore()

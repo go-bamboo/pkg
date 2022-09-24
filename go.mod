@@ -27,7 +27,6 @@ require (
 	github.com/onrik/ethrpc v1.1.1
 	github.com/panjf2000/ants/v2 v2.5.0
 	github.com/philchia/agollo/v4 v4.1.4
-	github.com/pingcap/errors v0.11.4
 	github.com/prometheus/client_golang v1.13.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/segmentio/kafka-go v0.4.34
