@@ -9,6 +9,18 @@ import (
 
 const KeepTTL = redis.KeepTTL
 
+type (
+	Pipeliner = redis.Pipeliner
+	Script    = redis.Script
+	Z         = redis.Z
+	ZAddArgs  = redis.ZAddArgs
+	ZRangeBy  = redis.ZRangeBy
+)
+
+func NewScript(src string) *Script {
+	return redis.NewScript(src)
+}
+
 type Client struct {
 	redis.Client
 

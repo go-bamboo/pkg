@@ -50,4 +50,7 @@ require (
 	gorm.io/gorm v1.23.8
 )
 
-require github.com/tinylib/msgp v1.1.6 // indirect
+require (
+	github.com/mitchellh/mapstructure v1.4.1
+	github.com/tinylib/msgp v1.1.6 // indirect
+)
