@@ -18,7 +18,8 @@ func wrapRedisError(err error) error {
 }
 
 func ErrSpanLost(format string, a ...interface{}) error {
-	return errors.InternalServer("ErrSpanLost", fmt.Sprintf(format, a...))
+	se := errors.InternalServer("ErrSpanLost", fmt.Sprintf(format, a...))
+	return se
 }
 
 func IsErrSpanLost(err error) bool {
@@ -28,7 +29,9 @@ func IsErrSpanLost(err error) bool {
 
 // RedisNil 没有值
 func RedisNil(err redis.Error) error {
-	return errors.InternalServer("RedisNil", err.Error())
+	se := errors.InternalServer("RedisNil", err.Error())
+	se.WithCause(err)
+	return se
 }
 
 func IsRedisNil(err error) bool {

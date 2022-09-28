@@ -1,13 +1,14 @@
-package ecode
+package jwtx
 
 import (
 	"fmt"
 
+	"github.com/emberfarkas/pkg/ecode"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func WrapJwtError(err error) error {
+func WrapError(err error) error {
 	if err == nil {
 		return nil
 	}
@@ -24,7 +25,7 @@ func WrapJwtError(err error) error {
 	} else if errors.Is(err, jwt.ErrInvalidKey) {
 		return ErrInvalidKey(err)
 	} else {
-		return Unknown(err.Error())
+		return ecode.Unknown(err.Error())
 	}
 }
 

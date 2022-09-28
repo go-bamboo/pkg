@@ -12,8 +12,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-
-	"github.com/emberfarkas/pkg/ecode"
 )
 
 func PathExists(path string) (bool, error) {
@@ -190,7 +188,6 @@ func MkDir(src string) error {
 func Open(name string, flag int, perm os.FileMode) (f *os.File, err error) {
 	f, err = os.OpenFile(name, flag, perm)
 	if err != nil {
-		err = ecode.WrapError(err)
 		return
 	}
 	return

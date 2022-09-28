@@ -2,8 +2,8 @@ package meta
 
 import (
 	"context"
-	"encoding/json"
 
+	"github.com/emberfarkas/pkg/jsonx"
 	"github.com/go-kratos/kratos/v2/metadata"
 )
 
@@ -22,7 +22,7 @@ func GetDataPermissions(ctx context.Context) (permission *DataPermission, err er
 		}
 	}
 	var dp DataPermission
-	if err = json.Unmarshal([]byte(v), &dp); err != nil {
+	if err = jsonx.Unmarshal([]byte(v), &dp); err != nil {
 		return
 	}
 	permission = &dp

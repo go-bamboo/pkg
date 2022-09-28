@@ -5,9 +5,9 @@ package v2
 
 import (
 	"github.com/emberfarkas/pkg/contracts/dodoex/v2/contract"
-	"github.com/emberfarkas/pkg/ecode"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/go-kratos/kratos/v2/errors"
 )
 
 // Dodo is a Go wrapper around an on-chain checkpoint oracle contract.
@@ -20,7 +20,7 @@ type Dodo struct {
 func NewDodo(contractAddr common.Address, backend bind.ContractBackend) (ctrt *Dodo, err error) {
 	c, err := contract.NewContract(contractAddr, backend)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	ctrt = &Dodo{address: contractAddr, contract: c}

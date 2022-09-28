@@ -9,12 +9,12 @@ import (
 	"math/big"
 
 	"github.com/emberfarkas/pkg/contracts/flattened/contract"
-	"github.com/emberfarkas/pkg/ecode"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/go-kratos/kratos/v2/errors"
 )
 
 // Media is a Go wrapper around an on-chain checkpoint oracle contract.
@@ -27,7 +27,7 @@ type Media struct {
 func NewMedia(contractAddr common.Address, backend bind.ContractBackend) (ctrt *Media, err error) {
 	c, err := contract.NewMedia(contractAddr, backend)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	ctrt = &Media{address: contractAddr, contract: c}
@@ -58,7 +58,7 @@ func (ctrct *Media) Symbol(ctx context.Context, from common.Address) (string, er
 		From:    from,
 	}
 	symbol, err := ctrct.contract.MediaCaller.Symbol(opts)
-	return symbol, ecode.WrapError(err)
+	return symbol, errors.FromError(err)
 }
 
 func (ctrct *Media) OwnerOf(ctx context.Context, from common.Address, tokenId *big.Int) (string, error) {
@@ -67,7 +67,7 @@ func (ctrct *Media) OwnerOf(ctx context.Context, from common.Address, tokenId *b
 		From:    from,
 	}
 	addr, err := ctrct.contract.OwnerOf(opts, tokenId)
-	return addr.Hex(), ecode.WrapError(err)
+	return addr.Hex(), errors.FromError(err)
 }
 
 func (ctrct *Media) TokenURI(ctx context.Context, from common.Address, tokenId *big.Int) (string, error) {
@@ -76,7 +76,7 @@ func (ctrct *Media) TokenURI(ctx context.Context, from common.Address, tokenId *
 		From:    from,
 	}
 	uri, err := ctrct.contract.TokenURI(opts, tokenId)
-	return uri, ecode.WrapError(err)
+	return uri, errors.FromError(err)
 }
 
 func (ctrct *Media) TokenContentHashes(ctx context.Context, from common.Address, tokenId *big.Int) (string, error) {
@@ -85,7 +85,7 @@ func (ctrct *Media) TokenContentHashes(ctx context.Context, from common.Address,
 		From:    from,
 	}
 	_, err := ctrct.contract.TokenContentHashes(opts, tokenId)
-	return "", ecode.WrapError(err)
+	return "", errors.FromError(err)
 }
 
 func (ctrct *Media) TokenOfOwnerByIndex(ctx context.Context, from common.Address, owner common.Address, index *big.Int) (string, error) {
@@ -94,7 +94,7 @@ func (ctrct *Media) TokenOfOwnerByIndex(ctx context.Context, from common.Address
 		From:    from,
 	}
 	tokenId, err := ctrct.contract.TokenOfOwnerByIndex(opts, owner, index)
-	return tokenId.String(), ecode.WrapError(err)
+	return tokenId.String(), errors.FromError(err)
 }
 
 func (ctrct *Media) TokenByIndex(ctx context.Context, from common.Address, index *big.Int) (string, error) {
@@ -103,7 +103,7 @@ func (ctrct *Media) TokenByIndex(ctx context.Context, from common.Address, index
 		From:    from,
 	}
 	tokenId, err := ctrct.contract.TokenByIndex(opts, index)
-	return tokenId.String(), ecode.WrapError(err)
+	return tokenId.String(), errors.FromError(err)
 }
 
 func (ctrct *Media) GetTokenIdByContentHash(ctx context.Context, from common.Address, hash string) (string, error) {
@@ -113,7 +113,7 @@ func (ctrct *Media) GetTokenIdByContentHash(ctx context.Context, from common.Add
 	}
 	contentHash := common.BytesToHash([]byte(hash))
 	tokenId, err := ctrct.contract.GetTokenIdByContentHash(opts, contentHash)
-	return tokenId.String(), ecode.WrapError(err)
+	return tokenId.String(), errors.FromError(err)
 }
 
 func (ctrct *Media) Mint(ctx context.Context, chainID *big.Int, from common.Address, fromPriv *ecdsa.PrivateKey, nonce *big.Int, tokenId *big.Int, tokenURI string, hash string) (txHash, rawTx string, err error) {
@@ -129,13 +129,13 @@ func (ctrct *Media) Mint(ctx context.Context, chainID *big.Int, from common.Addr
 	}
 	tx, err := ctrct.contract.Mint(opts, tokenId, data)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	txHash = tx.Hash().Hex()
 	rawTxBytes, err := rlp.EncodeToBytes(tx)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	rawTx = hexutil.Encode(rawTxBytes)
@@ -156,13 +156,13 @@ func (ctrct *Media) MintForCreator(ctx context.Context, chainID *big.Int, from c
 	}
 	tx, err := ctrct.contract.MintForCreator(opts, to, tokenId, data)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	txHash = tx.Hash().Hex()
 	rawTxBytes, err := rlp.EncodeToBytes(tx)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	rawTx = hexutil.Encode(rawTxBytes)
@@ -184,13 +184,13 @@ func (ctrct *Media) MintWithSig(ctx context.Context, chainID *big.Int, from comm
 	sig := contract.IMediaEIP712Signature{}
 	tx, err := ctrct.contract.MintWithSig(opts, from, tokenId, data, sig)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	txHash = tx.Hash().Hex()
 	rawTxBytes, err := rlp.EncodeToBytes(tx)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	rawTx = hexutil.Encode(rawTxBytes)
@@ -207,13 +207,13 @@ func (ctrct *Media) UpdateTokenURI(ctx context.Context, chainID *big.Int, from c
 
 	tx, err := ctrct.contract.UpdateTokenURI(opts, tokenId, tokenURI)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	txHash = tx.Hash().Hex()
 	rawTxBytes, err := rlp.EncodeToBytes(tx)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	rawTx = hexutil.Encode(rawTxBytes)
@@ -229,13 +229,13 @@ func (ctrct *Media) TransferFrom(ctx context.Context, chainID *big.Int, from com
 	}
 	tx, err := ctrct.contract.TransferFrom(opts, fromx, to, tokenId)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	txHash = tx.Hash().Hex()
 	rawTxBytes, err := rlp.EncodeToBytes(tx)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	rawTx = hexutil.Encode(rawTxBytes)
@@ -251,13 +251,13 @@ func (ctrct *Media) Burn(ctx context.Context, chainID *big.Int, from common.Addr
 	}
 	tx, err := ctrct.contract.Burn(opts, tokenId)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	txHash = tx.Hash().Hex()
 	rawTxBytes, err := rlp.EncodeToBytes(tx)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	rawTx = hexutil.Encode(rawTxBytes)

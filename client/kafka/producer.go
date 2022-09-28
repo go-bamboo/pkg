@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/queue"
 	"github.com/emberfarkas/pkg/tracing"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/attribute"
@@ -20,7 +21,7 @@ type TracingProducer struct {
 	topic  string
 }
 
-func MustNewTracingProducer(c *Conf) *TracingProducer {
+func MustNewTracingProducer(c *Conf) queue.Pusher {
 	pub, err := NewTracingProducer(c)
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +51,11 @@ func NewTracingProducer(c *Conf) (*TracingProducer, error) {
 	return tracingPub, nil
 }
 
-func (p *TracingProducer) Produce(ctx context.Context, key, value []byte) error {
+func (p *TracingProducer) Name() string {
+	return ""
+}
+
+func (p *TracingProducer) Push(ctx context.Context, key, value []byte) error {
 	msg := kafka.Message{
 		Key:   key,
 		Value: value,
@@ -67,6 +72,6 @@ func (p *TracingProducer) Produce(ctx context.Context, key, value []byte) error 
 	return err
 }
 
-func (p *TracingProducer) Close() {
-	p.pub.Close()
+func (p *TracingProducer) Close() error {
+	return p.pub.Close()
 }

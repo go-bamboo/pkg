@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/queue"
 	"github.com/emberfarkas/pkg/rescue"
 	"github.com/emberfarkas/pkg/stat/prom"
 	"github.com/emberfarkas/pkg/tracing"
@@ -19,14 +20,10 @@ import (
 )
 
 type (
-	ConsumeHandle  func(ctx context.Context, topic string, key, value []byte) error
-	ConsumeHandler interface {
-		Consume(ctx context.Context, topic string, key, value []byte) error
-	}
 	TracingConsumer struct {
 		c       Conf
 		sub     *kafka.Reader
-		handler ConsumeHandler
+		handler queue.ConsumeHandler
 
 		tracer  *tracing.Tracer
 		metrics *prom.Prom
@@ -41,7 +38,7 @@ type (
 	}
 )
 
-func MustNewQueue(c *Conf, handler ConsumeHandler) (*TracingConsumers, error) {
+func MustNewQueue(c *Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
 	q, err := NewQueue(c, handler)
 	if err != nil {
 		log.Fatal(err)
@@ -49,7 +46,7 @@ func MustNewQueue(c *Conf, handler ConsumeHandler) (*TracingConsumers, error) {
 	return q, nil
 }
 
-func NewQueue(c *Conf, handler ConsumeHandler) (*TracingConsumers, error) {
+func NewQueue(c *Conf, handler queue.ConsumeHandler) (*TracingConsumers, error) {
 	q := TracingConsumers{}
 	dialer := &Dialer{
 		Timeout:   10 * time.Second,
@@ -62,6 +59,10 @@ func NewQueue(c *Conf, handler ConsumeHandler) (*TracingConsumers, error) {
 	}
 	q.queues = append(q.queues, cc)
 	return &q, nil
+}
+
+func (q TracingConsumers) Name() string {
+	return ""
 }
 
 func (q TracingConsumers) Start(ctx context.Context) error {
@@ -78,7 +79,7 @@ func (q TracingConsumers) Stop(ctx context.Context) error {
 	return nil
 }
 
-func NewTracingConsumer(c Conf, dialer *Dialer, handler ConsumeHandler) (*TracingConsumer, error) {
+func NewTracingConsumer(c Conf, dialer *Dialer, handler queue.ConsumeHandler) (*TracingConsumer, error) {
 	ctx, cf := context.WithCancel(context.Background())
 	config := kafka.ReaderConfig{
 		Brokers: c.Brokers,

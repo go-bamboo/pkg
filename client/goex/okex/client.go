@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"bls/pkg/log"
-	"bls/pkg/tools"
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/tools"
 
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/gorilla/websocket"

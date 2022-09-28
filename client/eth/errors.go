@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-
-
 	"github.com/emberfarkas/pkg/ecode"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/onrik/ethrpc"

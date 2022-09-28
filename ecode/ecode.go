@@ -24,7 +24,6 @@ func ReadTimeout(format string, a ...interface{}) error {
 	return errors.InternalServer("10100", "读取超时")
 }
 
-// admin jwt
 // ErrMissingSecretKey indicates Secret key is required
 func ErrMissingSecretKey(domain, reason, format string, a ...interface{}) error {
 	return errors.InternalServer("11101", "secret key is required")

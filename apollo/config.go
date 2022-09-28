@@ -11,14 +11,35 @@ import (
 type Option func(*options)
 
 type options struct {
+	appID          string
+	cluster        string
 	namespaceNames []string
+	metaAddr       string
 	skipLocalCache bool
 	logger         agollo.Logger
 }
 
-func Namespaces(ns []string) Option {
+func AppID(appID string) Option {
 	return func(c *options) {
-		c.namespaceNames = ns
+		c.appID = appID
+	}
+}
+
+func Cluster(cluster string) Option {
+	return func(c *options) {
+		c.cluster = cluster
+	}
+}
+
+func Namespaces(ns ...string) Option {
+	return func(c *options) {
+		c.namespaceNames = append(c.namespaceNames, ns...)
+	}
+}
+
+func MetaAddr(metaAddr string) Option {
+	return func(c *options) {
+		c.metaAddr = metaAddr
 	}
 }
 
@@ -40,15 +61,20 @@ type Config struct {
 	client agollo.Client
 }
 
-func NewConfigSource(c *agollo.Conf, opts ...Option) config.Source {
+func NewConfigSource(opts ...Option) config.Source {
 	_options := options{
-		logger: log.GetLogger(),
+		cluster: "default",
+		logger:  log.GetLogger(),
 	}
 	for _, o := range opts {
 		o(&_options)
 	}
-	_options.namespaceNames = c.NameSpaceNames
-
+	c := &agollo.Conf{
+		AppID:          _options.appID,
+		Cluster:        _options.cluster,
+		NameSpaceNames: _options.namespaceNames,
+		MetaAddr:       _options.metaAddr,
+	}
 	if _options.skipLocalCache {
 		client := agollo.NewClient(c, agollo.SkipLocalCache(), agollo.WithLogger(_options.logger))
 		if err := client.Start(); err != nil {

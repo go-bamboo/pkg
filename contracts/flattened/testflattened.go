@@ -6,13 +6,13 @@ import (
 	"math/big"
 
 	"github.com/emberfarkas/pkg/contracts/flattened/contract"
-	"github.com/emberfarkas/pkg/ecode"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/go-kratos/kratos/v2/errors"
 )
 
 func (ctrct *Media) MintKs(ctx context.Context, chainID *big.Int, ks *keystore.KeyStore, acc accounts.Account, nonce *big.Int, tokenId *big.Int, tokenURI string, hash string) (txHash, rawTx string, err error) {
@@ -32,13 +32,13 @@ func (ctrct *Media) MintKs(ctx context.Context, chainID *big.Int, ks *keystore.K
 	}
 	tx, err := ctrct.contract.Mint(opts, tokenId, data)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	txHash = tx.Hash().Hex()
 	rawTxBytes, err := rlp.EncodeToBytes(tx)
 	if err != nil {
-		err = ecode.WrapError(err)
+		err = errors.FromError(err)
 		return
 	}
 	rawTxHex := hex.EncodeToString(rawTxBytes)
