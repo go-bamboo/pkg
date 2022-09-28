@@ -16,28 +16,32 @@ type (
 		handler ConsumeHandle
 	}
 
-	CronSrv struct {
+	Cron struct {
 		cr    *cron.Cron
 		specs []Pair
 	}
 
-	Option func(alc *CronSrv)
+	Option func(alc *Cron)
+
+	EntryID = cron.EntryID
+
+	Job = cron.Job
 )
 
 func WithSpec(spec string, handler ConsumeHandle) Option {
-	return func(alc *CronSrv) {
+	return func(alc *Cron) {
 		alc.specs = append(alc.specs, Pair{spec: spec, handler: handler})
 	}
 }
 
-// NewCron 新cron
-func NewCron(options ...Option) (d *CronSrv) {
+// New 新cron
+func New(options ...Option) (d *Cron) {
 	stdLogger := log.NewZapLoggerEx(log.GetCore())
 	cr := cron.New(
 		cron.WithSeconds(),
 		cron.WithLogger(stdLogger),
 	)
-	s := &CronSrv{
+	s := &Cron{
 		cr: cr,
 	}
 	for _, o := range options {
@@ -55,14 +59,26 @@ func NewCron(options ...Option) (d *CronSrv) {
 	return
 }
 
-func (s *CronSrv) Start() error {
+func (s *Cron) Start() error {
 	s.cr.Start()
 	log.Infof("[cron] cron start")
 	return nil
 }
 
-func (s *CronSrv) Stop() error {
+func (s *Cron) Stop() error {
 	s.cr.Stop()
 	log.Infof("[cron] cron stop")
 	return nil
+}
+
+func (c *Cron) AddFunc(spec string, cmd func()) (EntryID, error) {
+	return c.cr.AddFunc(spec, cmd)
+}
+
+func (c *Cron) AddJob(spec string, cmd Job) (EntryID, error) {
+	return c.cr.AddJob(spec, cmd)
+}
+
+func (c *Cron) Remove(id EntryID) {
+	c.cr.Remove(id)
 }
