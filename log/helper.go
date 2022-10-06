@@ -26,8 +26,8 @@ func With(c zapcore.Core, kv ...interface{}) zapcore.Core {
 
 func NewLoggerCore(c *Conf) (core.Logger, error) {
 	hooks := make([]core.Logger, 0)
-	if c.Stdout.Enable {
-		c := tee.NewStdCore(zapcore.Level(c.Stdout.Level))
+	if c.Console.Enable {
+		c := tee.NewStdCore(zapcore.Level(c.Console.Level))
 		hooks = append(hooks, c)
 	}
 	if c.File.Enable {

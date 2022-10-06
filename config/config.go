@@ -3,8 +3,10 @@ package config
 import (
 	"flag"
 	"net/url"
+	"path"
 
 	"github.com/emberfarkas/pkg/apollo"
+	"github.com/emberfarkas/pkg/filex"
 	"github.com/emberfarkas/pkg/log"
 	"github.com/go-kratos/kratos/contrib/config/consul/v2"
 	"github.com/go-kratos/kratos/v2/config"
@@ -21,7 +23,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&conf, "conf", "file://../../configs/conf.yaml", "file://../../configs/conf.yaml, eg: file://../../configs/conf.yaml")
+	flag.StringVar(&conf, "conf", "file:///../../configs/conf.yaml", "url for config eg: file:///../../configs/conf.yaml")
 }
 
 func Load(v interface{}) config.Config {
@@ -30,9 +32,10 @@ func Load(v interface{}) config.Config {
 		panic(err)
 	}
 	if uri.Scheme == "file" {
+		cp := filex.GetCurrentPath()
 		c := config.New(
 			config.WithSource(
-				file.NewSource(uri.Path),
+				file.NewSource(path.Join(cp, uri.Path)),
 			),
 			config.WithDecoder(func(kv *config.KeyValue, v map[string]interface{}) error {
 				return yaml.Unmarshal(kv.Value, v)
@@ -40,16 +43,19 @@ func Load(v interface{}) config.Config {
 		if err := c.Load(); err != nil {
 			panic(err)
 		}
+		if err := c.Scan(v); err != nil {
+			panic(err)
+		}
+		return c
 	} else if uri.Scheme == "apollo" {
 		q := uri.Query()
 		appId := q.Get("appid")
 		namespace := q.Get("namespace")
 		c := config.New(
-
 			config.WithSource(
 				apollo.NewConfigSource(
 					apollo.AppID(appId),
-					apollo.Namespaces(namespace),
+					apollo.Namespaces(namespace+".yaml"),
 					apollo.MetaAddr("http://"+uri.Host),
 					apollo.SkipLocalCache(),
 					apollo.WithLogger(log.DefaultLogger)),
@@ -90,5 +96,4 @@ func Load(v interface{}) config.Config {
 	} else {
 		panic(err)
 	}
-	return nil
 }

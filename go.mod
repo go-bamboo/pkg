@@ -51,6 +51,9 @@ require (
 )
 
 require (
+	github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20220927151429-0ecc2b422f28
+	github.com/hashicorp/consul/api v1.14.0
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/tinylib/msgp v1.1.6 // indirect
+	gopkg.in/yaml.v3 v3.0.1
 )

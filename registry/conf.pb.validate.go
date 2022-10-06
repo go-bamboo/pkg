@@ -40,6 +40,8 @@ func (m *Etcd) Validate() error {
 		return nil
 	}
 
+	// no validation rules for Enable
+
 	if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return EtcdValidationError{
@@ -113,6 +115,8 @@ func (m *Consul) Validate() error {
 	if m == nil {
 		return nil
 	}
+
+	// no validation rules for Enable
 
 	// no validation rules for Address
 
