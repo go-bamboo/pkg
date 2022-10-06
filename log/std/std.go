@@ -1,4 +1,4 @@
-package tee
+package std
 
 import (
 	"os"

@@ -57,7 +57,7 @@ func NewLogger(config logger.Config, core zapcore.Core) *Logger {
 		traceErrStr = RedBold + "%s " + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
 	}
 
-	logger := log.NewLogger(core, 1)
+	logger := log.NewLogger(core, 2)
 	l := &Logger{
 		ZapLogger: *logger,
 		Config:    config,

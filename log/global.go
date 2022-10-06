@@ -5,10 +5,14 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/emberfarkas/pkg/log/std"
 	"github.com/go-kratos/kratos/v2/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+
+// DefaultLogger is default logger.
+var DefaultLogger = NewLogger(std.NewStdCore(zapcore.DebugLevel), 1)
 
 // globalLogger is designed as a global logger in current process.
 var global = &loggerAppliance{}

@@ -51,7 +51,6 @@ func Load(v interface{}) config.Config {
 		q := uri.Query()
 		appId := q.Get("appid")
 		namespace := q.Get("ns")
-		log.Debugf("appId: %v, namespace: %v", appId, namespace)
 		c := config.New(
 			config.WithSource(
 				apollo.NewConfigSource(

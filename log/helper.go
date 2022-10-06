@@ -5,7 +5,7 @@ import (
 	"github.com/emberfarkas/pkg/log/file"
 	"github.com/emberfarkas/pkg/log/fluent"
 	"github.com/emberfarkas/pkg/log/multi"
-	"github.com/emberfarkas/pkg/log/tee"
+	"github.com/emberfarkas/pkg/log/std"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -27,7 +27,7 @@ func With(c zapcore.Core, kv ...interface{}) zapcore.Core {
 func NewLoggerCore(c *Conf) (core.Logger, error) {
 	hooks := make([]core.Logger, 0)
 	if c.Console.Enable {
-		c := tee.NewStdCore(zapcore.Level(c.Console.Level))
+		c := std.NewStdCore(zapcore.Level(c.Console.Level))
 		hooks = append(hooks, c)
 	}
 	if c.File.Enable {
