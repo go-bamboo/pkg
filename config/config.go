@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"net/url"
 	"path"
 
@@ -50,7 +51,8 @@ func Load(v interface{}) config.Config {
 	} else if uri.Scheme == "apollo" {
 		q := uri.Query()
 		appId := q.Get("appid")
-		namespace := q.Get("namespace")
+		namespace := q.Get("ns")
+		fmt.Printf("%v,%v\n", appId, namespace)
 		c := config.New(
 			config.WithSource(
 				apollo.NewConfigSource(
