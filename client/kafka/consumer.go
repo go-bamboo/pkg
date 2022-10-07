@@ -22,9 +22,9 @@ import (
 type (
 	TracingConsumer struct {
 		c       Conf
-		sub     *kafka.Reader
 		handler queue.ConsumeHandler
 
+		sub     *kafka.Reader
 		tracer  *tracing.Tracer
 		metrics *prom.Prom
 

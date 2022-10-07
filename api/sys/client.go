@@ -1,0 +1,49 @@
+package sys
+
+import (
+	"context"
+	"time"
+
+	"github.com/emberfarkas/pkg/log"
+	"github.com/emberfarkas/pkg/middleware/logging"
+	"github.com/emberfarkas/pkg/tracing"
+	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/metadata"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/middleware/validate"
+	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"go.opentelemetry.io/otel/propagation"
+)
+
+// AppID .
+const appID = "discovery:///sys"
+
+// NewSys new sso
+func MustNew(ctx context.Context, timeout time.Duration, r registry.Discovery) (addressc SysClient) {
+	m := grpc.WithMiddleware(
+		middleware.Chain(
+			recovery.Recovery(),
+			metadata.Client(),
+			tracing.Client(
+				tracing.WithPropagator(
+					propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
+				),
+			),
+			logging.Client(),
+			validate.Validator(),
+			//circuitbreaker.Client(),
+		),
+	)
+	t := []grpc.ClientOption{
+		m,
+		grpc.WithEndpoint(appID),
+		grpc.WithTimeout(timeout),
+		grpc.WithDiscovery(r),
+	}
+	cc, err := grpc.DialInsecure(ctx, t...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return NewSysClient(cc)
+}
