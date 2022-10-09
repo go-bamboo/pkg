@@ -22,7 +22,7 @@ message FluentConf {
 }
 
 message Conf {
-  StdoutConf stdout = 1;
+  StdoutConf console = 1;
   FileConf file = 2;
   FluentConf fluent = 3;
 }

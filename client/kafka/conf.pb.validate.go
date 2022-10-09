@@ -134,9 +134,11 @@ func (m *Conf) Validate() error {
 		}
 	}
 
+	// no validation rules for Group
+
 	// no validation rules for Topic
 
-	// no validation rules for Group
+	// no validation rules for Offset
 
 	if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {

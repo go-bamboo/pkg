@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package handler;
+package status;
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";
@@ -8,7 +8,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // import "errors.proto";
 import "errors/errors.proto";
 
-option go_package = "bls/pkg/handler;handler";
+option go_package = "github.com/emberfarkas/pkg/api/status;status";
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {
     title: "通用处理服务";

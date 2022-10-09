@@ -6,13 +6,15 @@ import "google/protobuf/duration.proto";
 option go_package = "github.com/emberfarkas/pkg/registry;registry";
 
 message Etcd {
-  repeated string endpoints = 1;
-  google.protobuf.Duration dialTimeout = 2;
+  bool enable = 1;
+  repeated string endpoints = 2;
+  google.protobuf.Duration dialTimeout = 3;
 }
 
 message Consul {
-  string address = 1;
-  google.protobuf.Duration dialTimeout = 2;
+  bool enable = 1;
+  string address = 2;
+  google.protobuf.Duration dialTimeout = 3;
 }
 
 message Conf {

@@ -250,10 +250,10 @@ func (m *Conf) Validate() error {
 		return nil
 	}
 
-	if v, ok := interface{}(m.GetStdout()).(interface{ Validate() error }); ok {
+	if v, ok := interface{}(m.GetConsole()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
-				field:  "Stdout",
+				field:  "Console",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

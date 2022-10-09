@@ -5,14 +5,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/emberfarkas/pkg/log/tee"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
-
-// DefaultLogger is default logger.
-var DefaultLogger = NewLogger(tee.NewStdCore(zapcore.DebugLevel), 1)
 
 type ZapLogger struct {
 	// zap logger

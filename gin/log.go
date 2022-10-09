@@ -1,4 +1,4 @@
-package log
+package gin
 
 //func (s *ZapLogger) Gin(conf gin.LoggerConfig) gin.HandlerFunc {
 //	logger := s.Skip(3)

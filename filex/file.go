@@ -1,4 +1,4 @@
-package tools
+package filex
 
 import (
 	"archive/zip"
@@ -197,7 +197,7 @@ func Open(name string, flag int, perm os.FileMode) (f *os.File, err error) {
 func GetCurrentPath() string {
 	dir, err := os.Getwd()
 	if err != nil {
-		fmt.Println(err)
+		return ""
 	}
 	return strings.Replace(dir, "\\", "/", -1)
 }
