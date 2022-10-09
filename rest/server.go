@@ -3,7 +3,7 @@ package rest
 import (
 	_ "net/http/pprof"
 
-	"github.com/emberfarkas/pkg/handler"
+	"github.com/emberfarkas/pkg/api/status"
 	"github.com/emberfarkas/pkg/middleware/logging"
 	"github.com/emberfarkas/pkg/middleware/metadata"
 	"github.com/emberfarkas/pkg/middleware/metrics/prometheus"
@@ -80,7 +80,7 @@ func NewServer(c *Conf, opts ...Option) *Server {
 		serverOpts = append(serverOpts, http.Timeout(c.Timeout.AsDuration()))
 	}
 	httpSrv := http.NewServer(serverOpts...)
-	handler.RegisterStatusHTTPServer(httpSrv, handler.NewStatusService())
+	status.RegisterStatusHTTPServer(httpSrv, status.NewStatusService())
 
 	httpSrv.Handle("/debug/fgprof", fgprof.Handler())
 	httpSrv.Handle("/metrics", promhttp.Handler())
