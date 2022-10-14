@@ -17,7 +17,7 @@ type Pool struct {
 	wg  sync.WaitGroup
 }
 
-func New(size int) (*Pool, error) {
+func NewPool(size int) (*Pool, error) {
 	p, err := ants.NewPool(size, ants.WithLogger(log.GetLogger()))
 	if err != nil {
 		return nil, err
@@ -39,6 +39,45 @@ func (p *Pool) Submit(task func(ctx context.Context)) {
 }
 
 func (p *Pool) Close() {
+	p.cf()
+	p.wg.Wait()
+	p.pool.Release()
+}
+
+type PoolWithFunc struct {
+	pool *ants.PoolWithFunc
+
+	ctx context.Context
+	cf  context.CancelFunc
+	wg  sync.WaitGroup
+}
+
+func NewPoolWithFunc(size int, pf func(context.Context, interface{})) (pwf *PoolWithFunc, err error) {
+	ctx, cf := context.WithCancel(context.Background())
+	pwf = &PoolWithFunc{
+		ctx: ctx,
+		cf:  cf,
+	}
+	p, err := ants.NewPoolWithFunc(size, func(i interface{}) {
+		defer rescue.Recover(func() { pwf.wg.Done() })
+		pf(ctx, i)
+	}, ants.WithLogger(log.GetLogger()))
+	if err != nil {
+		return nil, err
+	}
+	pwf.pool = p
+	return
+}
+
+func (p *PoolWithFunc) Submit(i interface{}) error {
+	p.wg.Add(1)
+	if err := p.pool.Invoke(i); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *PoolWithFunc) Close() {
 	p.cf()
 	p.wg.Wait()
 	p.pool.Release()
