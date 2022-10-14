@@ -27,6 +27,7 @@ func init() {
 }
 
 func Load(v interface{}) config.Config {
+	flag.Parse()
 	uri, err := url.Parse(conf)
 	if err != nil {
 		panic(err)
