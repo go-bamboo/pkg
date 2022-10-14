@@ -17,8 +17,8 @@ type Pool struct {
 	wg  sync.WaitGroup
 }
 
-func New() (*Pool, error) {
-	p, err := ants.NewPool(1000, ants.WithLogger(log.GetLogger()))
+func New(size int) (*Pool, error) {
+	p, err := ants.NewPool(size, ants.WithLogger(log.GetLogger()))
 	if err != nil {
 		return nil, err
 	}
