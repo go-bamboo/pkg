@@ -11,7 +11,7 @@ import (
 
 // A PerpetualMotion is used to run given number of workers to process jobs.
 type PerpetualMotion struct {
-	job     func(ctx context.Context) error
+	job     func(ctx context.Context) (time.Duration, error)
 	workers int
 
 	wg  sync.WaitGroup
@@ -22,7 +22,7 @@ type PerpetualMotion struct {
 }
 
 // NewPerpetualMotion returns a NewPerpetualMotion with given job and workers.
-func NewPerpetualMotion(job func(ctx context.Context) error, workers int) PerpetualMotion {
+func NewPerpetualMotion(job func(ctx context.Context) (time.Duration, error), workers int) PerpetualMotion {
 	ctx, cf := context.WithCancel(context.TODO())
 	return PerpetualMotion{
 		job:     job,
@@ -67,7 +67,11 @@ func (m PerpetualMotion) run() {
 	defer rescue.Recover(func() {
 		cf()
 	})
-	if err := m.job(ctx); err != nil {
+	delay, err := m.job(ctx)
+	if err != nil {
 		log.ErrorStack(err)
+	}
+	if delay > 0 {
+		time.Sleep(delay)
 	}
 }
