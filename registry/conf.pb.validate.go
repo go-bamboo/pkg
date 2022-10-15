@@ -11,7 +11,6 @@ import (
 	"net/mail"
 	"net/url"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -32,52 +31,18 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
-	_ = sort.Sort
 )
 
 // Validate checks the field values on Etcd with the rules defined in the proto
-// definition for this message. If any rules are violated, the first error
-// encountered is returned, or nil if there are no violations.
+// definition for this message. If any rules are violated, an error is returned.
 func (m *Etcd) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Etcd with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in EtcdMultiError, or nil if none found.
-func (m *Etcd) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Etcd) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	// no validation rules for Enable
 
-	if all {
-		switch v := interface{}(m.GetDialTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, EtcdValidationError{
-					field:  "DialTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, EtcdValidationError{
-					field:  "DialTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
+	if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return EtcdValidationError{
 				field:  "DialTimeout",
@@ -87,28 +52,8 @@ func (m *Etcd) validate(all bool) error {
 		}
 	}
 
-	if len(errors) > 0 {
-		return EtcdMultiError(errors)
-	}
-
 	return nil
 }
-
-// EtcdMultiError is an error wrapping multiple validation errors returned by
-// Etcd.ValidateAll() if the designated constraints aren't met.
-type EtcdMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m EtcdMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m EtcdMultiError) AllErrors() []error { return m }
 
 // EtcdValidationError is the validation error returned by Etcd.Validate if the
 // designated constraints aren't met.
@@ -165,50 +110,17 @@ var _ interface {
 } = EtcdValidationError{}
 
 // Validate checks the field values on Consul with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
+// proto definition for this message. If any rules are violated, an error is returned.
 func (m *Consul) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Consul with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in ConsulMultiError, or nil if none found.
-func (m *Consul) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Consul) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
-
-	var errors []error
 
 	// no validation rules for Enable
 
 	// no validation rules for Address
 
-	if all {
-		switch v := interface{}(m.GetDialTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ConsulValidationError{
-					field:  "DialTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ConsulValidationError{
-					field:  "DialTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
+	if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConsulValidationError{
 				field:  "DialTimeout",
@@ -218,28 +130,8 @@ func (m *Consul) validate(all bool) error {
 		}
 	}
 
-	if len(errors) > 0 {
-		return ConsulMultiError(errors)
-	}
-
 	return nil
 }
-
-// ConsulMultiError is an error wrapping multiple validation errors returned by
-// Consul.ValidateAll() if the designated constraints aren't met.
-type ConsulMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ConsulMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ConsulMultiError) AllErrors() []error { return m }
 
 // ConsulValidationError is the validation error returned by Consul.Validate if
 // the designated constraints aren't met.
@@ -295,47 +187,80 @@ var _ interface {
 	ErrorName() string
 } = ConsulValidationError{}
 
-// Validate checks the field values on Conf with the rules defined in the proto
-// definition for this message. If any rules are violated, the first error
-// encountered is returned, or nil if there are no violations.
-func (m *Conf) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Conf with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in ConfMultiError, or nil if none found.
-func (m *Conf) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Conf) validate(all bool) error {
+// Validate checks the field values on Kube with the rules defined in the proto
+// definition for this message. If any rules are violated, an error is returned.
+func (m *Kube) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
+	// no validation rules for Enable
 
-	if all {
-		switch v := interface{}(m.GetEtcd()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ConfValidationError{
-					field:  "Etcd",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ConfValidationError{
-					field:  "Etcd",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetEtcd()).(interface{ Validate() error }); ok {
+	return nil
+}
+
+// KubeValidationError is the validation error returned by Kube.Validate if the
+// designated constraints aren't met.
+type KubeValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e KubeValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e KubeValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e KubeValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e KubeValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e KubeValidationError) ErrorName() string { return "KubeValidationError" }
+
+// Error satisfies the builtin error interface
+func (e KubeValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sKube.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = KubeValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = KubeValidationError{}
+
+// Validate checks the field values on Conf with the rules defined in the proto
+// definition for this message. If any rules are violated, an error is returned.
+func (m *Conf) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if v, ok := interface{}(m.GetEtcd()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Etcd",
@@ -345,26 +270,7 @@ func (m *Conf) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetConsul()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ConfValidationError{
-					field:  "Consul",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ConfValidationError{
-					field:  "Consul",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetConsul()).(interface{ Validate() error }); ok {
+	if v, ok := interface{}(m.GetConsul()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Consul",
@@ -374,28 +280,18 @@ func (m *Conf) validate(all bool) error {
 		}
 	}
 
-	if len(errors) > 0 {
-		return ConfMultiError(errors)
+	if v, ok := interface{}(m.GetKube()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConfValidationError{
+				field:  "Kube",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	return nil
 }
-
-// ConfMultiError is an error wrapping multiple validation errors returned by
-// Conf.ValidateAll() if the designated constraints aren't met.
-type ConfMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ConfMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ConfMultiError) AllErrors() []error { return m }
 
 // ConfValidationError is the validation error returned by Conf.Validate if the
 // designated constraints aren't met.

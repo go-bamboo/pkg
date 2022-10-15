@@ -17,7 +17,12 @@ message Consul {
   google.protobuf.Duration dialTimeout = 3;
 }
 
+message Kube {
+  bool enable = 1;
+}
+
 message Conf {
   Etcd etcd = 1;
   Consul consul = 2;
+  Kube kube = 3;
 }
