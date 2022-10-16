@@ -99,11 +99,15 @@ func Load(v interface{}) config.Config {
 		}
 		return c
 	} else if uri.Scheme == "nacos" {
+		q := uri.Query()
+		namespace := q.Get("namespace")
+		group := q.Get("group")
+		dataId := q.Get("dataId")
 		sc := []constant.ServerConfig{
-			*constant.NewServerConfig("127.0.0.1", 8848),
+			*constant.NewServerConfig(uri.Host, 80),
 		}
 		cc := &constant.ClientConfig{
-			NamespaceId:         "public", //namespace id
+			NamespaceId:         namespace, //namespace id
 			TimeoutMs:           5000,
 			NotLoadCacheAtStart: true,
 			LogDir:              "/tmp/nacos/log",
@@ -120,7 +124,7 @@ func Load(v interface{}) config.Config {
 		if err != nil {
 			panic(err)
 		}
-		source := nacos.NewConfigSource(client, nacos.WithGroup("test"), nacos.WithDataID("test.yaml"))
+		source := nacos.NewConfigSource(client, nacos.WithGroup(group), nacos.WithDataID(dataId+".yaml"))
 		c := config.New(
 			config.WithSource(source),
 			config.WithDecoder(func(kv *config.KeyValue, v map[string]interface{}) error {
