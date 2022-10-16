@@ -9,9 +9,13 @@ import (
 	"github.com/emberfarkas/pkg/filex"
 	"github.com/emberfarkas/pkg/log"
 	"github.com/go-kratos/kratos/contrib/config/consul/v2"
+	nacos "github.com/go-kratos/kratos/contrib/config/nacos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/hashicorp/consul/api"
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
 	"gopkg.in/yaml.v3"
 )
 
@@ -94,7 +98,42 @@ func Load(v interface{}) config.Config {
 			panic(err)
 		}
 		return c
+	} else if uri.Scheme == "nacos" {
+		sc := []constant.ServerConfig{
+			*constant.NewServerConfig("127.0.0.1", 8848),
+		}
+		cc := &constant.ClientConfig{
+			NamespaceId:         "public", //namespace id
+			TimeoutMs:           5000,
+			NotLoadCacheAtStart: true,
+			LogDir:              "/tmp/nacos/log",
+			CacheDir:            "/tmp/nacos/cache",
+			LogLevel:            "debug",
+		}
+		// a more graceful way to create naming client
+		client, err := clients.NewConfigClient(
+			vo.NacosClientParam{
+				ClientConfig:  cc,
+				ServerConfigs: sc,
+			},
+		)
+		if err != nil {
+			panic(err)
+		}
+		source := nacos.NewConfigSource(client, nacos.WithGroup("test"), nacos.WithDataID("test.yaml"))
+		c := config.New(
+			config.WithSource(source),
+			config.WithDecoder(func(kv *config.KeyValue, v map[string]interface{}) error {
+				return yaml.Unmarshal(kv.Value, v)
+			}))
+		if err := c.Load(); err != nil {
+			panic(err)
+		}
+		if err := c.Scan(v); err != nil {
+			panic(err)
+		}
 	} else {
 		panic(err)
 	}
+	return nil
 }

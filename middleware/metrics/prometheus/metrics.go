@@ -1,15 +1,20 @@
 package prometheus
 
 import (
-	metricsx "github.com/emberfarkas/pkg/stat/prom"
-	prom "github.com/go-kratos/kratos/contrib/metrics/prometheus/v2"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
 )
 
 func Server() middleware.Middleware {
 	return metrics.Server(
-		metrics.WithSeconds(prom.NewHistogram(metricsx.MetricSeconds)),
-		metrics.WithRequests(prom.NewCounter(metricsx.MetricRequests)),
+		metrics.WithSeconds(NewHistogram()),
+		metrics.WithRequests(NewCounter()),
+	)
+}
+
+func Client() middleware.Middleware {
+	return metrics.Client(
+		metrics.WithSeconds(NewHistogram()),
+		metrics.WithRequests(NewCounter()),
 	)
 }

@@ -20,19 +20,153 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Conf struct {
+type Jaeger struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Enable   bool   `protobuf:"varint,1,opt,name=enable,proto3" json:"enable,omitempty"`
 	Endpoint string `protobuf:"bytes,2,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	Metrics  bool   `protobuf:"varint,3,opt,name=metrics,proto3" json:"metrics,omitempty"`
+	Traces   bool   `protobuf:"varint,4,opt,name=traces,proto3" json:"traces,omitempty"`
+}
+
+func (x *Jaeger) Reset() {
+	*x = Jaeger{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_tracing_conf_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Jaeger) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Jaeger) ProtoMessage() {}
+
+func (x *Jaeger) ProtoReflect() protoreflect.Message {
+	mi := &file_tracing_conf_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Jaeger.ProtoReflect.Descriptor instead.
+func (*Jaeger) Descriptor() ([]byte, []int) {
+	return file_tracing_conf_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Jaeger) GetEnable() bool {
+	if x != nil {
+		return x.Enable
+	}
+	return false
+}
+
+func (x *Jaeger) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *Jaeger) GetMetrics() bool {
+	if x != nil {
+		return x.Metrics
+	}
+	return false
+}
+
+func (x *Jaeger) GetTraces() bool {
+	if x != nil {
+		return x.Traces
+	}
+	return false
+}
+
+type Stdout struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Enable  bool `protobuf:"varint,1,opt,name=enable,proto3" json:"enable,omitempty"`
+	Metrics bool `protobuf:"varint,3,opt,name=metrics,proto3" json:"metrics,omitempty"`
+	Traces  bool `protobuf:"varint,4,opt,name=traces,proto3" json:"traces,omitempty"`
+}
+
+func (x *Stdout) Reset() {
+	*x = Stdout{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_tracing_conf_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Stdout) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Stdout) ProtoMessage() {}
+
+func (x *Stdout) ProtoReflect() protoreflect.Message {
+	mi := &file_tracing_conf_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Stdout.ProtoReflect.Descriptor instead.
+func (*Stdout) Descriptor() ([]byte, []int) {
+	return file_tracing_conf_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Stdout) GetEnable() bool {
+	if x != nil {
+		return x.Enable
+	}
+	return false
+}
+
+func (x *Stdout) GetMetrics() bool {
+	if x != nil {
+		return x.Metrics
+	}
+	return false
+}
+
+func (x *Stdout) GetTraces() bool {
+	if x != nil {
+		return x.Traces
+	}
+	return false
+}
+
+type Conf struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Jaeger *Jaeger `protobuf:"bytes,1,opt,name=jaeger,proto3" json:"jaeger,omitempty"`
+	Stdout *Stdout `protobuf:"bytes,2,opt,name=stdout,proto3" json:"stdout,omitempty"`
 }
 
 func (x *Conf) Reset() {
 	*x = Conf{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tracing_conf_proto_msgTypes[0]
+		mi := &file_tracing_conf_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45,7 +179,7 @@ func (x *Conf) String() string {
 func (*Conf) ProtoMessage() {}
 
 func (x *Conf) ProtoReflect() protoreflect.Message {
-	mi := &file_tracing_conf_proto_msgTypes[0]
+	mi := &file_tracing_conf_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,35 +192,50 @@ func (x *Conf) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Conf.ProtoReflect.Descriptor instead.
 func (*Conf) Descriptor() ([]byte, []int) {
-	return file_tracing_conf_proto_rawDescGZIP(), []int{0}
+	return file_tracing_conf_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Conf) GetEnable() bool {
+func (x *Conf) GetJaeger() *Jaeger {
 	if x != nil {
-		return x.Enable
+		return x.Jaeger
 	}
-	return false
+	return nil
 }
 
-func (x *Conf) GetEndpoint() string {
+func (x *Conf) GetStdout() *Stdout {
 	if x != nil {
-		return x.Endpoint
+		return x.Stdout
 	}
-	return ""
+	return nil
 }
 
 var File_tracing_conf_proto protoreflect.FileDescriptor
 
 var file_tracing_conf_proto_rawDesc = []byte{
 	0x0a, 0x12, 0x74, 0x72, 0x61, 0x63, 0x69, 0x6e, 0x67, 0x2f, 0x63, 0x6f, 0x6e, 0x66, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x12, 0x07, 0x74, 0x72, 0x61, 0x63, 0x69, 0x6e, 0x67, 0x22, 0x3a, 0x0a,
-	0x04, 0x43, 0x6f, 0x6e, 0x66, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x1a, 0x0a,
-	0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x66, 0x61, 0x72,
-	0x6b, 0x61, 0x73, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x74, 0x72, 0x61, 0x63, 0x69, 0x6e, 0x67, 0x3b,
-	0x74, 0x72, 0x61, 0x63, 0x69, 0x6e, 0x67, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x6f, 0x74, 0x6f, 0x12, 0x07, 0x74, 0x72, 0x61, 0x63, 0x69, 0x6e, 0x67, 0x22, 0x6e, 0x0a,
+	0x06, 0x4a, 0x61, 0x65, 0x67, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x12,
+	0x1a, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x08, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x6d,
+	0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x6d, 0x65,
+	0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x72, 0x61, 0x63, 0x65, 0x73, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x74, 0x72, 0x61, 0x63, 0x65, 0x73, 0x22, 0x52, 0x0a,
+	0x06, 0x53, 0x74, 0x64, 0x6f, 0x75, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x12,
+	0x18, 0x0a, 0x07, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08,
+	0x52, 0x07, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x72, 0x61,
+	0x63, 0x65, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x74, 0x72, 0x61, 0x63, 0x65,
+	0x73, 0x22, 0x58, 0x0a, 0x04, 0x43, 0x6f, 0x6e, 0x66, 0x12, 0x27, 0x0a, 0x06, 0x6a, 0x61, 0x65,
+	0x67, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x72, 0x61, 0x63,
+	0x69, 0x6e, 0x67, 0x2e, 0x4a, 0x61, 0x65, 0x67, 0x65, 0x72, 0x52, 0x06, 0x6a, 0x61, 0x65, 0x67,
+	0x65, 0x72, 0x12, 0x27, 0x0a, 0x06, 0x73, 0x74, 0x64, 0x6f, 0x75, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x72, 0x61, 0x63, 0x69, 0x6e, 0x67, 0x2e, 0x53, 0x74, 0x64,
+	0x6f, 0x75, 0x74, 0x52, 0x06, 0x73, 0x74, 0x64, 0x6f, 0x75, 0x74, 0x42, 0x2c, 0x5a, 0x2a, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x66,
+	0x61, 0x72, 0x6b, 0x61, 0x73, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x74, 0x72, 0x61, 0x63, 0x69, 0x6e,
+	0x67, 0x3b, 0x74, 0x72, 0x61, 0x63, 0x69, 0x6e, 0x67, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -101,16 +250,20 @@ func file_tracing_conf_proto_rawDescGZIP() []byte {
 	return file_tracing_conf_proto_rawDescData
 }
 
-var file_tracing_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_tracing_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_tracing_conf_proto_goTypes = []interface{}{
-	(*Conf)(nil), // 0: tracing.Conf
+	(*Jaeger)(nil), // 0: tracing.Jaeger
+	(*Stdout)(nil), // 1: tracing.Stdout
+	(*Conf)(nil),   // 2: tracing.Conf
 }
 var file_tracing_conf_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: tracing.Conf.jaeger:type_name -> tracing.Jaeger
+	1, // 1: tracing.Conf.stdout:type_name -> tracing.Stdout
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_tracing_conf_proto_init() }
@@ -120,6 +273,30 @@ func file_tracing_conf_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_tracing_conf_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Jaeger); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_tracing_conf_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Stdout); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_tracing_conf_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Conf); i {
 			case 0:
 				return &v.state
@@ -138,7 +315,7 @@ func file_tracing_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_tracing_conf_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

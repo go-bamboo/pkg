@@ -4,8 +4,9 @@ import (
 	"context"
 	"github.com/emberfarkas/pkg/log"
 	"github.com/emberfarkas/pkg/queue"
-	"github.com/emberfarkas/pkg/tracing"
 	"github.com/streadway/amqp"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type (
@@ -16,7 +17,8 @@ type (
 		conn    *amqp.Connection
 		channel *amqp.Channel
 
-		tracer *tracing.Tracer
+		tracer     trace.Tracer
+		propagator propagation.TextMapPropagator
 	}
 )
 

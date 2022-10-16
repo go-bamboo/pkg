@@ -1,8 +1,22 @@
 # pkg
 
-### 功能
+## 功能
 
-error
-log
-trace
-metrics
+### error
+
+kratos
+
+### config
+
+kratos
+
+### registry
+
+kratos
+
+### log
+zap
+
+### trace metrics
+
+otle

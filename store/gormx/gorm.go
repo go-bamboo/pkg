@@ -27,6 +27,11 @@ func New(c *Conf) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.Use(NewGormTracingHook())
+	if err = db.Use(NewGormTracingHook()); err != nil {
+		return nil, err
+	}
+	//if err := db.Use(tracing.NewPlugin()); err != nil {
+	//	return nil, err
+	//}
 	return db, nil
 }

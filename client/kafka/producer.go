@@ -9,6 +9,7 @@ import (
 	"github.com/emberfarkas/pkg/queue"
 	"github.com/emberfarkas/pkg/tracing"
 	"github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -16,9 +17,10 @@ import (
 
 // TracingProducer 生产者
 type TracingProducer struct {
-	tracer *tracing.Tracer
-	pub    *kafka.Writer
-	topic  string
+	pub        *kafka.Writer
+	topic      string
+	tracer     trace.Tracer
+	propagator propagation.TextMapPropagator
 }
 
 func MustNewTracingProducer(c *Conf) queue.Pusher {
@@ -40,13 +42,11 @@ func NewTracingProducer(c *Conf) (*TracingProducer, error) {
 		Dialer:   (*kafka.Dialer)(dialer),
 		Balancer: &kafka.LeastBytes{},
 	}
-	tracer := tracing.NewTracer(trace.SpanKindProducer, tracing.WithPropagator(
-		propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
-	))
 	pub := kafka.NewWriter(config)
 	tracingPub := &TracingProducer{
-		tracer: tracer,
-		pub:    pub,
+		tracer:     otel.Tracer("kafka"),
+		propagator: propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
+		pub:        pub,
 	}
 	return tracingPub, nil
 }
@@ -61,14 +61,17 @@ func (p *TracingProducer) Push(ctx context.Context, key, value []byte) error {
 		Value: value,
 	}
 	operation := "pub:" + msg.Topic
-	ctx, span := p.tracer.Start(ctx, operation, &KafkaMessageTextMapCarrier{msg: msg})
+	ctx, span := p.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindProducer))
+	p.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
 	span.SetAttributes(
 		attribute.String("kafka.topic", p.topic),
 		attribute.String("kafka.key", string(msg.Key)),
 	)
 	err := p.pub.WriteMessages(ctx, msg)
-	p.tracer.End(ctx, span, msg, err)
-	err = WrapError(err)
+	if err != nil {
+		span.RecordError(err)
+		err = WrapError(err)
+	}
 	return err
 }
 

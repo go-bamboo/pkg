@@ -2,10 +2,10 @@ package redis
 
 import (
 	"context"
-
 	"github.com/emberfarkas/pkg/tracing"
 	"github.com/go-redis/redis/extra/rediscmd/v8"
 	"github.com/go-redis/redis/v8"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
@@ -13,25 +13,24 @@ import (
 )
 
 // RedisTracingHook redis的hook
-type RedisTracingHook struct {
-	tracer *tracing.Tracer
+type tracingHook struct {
+	tracer     trace.Tracer
+	propagator propagation.TextMapPropagator
 }
 
-var _ redis.Hook = (*RedisTracingHook)(nil)
+var _ redis.Hook = (*tracingHook)(nil)
 
-func NewRedisTracingHook() *RedisTracingHook {
-	tracer := tracing.NewTracer(trace.SpanKindClient, tracing.WithPropagator(
-		propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
-	))
-	return &RedisTracingHook{
-		tracer: tracer,
+func NewRedisTracingHook() *tracingHook {
+	return &tracingHook{
+		tracer:     otel.Tracer("redis"),
+		propagator: propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
 	}
 }
 
-func (h *RedisTracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
-	var span trace.Span
+func (h *tracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
 	operation := "redis:" + cmd.FullName()
-	ctx, span = h.tracer.Start(ctx, operation, &RedisTextMapCarrier{})
+	ctx, span := h.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindClient))
+	h.propagator.Inject(ctx, &RedisTextMapCarrier{})
 	span.SetAttributes(
 		attribute.String("db.system", "redis"),
 		attribute.String("db.statement", rediscmd.CmdString(cmd)),
@@ -40,7 +39,7 @@ func (h *RedisTracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (
 	return ctx, nil
 }
 
-func (h *RedisTracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
+func (h *tracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 	span, ok := SpanFromContext(ctx)
 	if !ok {
 		return ErrSpanLost("span is lost")
@@ -49,16 +48,17 @@ func (h *RedisTracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) er
 	if err = cmd.Err(); err != nil {
 		recordError(ctx, span, err)
 		cmd.SetErr(wrapRedisError(err))
+	} else {
+		span.SetAttributes(attribute.Key("redis.name").String(cmd.Name()))
 	}
-	h.tracer.End(ctx, span, nil, err)
 	return nil
 }
 
-func (h *RedisTracingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+func (h *tracingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
 	var span trace.Span
 	summary, cmdsString := rediscmd.CmdsString(cmds)
 	operation := "redis:pipeline:" + summary
-	ctx, span = h.tracer.Start(ctx, operation, &RedisTextMapCarrier{})
+	ctx, span = h.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindClient))
 	span.SetAttributes(
 		attribute.String("db.system", "redis"),
 		attribute.Int("db.redis.num_cmd", len(cmds)),
@@ -68,7 +68,7 @@ func (h *RedisTracingHook) BeforeProcessPipeline(ctx context.Context, cmds []red
 	return ctx, nil
 }
 
-func (h *RedisTracingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
+func (h *tracingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
 	span, ok := SpanFromContext(ctx)
 	if !ok {
 		return ErrSpanLost("not found span")
@@ -78,9 +78,10 @@ func (h *RedisTracingHook) AfterProcessPipeline(ctx context.Context, cmds []redi
 		if err = cmd.Err(); err != nil {
 			recordError(ctx, span, err)
 			cmd.SetErr(wrapRedisError(err))
+		} else {
+			span.SetAttributes(attribute.Key("redis.name").String(cmd.Name()))
 		}
 	}
-	h.tracer.End(ctx, span, nil, err)
 	return nil
 }
 

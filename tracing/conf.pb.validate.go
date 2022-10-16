@@ -33,9 +33,9 @@ var (
 	_ = anypb.Any{}
 )
 
-// Validate checks the field values on Conf with the rules defined in the proto
-// definition for this message. If any rules are violated, an error is returned.
-func (m *Conf) Validate() error {
+// Validate checks the field values on Jaeger with the rules defined in the
+// proto definition for this message. If any rules are violated, an error is returned.
+func (m *Jaeger) Validate() error {
 	if m == nil {
 		return nil
 	}
@@ -43,6 +43,164 @@ func (m *Conf) Validate() error {
 	// no validation rules for Enable
 
 	// no validation rules for Endpoint
+
+	// no validation rules for Metrics
+
+	// no validation rules for Traces
+
+	return nil
+}
+
+// JaegerValidationError is the validation error returned by Jaeger.Validate if
+// the designated constraints aren't met.
+type JaegerValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e JaegerValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e JaegerValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e JaegerValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e JaegerValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e JaegerValidationError) ErrorName() string { return "JaegerValidationError" }
+
+// Error satisfies the builtin error interface
+func (e JaegerValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sJaeger.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = JaegerValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = JaegerValidationError{}
+
+// Validate checks the field values on Stdout with the rules defined in the
+// proto definition for this message. If any rules are violated, an error is returned.
+func (m *Stdout) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Enable
+
+	// no validation rules for Metrics
+
+	// no validation rules for Traces
+
+	return nil
+}
+
+// StdoutValidationError is the validation error returned by Stdout.Validate if
+// the designated constraints aren't met.
+type StdoutValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e StdoutValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e StdoutValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e StdoutValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e StdoutValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e StdoutValidationError) ErrorName() string { return "StdoutValidationError" }
+
+// Error satisfies the builtin error interface
+func (e StdoutValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sStdout.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = StdoutValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = StdoutValidationError{}
+
+// Validate checks the field values on Conf with the rules defined in the proto
+// definition for this message. If any rules are violated, an error is returned.
+func (m *Conf) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if v, ok := interface{}(m.GetJaeger()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConfValidationError{
+				field:  "Jaeger",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if v, ok := interface{}(m.GetStdout()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConfValidationError{
+				field:  "Stdout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	return nil
 }

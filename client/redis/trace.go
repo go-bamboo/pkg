@@ -24,11 +24,11 @@ func (carrier *RedisTextMapCarrier) Keys() []string {
 }
 
 func NewSpanContext(ctx context.Context, s trace.Span) context.Context {
-	return context.WithValue(ctx, RedisTracingHook{}, s)
+	return context.WithValue(ctx, tracingHook{}, s)
 }
 
 // SpanFromContext returns the Transport value stored in ctx, if any.
 func SpanFromContext(ctx context.Context) (s trace.Span, ok bool) {
-	s, ok = ctx.Value(RedisTracingHook{}).(trace.Span)
+	s, ok = ctx.Value(tracingHook{}).(trace.Span)
 	return
 }

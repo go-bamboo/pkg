@@ -10,7 +10,6 @@ import (
 	"github.com/emberfarkas/pkg/log"
 	"github.com/emberfarkas/pkg/queue"
 	"github.com/emberfarkas/pkg/rescue"
-	"github.com/emberfarkas/pkg/stat/prom"
 	"github.com/emberfarkas/pkg/tracing"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/segmentio/kafka-go"
@@ -24,9 +23,8 @@ type (
 		c       Conf
 		handler queue.ConsumeHandler
 
-		sub     *kafka.Reader
-		tracer  *tracing.Tracer
-		metrics *prom.Prom
+		sub    *kafka.Reader
+		tracer *tracing.Tracer
 
 		wg  sync.WaitGroup
 		ctx context.Context

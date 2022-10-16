@@ -1,10 +1,7 @@
 package fastdfs
 
 import (
-	"fmt"
 	"testing"
-
-	"github.com/astaxie/beego/httplib"
 )
 
 const (
@@ -23,14 +20,14 @@ func TestUpload(t *testing.T) {
 }
 
 func TestUploadSmall(t *testing.T) {
-	var obj FileResult
-	req := httplib.Post("http://192.168.21.95:8080/group1" + "/upload")
-	req.PostFile("file", "logo.png")
-	req.Param("output", "json")
-	req.Param("scene", "")
-	req.Param("path", "")
-	req.ToJSON(&obj)
-	fmt.Println(obj.Url)
+	//var obj FileResult
+	//req := httplib.Post("http://192.168.21.95:8080/group1" + "/upload")
+	//req.PostFile("file", "logo.png")
+	//req.Param("output", "json")
+	//req.Param("scene", "")
+	//req.Param("path", "")
+	//req.ToJSON(&obj)
+	//fmt.Println(obj.Url)
 	// if obj.Md5 != testSmallFileMd5 {
 	// 	t.Error("file not equal")
 	// } else {
