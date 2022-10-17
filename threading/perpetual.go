@@ -39,6 +39,7 @@ func (m PerpetualMotion) Start() error {
 		m.wg.Add(1)
 		go func() {
 			defer rescue.Recover(func() {
+				log.Debug("[perpetual motion] done")
 				m.wg.Done()
 			})
 			for {
@@ -72,6 +73,7 @@ func (m PerpetualMotion) run() {
 		log.ErrorStack(err)
 	}
 	if delay > 0 {
+		log.Debugf("sleep: %v", delay)
 		time.Sleep(delay)
 	}
 }
