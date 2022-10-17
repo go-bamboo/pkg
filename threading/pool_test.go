@@ -9,7 +9,7 @@ import (
 )
 
 func TestPool(t *testing.T) {
-	p, err := New()
+	p, err := NewPool(1)
 	assert.Nil(t, err)
 	defer p.Close()
 	p.Submit(func(ctx context.Context) {
