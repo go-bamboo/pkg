@@ -3,7 +3,7 @@ package mongox
 import (
 	"context"
 
-	"github.com/emberfarkas/pkg/log"
+	"github.com/go-bamboo/pkg/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

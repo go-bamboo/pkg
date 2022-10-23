@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/emberfarkas/pkg/log"
-	"github.com/emberfarkas/pkg/rescue"
+	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/rescue"
 	"github.com/panjf2000/ants/v2"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/emberfarkas/pkg/cache/memory"
+	"github.com/go-bamboo/pkg/cache/memory"
 )
 
 var (

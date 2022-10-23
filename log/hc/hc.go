@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/emberfarkas/pkg/log/core"
+	"github.com/go-bamboo/pkg/log/core"
 	"go.uber.org/zap/zapcore"
 )
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/emberfarkas/pkg/log"
+	"github.com/go-bamboo/pkg/log"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/emberfarkas/pkg/log"
-	"github.com/emberfarkas/pkg/rescue"
+	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/rescue"
 )
 
 // A Broadcast is used to run given number of workers to process jobs.

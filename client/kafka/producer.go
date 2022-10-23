@@ -3,9 +3,9 @@ package kafka
 import (
 	"context"
 
-	"github.com/emberfarkas/pkg/log"
-	"github.com/emberfarkas/pkg/queue"
-	"github.com/emberfarkas/pkg/tracing"
+	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/queue"
+	"github.com/go-bamboo/pkg/tracing"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

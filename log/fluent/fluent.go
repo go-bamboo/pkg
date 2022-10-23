@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/emberfarkas/pkg/log/core"
+	"github.com/go-bamboo/pkg/log/core"
 	"github.com/fluent/fluent-logger-golang/fluent"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/emberfarkas/pkg/client/kafka"
-	"github.com/emberfarkas/pkg/log"
+	"github.com/go-bamboo/pkg/client/kafka"
+	"github.com/go-bamboo/pkg/log"
 	"os"
 	"os/signal"
 	"syscall"

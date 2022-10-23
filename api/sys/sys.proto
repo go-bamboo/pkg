@@ -9,7 +9,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // import "errors.proto";
 import "errors/errors.proto";
 
-option go_package = "github.com/emberfarkas/pkg/api/sys;sys";
+option go_package = "github.com/go-bamboo/pkg/api/sys;sys";
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 	info: {

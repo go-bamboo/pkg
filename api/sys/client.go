@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/emberfarkas/pkg/log"
-	"github.com/emberfarkas/pkg/middleware/logging"
-	"github.com/emberfarkas/pkg/tracing"
+	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/middleware/logging"
+	"github.com/go-bamboo/pkg/tracing"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/metadata"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"

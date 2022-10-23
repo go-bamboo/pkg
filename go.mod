@@ -1,4 +1,4 @@
-module github.com/emberfarkas/pkg
+module github.com/go-bamboo/pkg
 
 go 1.18
 

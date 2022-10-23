@@ -5,9 +5,9 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/emberfarkas/pkg/apollo"
-	"github.com/emberfarkas/pkg/filex"
-	"github.com/emberfarkas/pkg/log"
+	"github.com/go-bamboo/pkg/apollo"
+	"github.com/go-bamboo/pkg/filex"
+	"github.com/go-bamboo/pkg/log"
 	"github.com/go-kratos/kratos/contrib/config/consul/v2"
 	nacos "github.com/go-kratos/kratos/contrib/config/nacos/v2"
 	"github.com/go-kratos/kratos/v2/config"

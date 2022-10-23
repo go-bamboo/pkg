@@ -3,7 +3,7 @@ package meta
 import (
 	"context"
 
-	"github.com/emberfarkas/pkg/jsonx"
+	"github.com/go-bamboo/pkg/jsonx"
 	"github.com/go-kratos/kratos/v2/metadata"
 )
 

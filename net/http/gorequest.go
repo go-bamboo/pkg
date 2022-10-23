@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/emberfarkas/pkg/log"
+	"github.com/go-bamboo/pkg/log"
 	"github.com/go-kratos/kratos/v2/errors"
 	transporthttp "github.com/go-kratos/kratos/v2/transport/http"
 	"go.uber.org/zap/zapcore"

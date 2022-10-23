@@ -2,7 +2,7 @@ package redis
 
 import (
 	"context"
-	"github.com/emberfarkas/pkg/tracing"
+	"github.com/go-bamboo/pkg/tracing"
 	"github.com/go-redis/redis/extra/rediscmd/v8"
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel"

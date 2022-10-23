@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/emberfarkas/pkg/bufio"
+	"github.com/go-bamboo/pkg/bufio"
 )
 
 var (

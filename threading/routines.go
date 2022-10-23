@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/emberfarkas/pkg/rescue"
+	"github.com/go-bamboo/pkg/rescue"
 )
 
 // GoSafe runs the given fn using another goroutine, recovers if fn panics.

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/emberfarkas/pkg/tracing"
+	"github.com/go-bamboo/pkg/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"

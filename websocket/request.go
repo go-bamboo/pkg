@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/emberfarkas/pkg/bufio"
+	"github.com/go-bamboo/pkg/bufio"
 )
 
 // Request request.

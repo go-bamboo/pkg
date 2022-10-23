@@ -7,7 +7,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 
-	"github.com/emberfarkas/pkg/ecode"
+	"github.com/go-bamboo/pkg/ecode"
 )
 
 func EncryptWithAES(key, message string) (string, error) {

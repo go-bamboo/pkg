@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"github.com/emberfarkas/pkg/log"
+	"github.com/go-bamboo/pkg/log"
 	"github.com/streadway/amqp"
 )
 

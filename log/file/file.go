@@ -3,7 +3,7 @@ package file
 import (
 	"path/filepath"
 
-	"github.com/emberfarkas/pkg/log/core"
+	"github.com/go-bamboo/pkg/log/core"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"

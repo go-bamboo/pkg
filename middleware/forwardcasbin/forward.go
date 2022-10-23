@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	syspb "github.com/emberfarkas/pkg/api/sys"
+	syspb "github.com/go-bamboo/pkg/api/sys"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"

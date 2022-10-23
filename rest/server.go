@@ -3,11 +3,11 @@ package rest
 import (
 	_ "net/http/pprof"
 
-	"github.com/emberfarkas/pkg/api/status"
-	"github.com/emberfarkas/pkg/middleware/logging"
-	"github.com/emberfarkas/pkg/middleware/metadata"
-	"github.com/emberfarkas/pkg/middleware/metrics/prometheus"
-	"github.com/emberfarkas/pkg/tracing"
+	"github.com/go-bamboo/pkg/api/status"
+	"github.com/go-bamboo/pkg/middleware/logging"
+	"github.com/go-bamboo/pkg/middleware/metadata"
+	"github.com/go-bamboo/pkg/middleware/metrics/prometheus"
+	"github.com/go-bamboo/pkg/tracing"
 	"github.com/felixge/fgprof"
 	"github.com/go-kratos/aegis/ratelimit/bbr"
 	"github.com/go-kratos/kratos/v2/middleware"

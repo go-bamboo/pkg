@@ -15,7 +15,7 @@ import (
 	"testing/iotest"
 	"time"
 
-	. "github.com/emberfarkas/pkg/bufio"
+	. "github.com/go-bamboo/pkg/bufio"
 )
 
 // Reads from a reader and rot13s the result.

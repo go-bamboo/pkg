@@ -3,7 +3,7 @@ package client.redis;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "github.com/emberfarkas/pkg/client/redis;redis";
+option go_package = "github.com/go-bamboo/pkg/client/redis;redis";
 
 message Conf {
   string network = 1;

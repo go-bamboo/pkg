@@ -3,7 +3,7 @@ package store.gormx;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "github.com/emberfarkas/pkg/store/gormx;gormx";
+option go_package = "github.com/go-bamboo/pkg/store/gormx;gormx";
 
 message Conf {
   string driver = 1;

@@ -2,8 +2,8 @@ package rabbitmq
 
 import (
 	"context"
-	"github.com/emberfarkas/pkg/log"
-	"github.com/emberfarkas/pkg/queue"
+	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/queue"
 	"github.com/streadway/amqp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"

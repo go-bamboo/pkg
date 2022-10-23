@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/emberfarkas/pkg/log"
-	"github.com/emberfarkas/pkg/net/ip"
+	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/net/ip"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"

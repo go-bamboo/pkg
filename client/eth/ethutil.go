@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"net/http"
 
-	"github.com/emberfarkas/pkg/log"
+	"github.com/go-bamboo/pkg/log"
 	"github.com/onrik/ethrpc"
 	"go.uber.org/zap/zapcore"
 )

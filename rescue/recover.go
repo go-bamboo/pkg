@@ -1,6 +1,6 @@
 package rescue
 
-import "github.com/emberfarkas/pkg/log"
+import "github.com/go-bamboo/pkg/log"
 
 // Recover is used with defer to do cleanup on panics.
 // Use it like:

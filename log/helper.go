@@ -1,11 +1,11 @@
 package log
 
 import (
-	"github.com/emberfarkas/pkg/log/core"
-	"github.com/emberfarkas/pkg/log/file"
-	"github.com/emberfarkas/pkg/log/fluent"
-	"github.com/emberfarkas/pkg/log/multi"
-	"github.com/emberfarkas/pkg/log/std"
+	"github.com/go-bamboo/pkg/log/core"
+	"github.com/go-bamboo/pkg/log/file"
+	"github.com/go-bamboo/pkg/log/fluent"
+	"github.com/go-bamboo/pkg/log/multi"
+	"github.com/go-bamboo/pkg/log/std"
 	"go.uber.org/zap/zapcore"
 )
 

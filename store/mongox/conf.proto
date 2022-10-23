@@ -3,7 +3,7 @@ package store.mongox;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "github.com/emberfarkas/pkg/store/mongox;mongox";
+option go_package = "github.com/go-bamboo/pkg/store/mongox;mongox";
 
 message Conf {
   string driver = 1;

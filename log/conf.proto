@@ -1,7 +1,7 @@
 syntax = "proto3";
 package log;
 
-option go_package = "github.com/emberfarkas/pkg/log;log";
+option go_package = "github.com/go-bamboo/pkg/log;log";
 
 message StdoutConf {
   bool enable = 1;

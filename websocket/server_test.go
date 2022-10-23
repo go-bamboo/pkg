@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/emberfarkas/pkg/bufio"
+	"github.com/go-bamboo/pkg/bufio"
 	"golang.org/x/net/websocket"
 )
 

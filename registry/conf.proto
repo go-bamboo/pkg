@@ -3,7 +3,7 @@ package registry;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "github.com/emberfarkas/pkg/registry;registry";
+option go_package = "github.com/go-bamboo/pkg/registry;registry";
 
 message Etcd {
   bool enable = 1;
