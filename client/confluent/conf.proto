@@ -1,0 +1,31 @@
+syntax = "proto3";
+package pkg.client.confluent;
+
+option go_package = "github.com/emberfarkas/pkg/client/confluent;confluent";
+
+import "google/protobuf/duration.proto";
+
+message SASL {
+  string mechanisms = 1;
+  string user = 2;
+  string password = 3;
+}
+
+message SSL {
+  string caLocation = 1;
+  string caPem = 2;
+}
+
+message Conf {
+  string bootstrapServers = 1;
+  string securityProtocol = 2; //plaintext, ssl, sasl_plaintext, sasl_ssl
+  SASL sasl = 3;
+  SSL ssl = 4;
+  string topic = 5;
+  string group = 6;
+  google.protobuf.Duration read_timeout = 7;
+  google.protobuf.Duration write_timeout = 8;
+  int32 acks = 9;
+}
+
+

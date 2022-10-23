@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/aliyun/aliyun-log-go-sdk v0.1.37
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/elastic/go-elasticsearch/v7 v7.17.1
 	github.com/elazarl/goproxy v0.0.0-20220901064549-fbd10ff4f5a1
 	github.com/envoyproxy/protoc-gen-validate v0.6.7
