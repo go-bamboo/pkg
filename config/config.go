@@ -32,7 +32,11 @@ func init() {
 
 func Load(v interface{}) config.Config {
 	flag.Parse()
-	uri, err := url.Parse(conf)
+	return LoadUri(conf, v)
+}
+
+func LoadUri(c string, v interface{}) config.Config {
+	uri, err := url.Parse(c)
 	if err != nil {
 		panic(err)
 	}
