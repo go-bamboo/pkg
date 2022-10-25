@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"net/url"
+	"os"
 	"path"
 
 	"github.com/go-bamboo/pkg/apollo"
@@ -32,6 +33,10 @@ func init() {
 
 func Load(v interface{}) config.Config {
 	flag.Parse()
+	nacosAddr := os.Getenv("NACOS_ADDRESS")
+	if len(nacosAddr) > 0 {
+		conf = nacosAddr
+	}
 	return LoadUri(conf, v)
 }
 
