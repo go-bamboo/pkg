@@ -25,6 +25,7 @@ message Nacos {
   bool enable = 1;
   string ipAddr = 2;
   uint64 port = 3;
+  string namespace = 4;
 }
 
 message Conf {

@@ -69,7 +69,7 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 			*constant.NewServerConfig(c.Nacos.IpAddr, c.Nacos.Port),
 		}
 		cc := constant.ClientConfig{
-			NamespaceId: "public",
+			NamespaceId: c.Nacos.Namespace,
 			TimeoutMs:   5000,
 		}
 		client, err := clients.NewNamingClient(

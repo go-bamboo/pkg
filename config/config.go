@@ -145,6 +145,7 @@ func LoadUri(c string, v interface{}) config.Config {
 		if err := c.Scan(v); err != nil {
 			panic(err)
 		}
+		return c
 	} else {
 		panic(err)
 	}

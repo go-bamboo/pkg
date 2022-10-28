@@ -422,6 +422,8 @@ func (m *Nacos) validate(all bool) error {
 
 	// no validation rules for Port
 
+	// no validation rules for Namespace
+
 	if len(errors) > 0 {
 		return NacosMultiError(errors)
 	}
