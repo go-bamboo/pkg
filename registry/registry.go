@@ -5,8 +5,12 @@ import (
 	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/contrib/registry/kubernetes/v2"
+	"github.com/go-kratos/kratos/contrib/registry/nacos/v2"
 	kreg "github.com/go-kratos/kratos/v2/registry"
 	"github.com/hashicorp/consul/api"
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
 	etcdv3 "go.etcd.io/etcd/client/v3"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -59,6 +63,25 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 			panic(err)
 		}
 		r := kuberegistry.NewRegistry(cli)
+		return r, r
+	} else if c.Nacos.Enable {
+		sc := []constant.ServerConfig{
+			*constant.NewServerConfig(c.Nacos.IpAddr, c.Nacos.Port),
+		}
+		cc := constant.ClientConfig{
+			NamespaceId: "public",
+			TimeoutMs:   5000,
+		}
+		client, err := clients.NewNamingClient(
+			vo.NacosClientParam{
+				ServerConfigs: sc,
+				ClientConfig:  &cc,
+			},
+		)
+		if err != nil {
+			panic(err)
+		}
+		r := nacos.New(client)
 		return r, r
 	} else {
 		panic(errors.New("not support"))

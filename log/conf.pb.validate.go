@@ -11,6 +11,7 @@ import (
 	"net/mail"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -31,21 +32,57 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
+	_ = sort.Sort
 )
 
 // Validate checks the field values on StdoutConf with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *StdoutConf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on StdoutConf with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in StdoutConfMultiError, or
+// nil if none found.
+func (m *StdoutConf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *StdoutConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for Enable
 
 	// no validation rules for Level
 
+	if len(errors) > 0 {
+		return StdoutConfMultiError(errors)
+	}
+
 	return nil
 }
+
+// StdoutConfMultiError is an error wrapping multiple validation errors
+// returned by StdoutConf.ValidateAll() if the designated constraints aren't met.
+type StdoutConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m StdoutConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m StdoutConfMultiError) AllErrors() []error { return m }
 
 // StdoutConfValidationError is the validation error returned by
 // StdoutConf.Validate if the designated constraints aren't met.
@@ -102,11 +139,26 @@ var _ interface {
 } = StdoutConfValidationError{}
 
 // Validate checks the field values on FileConf with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *FileConf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FileConf with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in FileConfMultiError, or nil
+// if none found.
+func (m *FileConf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FileConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for Enable
 
@@ -116,8 +168,28 @@ func (m *FileConf) Validate() error {
 
 	// no validation rules for Name
 
+	if len(errors) > 0 {
+		return FileConfMultiError(errors)
+	}
+
 	return nil
 }
+
+// FileConfMultiError is an error wrapping multiple validation errors returned
+// by FileConf.ValidateAll() if the designated constraints aren't met.
+type FileConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FileConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FileConfMultiError) AllErrors() []error { return m }
 
 // FileConfValidationError is the validation error returned by
 // FileConf.Validate if the designated constraints aren't met.
@@ -174,11 +246,26 @@ var _ interface {
 } = FileConfValidationError{}
 
 // Validate checks the field values on FluentConf with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *FluentConf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FluentConf with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in FluentConfMultiError, or
+// nil if none found.
+func (m *FluentConf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FluentConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for Enable
 
@@ -186,8 +273,28 @@ func (m *FluentConf) Validate() error {
 
 	// no validation rules for Addr
 
+	if len(errors) > 0 {
+		return FluentConfMultiError(errors)
+	}
+
 	return nil
 }
+
+// FluentConfMultiError is an error wrapping multiple validation errors
+// returned by FluentConf.ValidateAll() if the designated constraints aren't met.
+type FluentConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FluentConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FluentConfMultiError) AllErrors() []error { return m }
 
 // FluentConfValidationError is the validation error returned by
 // FluentConf.Validate if the designated constraints aren't met.
@@ -244,13 +351,46 @@ var _ interface {
 } = FluentConfValidationError{}
 
 // Validate checks the field values on Conf with the rules defined in the proto
-// definition for this message. If any rules are violated, an error is returned.
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
 func (m *Conf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Conf with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ConfMultiError, or nil if none found.
+func (m *Conf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Conf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	if v, ok := interface{}(m.GetConsole()).(interface{ Validate() error }); ok {
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetConsole()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Console",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Console",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetConsole()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Console",
@@ -260,7 +400,26 @@ func (m *Conf) Validate() error {
 		}
 	}
 
-	if v, ok := interface{}(m.GetFile()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetFile()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "File",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "File",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetFile()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "File",
@@ -270,7 +429,26 @@ func (m *Conf) Validate() error {
 		}
 	}
 
-	if v, ok := interface{}(m.GetFluent()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetFluent()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Fluent",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Fluent",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetFluent()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Fluent",
@@ -280,8 +458,28 @@ func (m *Conf) Validate() error {
 		}
 	}
 
+	if len(errors) > 0 {
+		return ConfMultiError(errors)
+	}
+
 	return nil
 }
+
+// ConfMultiError is an error wrapping multiple validation errors returned by
+// Conf.ValidateAll() if the designated constraints aren't met.
+type ConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ConfMultiError) AllErrors() []error { return m }
 
 // ConfValidationError is the validation error returned by Conf.Validate if the
 // designated constraints aren't met.

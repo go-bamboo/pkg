@@ -4,12 +4,6 @@
     "title": "store/mongox/conf.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "HTTP",
-    "HTTPS",
-    "WS",
-    "WSS"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -39,14 +33,11 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "typeUrl": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     }
   }
 }

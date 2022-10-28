@@ -16,7 +16,8 @@ require (
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20221014030943-7a99e8bbdc01
 	github.com/go-kratos/kratos/contrib/registry/etcd/v2 v2.0.0-20221014030943-7a99e8bbdc01
 	github.com/go-kratos/kratos/contrib/registry/kubernetes/v2 v2.0.0-20221014030943-7a99e8bbdc01
-	github.com/go-kratos/kratos/v2 v2.5.1
+	github.com/go-kratos/kratos/contrib/registry/nacos/v2 v2.0.0-20221028122214-f0878b0a7892
+	github.com/go-kratos/kratos/v2 v2.5.2
 	github.com/go-playground/form/v4 v4.2.0
 	github.com/go-redis/cache/v8 v8.4.3
 	github.com/go-redis/redis/extra/rediscmd/v8 v8.11.5
@@ -79,7 +80,7 @@ require (
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/frankban/quicktest v1.14.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/go-errors/errors v1.0.1 // indirect
+	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-kit/kit v0.10.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -151,11 +152,11 @@ require (
 	go.etcd.io/etcd/api/v3 v3.5.5 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.5 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5 // indirect
 	golang.org/x/image v0.0.0-20210216034530-4410531fe030 // indirect
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
-	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.0.0-20221013171732-95e765b1cc43 // indirect
 	golang.org/x/term v0.0.0-20220919170432-7a66f970e087 // indirect
 	golang.org/x/text v0.3.8 // indirect

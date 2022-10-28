@@ -11,6 +11,7 @@ import (
 	"net/mail"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -31,14 +32,29 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
+	_ = sort.Sort
 )
 
 // Validate checks the field values on Jaeger with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *Jaeger) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Jaeger with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in JaegerMultiError, or nil if none found.
+func (m *Jaeger) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Jaeger) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for Enable
 
@@ -48,8 +64,28 @@ func (m *Jaeger) Validate() error {
 
 	// no validation rules for Traces
 
+	if len(errors) > 0 {
+		return JaegerMultiError(errors)
+	}
+
 	return nil
 }
+
+// JaegerMultiError is an error wrapping multiple validation errors returned by
+// Jaeger.ValidateAll() if the designated constraints aren't met.
+type JaegerMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m JaegerMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m JaegerMultiError) AllErrors() []error { return m }
 
 // JaegerValidationError is the validation error returned by Jaeger.Validate if
 // the designated constraints aren't met.
@@ -106,11 +142,25 @@ var _ interface {
 } = JaegerValidationError{}
 
 // Validate checks the field values on Stdout with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *Stdout) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Stdout with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in StdoutMultiError, or nil if none found.
+func (m *Stdout) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Stdout) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for Enable
 
@@ -118,8 +168,28 @@ func (m *Stdout) Validate() error {
 
 	// no validation rules for Traces
 
+	if len(errors) > 0 {
+		return StdoutMultiError(errors)
+	}
+
 	return nil
 }
+
+// StdoutMultiError is an error wrapping multiple validation errors returned by
+// Stdout.ValidateAll() if the designated constraints aren't met.
+type StdoutMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m StdoutMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m StdoutMultiError) AllErrors() []error { return m }
 
 // StdoutValidationError is the validation error returned by Stdout.Validate if
 // the designated constraints aren't met.
@@ -176,13 +246,46 @@ var _ interface {
 } = StdoutValidationError{}
 
 // Validate checks the field values on Conf with the rules defined in the proto
-// definition for this message. If any rules are violated, an error is returned.
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
 func (m *Conf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Conf with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ConfMultiError, or nil if none found.
+func (m *Conf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Conf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	if v, ok := interface{}(m.GetJaeger()).(interface{ Validate() error }); ok {
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetJaeger()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Jaeger",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Jaeger",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetJaeger()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Jaeger",
@@ -192,7 +295,26 @@ func (m *Conf) Validate() error {
 		}
 	}
 
-	if v, ok := interface{}(m.GetStdout()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetStdout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Stdout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Stdout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStdout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Stdout",
@@ -202,8 +324,28 @@ func (m *Conf) Validate() error {
 		}
 	}
 
+	if len(errors) > 0 {
+		return ConfMultiError(errors)
+	}
+
 	return nil
 }
+
+// ConfMultiError is an error wrapping multiple validation errors returned by
+// Conf.ValidateAll() if the designated constraints aren't met.
+type ConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ConfMultiError) AllErrors() []error { return m }
 
 // ConfValidationError is the validation error returned by Conf.Validate if the
 // designated constraints aren't met.
