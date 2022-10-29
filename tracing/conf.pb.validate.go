@@ -245,6 +245,112 @@ var _ interface {
 	ErrorName() string
 } = StdoutValidationError{}
 
+// Validate checks the field values on Otlp with the rules defined in the proto
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
+func (m *Otlp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Otlp with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in OtlpMultiError, or nil if none found.
+func (m *Otlp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Otlp) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enable
+
+	// no validation rules for Endpoint
+
+	// no validation rules for Metrics
+
+	// no validation rules for Traces
+
+	if len(errors) > 0 {
+		return OtlpMultiError(errors)
+	}
+
+	return nil
+}
+
+// OtlpMultiError is an error wrapping multiple validation errors returned by
+// Otlp.ValidateAll() if the designated constraints aren't met.
+type OtlpMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m OtlpMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m OtlpMultiError) AllErrors() []error { return m }
+
+// OtlpValidationError is the validation error returned by Otlp.Validate if the
+// designated constraints aren't met.
+type OtlpValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e OtlpValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e OtlpValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e OtlpValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e OtlpValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e OtlpValidationError) ErrorName() string { return "OtlpValidationError" }
+
+// Error satisfies the builtin error interface
+func (e OtlpValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sOtlp.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = OtlpValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = OtlpValidationError{}
+
 // Validate checks the field values on Conf with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
 // encountered is returned, or nil if there are no violations.
@@ -318,6 +424,35 @@ func (m *Conf) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Stdout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetOtlp()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Otlp",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Otlp",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOtlp()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConfValidationError{
+				field:  "Otlp",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

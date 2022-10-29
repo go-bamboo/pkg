@@ -16,7 +16,15 @@ message Stdout {
   bool traces = 4;
 }
 
+message Otlp {
+  bool enable = 1;
+  string endpoint = 2;
+  bool metrics = 3;
+  bool traces = 4;
+}
+
 message Conf {
   Jaeger jaeger = 1;
   Stdout stdout = 2;
+  Otlp otlp = 3;
 }

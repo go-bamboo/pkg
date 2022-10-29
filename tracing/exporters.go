@@ -12,6 +12,9 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/metric/global"
@@ -51,6 +54,9 @@ func NewProvider(c *Conf, serviceName string, uuid string) (*Provider, error) {
 	}
 	if c.Jaeger.Enable {
 		return jaegerProvider(c.Jaeger, serviceName, uuid)
+	}
+	if c.Otlp.Enable {
+		return otlpProvider(c.Otlp, serviceName, uuid)
 	}
 	// 设置内部日志
 	//otel.SetLogger()
@@ -105,23 +111,65 @@ func stdoutProvider(c *Stdout, serviceName string, uuid string) (*Provider, erro
 }
 
 func jaegerProvider(c *Jaeger, serviceName string, uuid string) (*Provider, error) {
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(c.Endpoint)))
-	if err != nil {
-		return nil, err
+	var provider Provider
+	if c.Traces {
+		exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(c.Endpoint)))
+		if err != nil {
+			return nil, err
+		}
+		tp := tracesdk.NewTracerProvider(
+			tracesdk.WithSampler(tracesdk.AlwaysSample()),
+			// Always be sure to batch in production.
+			tracesdk.WithBatcher(exp),
+			// Record information about this application in an Resource.
+			tracesdk.WithResource(resource.NewSchemaless(
+				semconv.ServiceNameKey.String(serviceName),
+				semconv.ServiceInstanceIDKey.String(uuid),
+				semconv.ProcessPIDKey.Int(os.Getpid()),
+				attribute.String("environment", "development"),
+				attribute.String("ip", ip.InternalIP()),
+			)),
+		)
+		otel.SetTracerProvider(tp)
+		provider.tracer = tp
 	}
-	tp := tracesdk.NewTracerProvider(
-		tracesdk.WithSampler(tracesdk.AlwaysSample()),
-		// Always be sure to batch in production.
-		tracesdk.WithBatcher(exp),
-		// Record information about this application in an Resource.
-		tracesdk.WithResource(resource.NewSchemaless(
-			semconv.ServiceNameKey.String(serviceName),
-			semconv.ServiceInstanceIDKey.String(uuid),
-			semconv.ProcessPIDKey.Int(os.Getpid()),
-			attribute.String("environment", "development"),
-			attribute.String("ip", ip.InternalIP()),
-		)),
-	)
-	otel.SetTracerProvider(tp)
-	return &Provider{tracer: tp}, nil
+
+	return &provider, nil
+}
+
+func otlpProvider(c *Otlp, serviceName string, uuid string) (*Provider, error) {
+	var provider Provider
+	if c.Traces {
+		client := otlptracegrpc.NewClient(otlptracegrpc.WithEndpoint(c.Endpoint))
+		exporter, err := otlptrace.New(context.TODO(), client)
+		if err != nil {
+			return nil, fmt.Errorf("creating OTLP trace exporter: %w", err)
+		}
+		tp := tracesdk.NewTracerProvider(
+			tracesdk.WithSampler(tracesdk.AlwaysSample()),
+			// Always be sure to batch in production.
+			tracesdk.WithBatcher(exporter),
+			// Record information about this application in an Resource.
+			tracesdk.WithResource(resource.NewSchemaless(
+				semconv.ServiceNameKey.String(serviceName),
+				semconv.ServiceInstanceIDKey.String(uuid),
+				semconv.ProcessPIDKey.Int(os.Getpid()),
+				attribute.String("environment", "development"),
+				attribute.String("ip", ip.InternalIP()),
+			)),
+		)
+		otel.SetTracerProvider(tp)
+		provider.tracer = tp
+	}
+	if c.Metrics {
+		ctx := context.Background()
+		exp, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithEndpoint(c.Endpoint))
+		if err != nil {
+			panic(err)
+		}
+		meterProvider := metric.NewMeterProvider(metric.WithReader(metric.NewPeriodicReader(exp)))
+		global.SetMeterProvider(meterProvider)
+		provider.meter = meterProvider
+	}
+	return &provider, nil
 }
