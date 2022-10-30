@@ -164,9 +164,13 @@ func (m *Stdout) validate(all bool) error {
 
 	// no validation rules for Enable
 
+	// no validation rules for Traces
+
+	// no validation rules for TraceOutput
+
 	// no validation rules for Metrics
 
-	// no validation rules for Traces
+	// no validation rules for MetricOutput
 
 	if len(errors) > 0 {
 		return StdoutMultiError(errors)
@@ -351,6 +355,109 @@ var _ interface {
 	ErrorName() string
 } = OtlpValidationError{}
 
+// Validate checks the field values on Prometheus with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Prometheus) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Prometheus with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in PrometheusMultiError, or
+// nil if none found.
+func (m *Prometheus) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Prometheus) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enable
+
+	// no validation rules for Metrics
+
+	if len(errors) > 0 {
+		return PrometheusMultiError(errors)
+	}
+
+	return nil
+}
+
+// PrometheusMultiError is an error wrapping multiple validation errors
+// returned by Prometheus.ValidateAll() if the designated constraints aren't met.
+type PrometheusMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PrometheusMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PrometheusMultiError) AllErrors() []error { return m }
+
+// PrometheusValidationError is the validation error returned by
+// Prometheus.Validate if the designated constraints aren't met.
+type PrometheusValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PrometheusValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PrometheusValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PrometheusValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PrometheusValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PrometheusValidationError) ErrorName() string { return "PrometheusValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PrometheusValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPrometheus.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PrometheusValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PrometheusValidationError{}
+
 // Validate checks the field values on Conf with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
 // encountered is returned, or nil if there are no violations.
@@ -453,6 +560,35 @@ func (m *Conf) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Otlp",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetProm()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Prom",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Prom",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetProm()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConfValidationError{
+				field:  "Prom",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

@@ -12,8 +12,10 @@ message Jaeger {
 
 message Stdout {
   bool enable = 1;
-  bool metrics = 3;
-  bool traces = 4;
+  bool traces = 2;
+  string trace_output = 3;
+  bool metrics = 4;
+  string metric_output = 5;
 }
 
 message Otlp {
@@ -23,8 +25,14 @@ message Otlp {
   bool traces = 4;
 }
 
+message Prometheus {
+  bool enable = 1;
+  bool metrics = 2;
+}
+
 message Conf {
   Jaeger jaeger = 1;
   Stdout stdout = 2;
   Otlp otlp = 3;
+  Prometheus prom = 4;
 }

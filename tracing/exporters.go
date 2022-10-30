@@ -3,18 +3,20 @@ package tracing
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+
 	"os"
 
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/net/ip"
+	prom "github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/metric/global"
@@ -25,8 +27,10 @@ import (
 )
 
 type Provider struct {
-	tracer *tracesdk.TracerProvider
-	meter  *metric.MeterProvider
+	tracer   *tracesdk.TracerProvider
+	meter    *metric.MeterProvider
+	traceFn  *os.File
+	metricFn *os.File
 }
 
 func (o *Provider) Close() {
@@ -35,6 +39,14 @@ func (o *Provider) Close() {
 	}
 	if o.meter != nil {
 		o.meter.Shutdown(context.TODO())
+	}
+	if o.traceFn != nil {
+		o.traceFn.Sync()
+		o.traceFn.Close()
+	}
+	if o.metricFn != nil {
+		o.metricFn.Sync()
+		o.metricFn.Close()
 	}
 }
 
@@ -48,27 +60,41 @@ func MustNewProvider(c *Conf, serviceName string, uuid string) *Provider {
 
 // NewProvider Get trace provider
 func NewProvider(c *Conf, serviceName string, uuid string) (*Provider, error) {
+	var provider Provider
 	// Create the Jaeger exporter
 	if c.Stdout.Enable {
-		return stdoutProvider(c.Stdout, serviceName, uuid)
+		stdoutProvider(&provider, c.Stdout, serviceName, uuid)
 	}
 	if c.Jaeger.Enable {
-		return jaegerProvider(c.Jaeger, serviceName, uuid)
+		jaegerProvider(&provider, c.Jaeger, serviceName, uuid)
 	}
 	if c.Otlp.Enable {
-		return otlpProvider(c.Otlp, serviceName, uuid)
+		otlpProvider(&provider, c.Otlp, serviceName, uuid)
+	}
+	if c.Prom.Enable {
+		promProvider(&provider, c.Prom, serviceName, uuid)
 	}
 	// 设置内部日志
 	//otel.SetLogger()
-	return nil, errors.New("not support")
+	return &provider, nil
 }
 
-func stdoutProvider(c *Stdout, serviceName string, uuid string) (*Provider, error) {
-	var exporter Provider
+func stdoutProvider(provider *Provider, c *Stdout, serviceName string, uuid string) error {
 	if c.Traces {
-		exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+		w := os.Stdout
+		if len(c.TraceOutput) > 0 {
+			f, err := os.OpenFile(c.TraceOutput, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModeAppend)
+			if err != nil {
+				panic(err)
+			}
+			w = f
+		}
+		exp, err := stdouttrace.New(
+			stdouttrace.WithWriter(w),
+			stdouttrace.WithPrettyPrint(),
+		)
 		if err != nil {
-			return nil, fmt.Errorf("creating stdout exporter: %w", err)
+			return fmt.Errorf("creating stdout exporter: %w", err)
 		}
 		tp := tracesdk.NewTracerProvider(
 			tracesdk.WithSampler(tracesdk.AlwaysSample()),
@@ -84,38 +110,44 @@ func stdoutProvider(c *Stdout, serviceName string, uuid string) (*Provider, erro
 			)),
 		)
 		otel.SetTracerProvider(tp)
-		exporter.tracer = tp
+		provider.tracer = tp
 	}
 	if c.Metrics {
 		// metric
-		enc := json.NewEncoder(os.Stdout)
+		w := os.Stdout
+		if len(c.MetricOutput) > 0 {
+			f, err := os.OpenFile(c.MetricOutput, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModeAppend)
+			if err != nil {
+				panic(err)
+			}
+			w = f
+		}
+		enc := json.NewEncoder(w)
 		enc.SetIndent("", "  ")
 		exp, err := stdoutmetric.New(stdoutmetric.WithEncoder(enc))
 		if err != nil {
 			panic(err)
 		}
-
 		// Register the exporter with an SDK via a periodic reader.
 		sdk := metric.NewMeterProvider(
 			metric.WithResource(resource.NewSchemaless(
-				semconv.ServiceNameKey.String("stdoutmetric-example"),
+				semconv.ServiceNameKey.String(serviceName),
 			)),
 			metric.WithReader(metric.NewPeriodicReader(exp)),
 		)
 		global.SetMeterProvider(sdk)
 		//meter.AsyncFloat64().
-		exporter.meter = sdk
+		provider.meter = sdk
 	}
 
-	return &exporter, nil
+	return nil
 }
 
-func jaegerProvider(c *Jaeger, serviceName string, uuid string) (*Provider, error) {
-	var provider Provider
-	if c.Traces {
+func jaegerProvider(provider *Provider, c *Jaeger, serviceName string, uuid string) error {
+	if c.Traces && provider.tracer == nil {
 		exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(c.Endpoint)))
 		if err != nil {
-			return nil, err
+			return err
 		}
 		tp := tracesdk.NewTracerProvider(
 			tracesdk.WithSampler(tracesdk.AlwaysSample()),
@@ -134,16 +166,15 @@ func jaegerProvider(c *Jaeger, serviceName string, uuid string) (*Provider, erro
 		provider.tracer = tp
 	}
 
-	return &provider, nil
+	return nil
 }
 
-func otlpProvider(c *Otlp, serviceName string, uuid string) (*Provider, error) {
-	var provider Provider
-	if c.Traces {
-		client := otlptracegrpc.NewClient(otlptracegrpc.WithEndpoint(c.Endpoint))
+func otlpProvider(provider *Provider, c *Otlp, serviceName string, uuid string) error {
+	if c.Traces && provider.tracer == nil {
+		client := otlptracegrpc.NewClient(otlptracegrpc.WithEndpoint(c.Endpoint), otlptracegrpc.WithInsecure())
 		exporter, err := otlptrace.New(context.TODO(), client)
 		if err != nil {
-			return nil, fmt.Errorf("creating OTLP trace exporter: %w", err)
+			return fmt.Errorf("creating OTLP trace exporter: %w", err)
 		}
 		tp := tracesdk.NewTracerProvider(
 			tracesdk.WithSampler(tracesdk.AlwaysSample()),
@@ -161,15 +192,39 @@ func otlpProvider(c *Otlp, serviceName string, uuid string) (*Provider, error) {
 		otel.SetTracerProvider(tp)
 		provider.tracer = tp
 	}
-	if c.Metrics {
+	if c.Metrics && provider.meter == nil {
 		ctx := context.Background()
-		exp, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithEndpoint(c.Endpoint))
+		exp, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithEndpoint(c.Endpoint), otlpmetricgrpc.WithInsecure())
 		if err != nil {
 			panic(err)
 		}
-		meterProvider := metric.NewMeterProvider(metric.WithReader(metric.NewPeriodicReader(exp)))
+		meterProvider := metric.NewMeterProvider(
+			metric.WithResource(resource.NewSchemaless(
+				semconv.ServiceNameKey.String(serviceName),
+			)),
+			metric.WithReader(metric.NewPeriodicReader(exp)),
+		)
 		global.SetMeterProvider(meterProvider)
 		provider.meter = meterProvider
 	}
-	return &provider, nil
+	return nil
+}
+
+func promProvider(provider *Provider, c *Prometheus, serviceName string, uuid string) error {
+	if c.Metrics && provider.meter == nil {
+		registry := prom.NewRegistry()
+		exporter, err := prometheus.New(prometheus.WithRegisterer(registry))
+		if err != nil {
+			panic(err)
+		}
+		meterProvider := metric.NewMeterProvider(
+			metric.WithResource(resource.NewSchemaless(
+				semconv.ServiceNameKey.String(serviceName),
+			)),
+			metric.WithReader(exporter),
+		)
+		global.SetMeterProvider(meterProvider)
+		provider.meter = meterProvider
+	}
+	return nil
 }
