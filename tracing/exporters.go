@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 
 	"os"
 
@@ -79,15 +80,26 @@ func NewProvider(c *Conf, serviceName string, uuid string) (*Provider, error) {
 	return &provider, nil
 }
 
+type noOutput int
+
+func (*noOutput) Write(p []byte) (n int, err error) {
+	return len(p), nil
+}
+
 func stdoutProvider(provider *Provider, c *Stdout, serviceName string, uuid string) error {
 	if c.Traces {
-		w := os.Stdout
+		var w io.Writer = os.Stdout
 		if len(c.TraceOutput) > 0 {
-			f, err := os.OpenFile(c.TraceOutput, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModeAppend)
-			if err != nil {
-				panic(err)
+			if c.TraceOutput == "no" {
+				var n noOutput = 0
+				w = &n
+			} else {
+				f, err := os.OpenFile(c.TraceOutput, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModeAppend)
+				if err != nil {
+					panic(err)
+				}
+				w = f
 			}
-			w = f
 		}
 		exp, err := stdouttrace.New(
 			stdouttrace.WithWriter(w),
@@ -114,13 +126,18 @@ func stdoutProvider(provider *Provider, c *Stdout, serviceName string, uuid stri
 	}
 	if c.Metrics {
 		// metric
-		w := os.Stdout
+		var w io.Writer = os.Stdout
 		if len(c.MetricOutput) > 0 {
-			f, err := os.OpenFile(c.MetricOutput, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModeAppend)
-			if err != nil {
-				panic(err)
+			if c.TraceOutput == "no" {
+				var n noOutput = 0
+				w = &n
+			} else {
+				f, err := os.OpenFile(c.MetricOutput, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModeAppend)
+				if err != nil {
+					panic(err)
+				}
+				w = f
 			}
-			w = f
 		}
 		enc := json.NewEncoder(w)
 		enc.SetIndent("", "  ")
