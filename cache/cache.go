@@ -3,13 +3,6 @@ package cache
 import (
 	"context"
 	"time"
-
-	"github.com/go-bamboo/pkg/cache/memory"
-)
-
-var (
-	// DefaultCache is the default cache.
-	DefaultCache Cache = memory.NewCache()
 )
 
 // Cache is the interface that wraps the cache.

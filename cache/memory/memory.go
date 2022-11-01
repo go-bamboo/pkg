@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-bamboo/pkg/cache"
 	"github.com/go-kratos/kratos/v2/errors"
 )
 
@@ -18,6 +19,11 @@ var (
 	// ErrKeyNotFound is returned in Cache.Get and Cache.Delete when the
 	// provided key could not be found in cache.
 	ErrKeyNotFound error = errors.InternalServer("ErrKeyNotFound", "key not found in cache")
+)
+
+var (
+	// DefaultCache is the default cache.
+	DefaultCache cache.Cache = NewCache()
 )
 
 type memCache struct {
@@ -35,7 +41,6 @@ func NewCache(opts ...Option) *memCache {
 	if len(options.Items) > 0 {
 		items = options.Items
 	}
-
 	return &memCache{
 		opts:  options,
 		items: items,
