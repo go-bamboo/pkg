@@ -45,16 +45,16 @@ func (p *Producer) Name() string {
 	return "kafka"
 }
 
-func (p *Producer) Push(ctx context.Context, key, value []byte) error {
+func (p *Producer) Push(ctx context.Context, topic string, key, value []byte) error {
 	msg := kafka.Message{
 		Key:   key,
 		Value: value,
 	}
-	operation := "pub:" + msg.Topic
+	operation := "pub:" + topic
 	ctx, span := p.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindProducer))
 	p.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
 	span.SetAttributes(
-		attribute.String("kafka.topic", p.topic),
+		attribute.String("kafka.topic", topic),
 		attribute.String("kafka.key", string(msg.Key)),
 	)
 	if err := p.pub.WriteMessages(ctx, msg); err != nil {
