@@ -183,4 +183,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/go-kratos/kratos/v2 v2.5.2 => github.com/go-bamboo/kratos/v2 v2.4.0
+replace github.com/go-kratos/kratos/v2 v2.5.2 => github.com/go-bamboo/kratos/v2 v2.5.2
