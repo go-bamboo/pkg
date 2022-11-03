@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
@@ -53,6 +54,7 @@ func after(db *gorm.DB) {
 		tracer.End(db.Statement.Context, span, nil, nil)
 	}
 	if db.Error != nil {
+		log.Error(db.Error)
 		db.Error = WrapGormError(db.Error)
 	}
 	return

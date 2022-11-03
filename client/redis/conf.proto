@@ -5,6 +5,10 @@ import "google/protobuf/duration.proto";
 
 option go_package = "github.com/go-bamboo/pkg/client/redis;redis";
 
+message Tls {
+   bool insecureSkipVerify = 1;
+}
+
 message Conf {
   string network = 1;
   string addr = 2;
@@ -15,4 +19,5 @@ message Conf {
   string username = 7;
   string password = 8;
   int32 db = 9;
+  Tls tls = 10;
 }

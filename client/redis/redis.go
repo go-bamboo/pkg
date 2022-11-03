@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"crypto/tls"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -23,7 +24,7 @@ type Client struct {
 }
 
 func New(c *Conf) *Client {
-	rdb := redis.NewClient(&redis.Options{
+	opts := &redis.Options{
 		Addr:         c.Addr,
 		DialTimeout:  c.DialTimeout.AsDuration(),
 		ReadTimeout:  c.ReadTimeout.AsDuration(),
@@ -31,9 +32,12 @@ func New(c *Conf) *Client {
 		//Username:     c.Redis.Username,
 		Password: c.Password,
 		DB:       int(c.Db),
-	})
+	}
+	if c.Tls != nil && c.Tls.InsecureSkipVerify {
+		opts.TLSConfig = &tls.Config{InsecureSkipVerify: c.Tls.InsecureSkipVerify}
+	}
+	rdb := redis.NewClient(opts)
 	rdb.AddHook(NewRedisTracingHook())
-
 	return &Client{
 		Client: *rdb,
 	}
