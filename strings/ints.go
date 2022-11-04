@@ -37,7 +37,7 @@ func JoinInt32s(is []int32, p string) string {
 	return s
 }
 
-// SplitInt32s split string into int32 slice.
+// SplitInts split string into int32 slice.
 func SplitInts(s, p string) ([]int, error) {
 	if s == "" {
 		return nil, nil
@@ -110,7 +110,7 @@ func SplitInt64s(s, p string) ([]int64, error) {
 	return res, nil
 }
 
-// SplitInt64s split string into int64 slice.
+// SplitUint64s split string into int64 slice.
 func SplitUint64s(s, p string) ([]uint64, error) {
 	if s == "" {
 		return nil, nil
