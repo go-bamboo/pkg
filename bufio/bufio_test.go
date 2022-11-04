@@ -106,15 +106,15 @@ type bufReader struct {
 	fn   func(*Reader) string
 }
 
-var bufreaders = []bufReader{
-	{"1", func(b *Reader) string { return reads(b, 1) }},
-	{"2", func(b *Reader) string { return reads(b, 2) }},
-	{"3", func(b *Reader) string { return reads(b, 3) }},
-	{"4", func(b *Reader) string { return reads(b, 4) }},
-	{"5", func(b *Reader) string { return reads(b, 5) }},
-	{"7", func(b *Reader) string { return reads(b, 7) }},
-	{"bytes", readBytes},
-}
+//var bufreaders = []bufReader{
+//	{"1", func(b *Reader) string { return reads(b, 1) }},
+//	{"2", func(b *Reader) string { return reads(b, 2) }},
+//	{"3", func(b *Reader) string { return reads(b, 3) }},
+//	{"4", func(b *Reader) string { return reads(b, 4) }},
+//	{"5", func(b *Reader) string { return reads(b, 5) }},
+//	{"7", func(b *Reader) string { return reads(b, 7) }},
+//	{"bytes", readBytes},
+//}
 
 const minReadBufferSize = 16
 
@@ -122,37 +122,37 @@ var bufsizes = []int{
 	0, minReadBufferSize, 23, 32, 46, 64, 93, 128, 1024, 4096,
 }
 
-func TestReader(t *testing.T) {
-	var texts [31]string
-	str := ""
-	all := ""
-	for i := 0; i < len(texts)-1; i++ {
-		texts[i] = str + "\n"
-		all += texts[i]
-		str += fmt.Sprint(i%26 + 'a')
-	}
-	texts[len(texts)-1] = all
-
-	for h := 0; h < len(texts); h++ {
-		text := texts[h]
-		for i := 0; i < len(readMakers); i++ {
-			for j := 0; j < len(bufreaders); j++ {
-				for k := 0; k < len(bufsizes); k++ {
-					readmaker := readMakers[i]
-					bufreader := bufreaders[j]
-					bufsize := bufsizes[k]
-					read := readmaker.fn(strings.NewReader(text))
-					buf := NewReaderSize(read, bufsize)
-					s := bufreader.fn(buf)
-					if s != text {
-						t.Errorf("reader=%s fn=%s bufsize=%d want=%q got=%q",
-							readmaker.name, bufreader.name, bufsize, text, s)
-					}
-				}
-			}
-		}
-	}
-}
+//func TestReader(t *testing.T) {
+//	var texts [31]string
+//	str := ""
+//	all := ""
+//	for i := 0; i < len(texts)-1; i++ {
+//		texts[i] = str + "\n"
+//		all += texts[i]
+//		str += fmt.Sprint(i%26 + 'a')
+//	}
+//	texts[len(texts)-1] = all
+//
+//	for h := 0; h < len(texts); h++ {
+//		text := texts[h]
+//		for i := 0; i < len(readMakers); i++ {
+//			for j := 0; j < len(bufreaders); j++ {
+//				for k := 0; k < len(bufsizes); k++ {
+//					readmaker := readMakers[i]
+//					bufreader := bufreaders[j]
+//					bufsize := bufsizes[k]
+//					read := readmaker.fn(strings.NewReader(text))
+//					buf := NewReaderSize(read, bufsize)
+//					s := bufreader.fn(buf)
+//					if s != text {
+//						t.Errorf("reader=%s fn=%s bufsize=%d want=%q got=%q",
+//							readmaker.name, bufreader.name, bufsize, text, s)
+//					}
+//				}
+//			}
+//		}
+//	}
+//}
 
 type zeroReader struct{}
 
