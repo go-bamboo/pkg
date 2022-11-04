@@ -80,7 +80,7 @@ func DecryptPrivWithAES(key, message string) (encry string, err error) {
 
 	block, err := aes.NewCipher(keyData)
 	if err != nil {
-		err = ecode.Unknown("crypto", "", "")
+		err = ecode.Unknown("crypto")
 		return
 	}
 
@@ -101,7 +101,7 @@ func DecryptPrivWithAES1(key, message string) (d string, err error) {
 
 	block, err := aes.NewCipher(keyData)
 	if err != nil {
-		err = ecode.Unknown("crypto", "", "")
+		err = ecode.Unknown("crypto")
 		return
 	}
 
