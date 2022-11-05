@@ -5,7 +5,6 @@ go 1.18
 require (
 	github.com/aliyun/aliyun-log-go-sdk v0.1.37
 	github.com/elastic/go-elasticsearch/v7 v7.17.1
-	github.com/elazarl/goproxy v0.0.0-20220901064549-fbd10ff4f5a1
 	github.com/envoyproxy/protoc-gen-validate v0.6.7
 	github.com/felixge/fgprof v0.9.3
 	github.com/fluent/fluent-logger-golang v1.9.0
@@ -177,5 +176,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace github.com/go-kratos/kratos/v2 v2.5.2 => github.com/go-bamboo/kratos/v2 v2.5.2
