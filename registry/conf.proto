@@ -19,9 +19,6 @@ message Consul {
 
 message Kube {
   bool enable = 1;
-  string namespace = 2;
-  string deployName = 3;
-  string podName = 4;
 }
 
 message Nacos {

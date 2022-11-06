@@ -196,12 +196,6 @@ func (m *Kube) Validate() error {
 
 	// no validation rules for Enable
 
-	// no validation rules for Namespace
-
-	// no validation rules for DeployName
-
-	// no validation rules for PodName
-
 	return nil
 }
 
