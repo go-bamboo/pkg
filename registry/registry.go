@@ -70,8 +70,12 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 			*constant.NewServerConfig(c.Nacos.IpAddr, c.Nacos.Port),
 		}
 		cc := constant.ClientConfig{
-			NamespaceId: c.Nacos.Namespace,
-			TimeoutMs:   60000,
+			NamespaceId:         c.Nacos.Namespace,
+			TimeoutMs:           5000,
+			NotLoadCacheAtStart: true,
+			LogDir:              "/tmp/nacos/log",
+			CacheDir:            "/tmp/nacos/cache",
+			LogLevel:            "debug",
 		}
 		client, err := clients.NewNamingClient(
 			vo.NacosClientParam{
