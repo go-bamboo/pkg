@@ -2,9 +2,11 @@ package registry
 
 import (
 	"errors"
+	"path/filepath"
+
 	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
-	"github.com/go-kratos/kratos/contrib/registry/kubernetes/v2"
+	kuberegistry "github.com/go-kratos/kratos/contrib/registry/kubernetes/v2"
 	"github.com/go-kratos/kratos/contrib/registry/nacos/v2"
 	kreg "github.com/go-kratos/kratos/v2/registry"
 	"github.com/hashicorp/consul/api"
@@ -16,7 +18,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"path/filepath"
 )
 
 func getClientSet() (*kubernetes.Clientset, error) {
