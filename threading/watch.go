@@ -8,8 +8,8 @@ import (
 	"github.com/go-bamboo/pkg/rescue"
 )
 
-// A Broadcast is used to run given number of workers to process jobs.
-type Broadcast struct {
+// A Watch is used to run given number of workers to process jobs.
+type Watch struct {
 	job     func(ctx context.Context, data interface{}) error
 	workers int
 	ch      chan interface{}
@@ -19,13 +19,13 @@ type Broadcast struct {
 	cf  context.CancelFunc
 }
 
-// NewBroadcast returns a Broadcast with given job and workers.
-func NewBroadcast(job func(ctx context.Context, data interface{}) error, workers int) *Broadcast {
+// NewWatch returns a Broadcast with given job and workers.
+func NewWatch(job func(ctx context.Context, data interface{}) error, workers int) *Watch {
 	ctx, cf := context.WithCancel(context.TODO())
-	return &Broadcast{
+	return &Watch{
 		job:     job,
 		workers: workers,
-		ch:      make(chan interface{}),
+		ch:      make(chan interface{}, 1),
 
 		ctx: ctx,
 		cf:  cf,
@@ -33,7 +33,7 @@ func NewBroadcast(job func(ctx context.Context, data interface{}) error, workers
 }
 
 // Start starts a Broadcast.
-func (b Broadcast) Start() error {
+func (b Watch) Start() error {
 	for i := 0; i < b.workers; i++ {
 		b.wg.Add(1)
 		go func() {
@@ -50,17 +50,17 @@ func (b Broadcast) Start() error {
 	return nil
 }
 
-func (b Broadcast) Send(data interface{}) {
+func (b Watch) Send(data interface{}) {
 	b.ch <- data
 }
 
-func (b Broadcast) Stop() error {
+func (b Watch) Stop() error {
 	b.cf()
 	b.wg.Wait()
 	return nil
 }
 
-func (b Broadcast) run(data interface{}) {
+func (b Watch) run(data interface{}) {
 	defer rescue.Recover(func() {
 		b.wg.Done()
 	})
