@@ -11,7 +11,6 @@ import (
 	"net/mail"
 	"net/url"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -32,30 +31,14 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
-	_ = sort.Sort
 )
 
 // Validate checks the field values on RabbitConf with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
+// proto definition for this message. If any rules are violated, an error is returned.
 func (m *RabbitConf) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on RabbitConf with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in RabbitConfMultiError, or
-// nil if none found.
-func (m *RabbitConf) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *RabbitConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
-
-	var errors []error
 
 	// no validation rules for Username
 
@@ -69,28 +52,8 @@ func (m *RabbitConf) validate(all bool) error {
 
 	// no validation rules for Address
 
-	if len(errors) > 0 {
-		return RabbitConfMultiError(errors)
-	}
-
 	return nil
 }
-
-// RabbitConfMultiError is an error wrapping multiple validation errors
-// returned by RabbitConf.ValidateAll() if the designated constraints aren't met.
-type RabbitConfMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m RabbitConfMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m RabbitConfMultiError) AllErrors() []error { return m }
 
 // RabbitConfValidationError is the validation error returned by
 // RabbitConf.Validate if the designated constraints aren't met.
@@ -147,53 +110,19 @@ var _ interface {
 } = RabbitConfValidationError{}
 
 // Validate checks the field values on ConsumerConf with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
 func (m *ConsumerConf) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ConsumerConf with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in ConsumerConfMultiError, or
-// nil if none found.
-func (m *ConsumerConf) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ConsumerConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
-
-	var errors []error
 
 	// no validation rules for Name
 
 	// no validation rules for Consumer
 
-	if len(errors) > 0 {
-		return ConsumerConfMultiError(errors)
-	}
-
 	return nil
 }
-
-// ConsumerConfMultiError is an error wrapping multiple validation errors
-// returned by ConsumerConf.ValidateAll() if the designated constraints aren't met.
-type ConsumerConfMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ConsumerConfMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ConsumerConfMultiError) AllErrors() []error { return m }
 
 // ConsumerConfValidationError is the validation error returned by
 // ConsumerConf.Validate if the designated constraints aren't met.
@@ -250,47 +179,14 @@ var _ interface {
 } = ConsumerConfValidationError{}
 
 // Validate checks the field values on ListenerConf with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
 func (m *ListenerConf) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ListenerConf with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in ListenerConfMultiError, or
-// nil if none found.
-func (m *ListenerConf) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ListenerConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetRabbit()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ListenerConfValidationError{
-					field:  "Rabbit",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ListenerConfValidationError{
-					field:  "Rabbit",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetRabbit()).(interface{ Validate() error }); ok {
+	if v, ok := interface{}(m.GetRabbit()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ListenerConfValidationError{
 				field:  "Rabbit",
@@ -303,26 +199,7 @@ func (m *ListenerConf) validate(all bool) error {
 	for idx, item := range m.GetQueues() {
 		_, _ = idx, item
 
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ListenerConfValidationError{
-						field:  fmt.Sprintf("Queues[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, ListenerConfValidationError{
-						field:  fmt.Sprintf("Queues[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return ListenerConfValidationError{
 					field:  fmt.Sprintf("Queues[%v]", idx),
@@ -334,28 +211,8 @@ func (m *ListenerConf) validate(all bool) error {
 
 	}
 
-	if len(errors) > 0 {
-		return ListenerConfMultiError(errors)
-	}
-
 	return nil
 }
-
-// ListenerConfMultiError is an error wrapping multiple validation errors
-// returned by ListenerConf.ValidateAll() if the designated constraints aren't met.
-type ListenerConfMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListenerConfMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListenerConfMultiError) AllErrors() []error { return m }
 
 // ListenerConfValidationError is the validation error returned by
 // ListenerConf.Validate if the designated constraints aren't met.
@@ -412,47 +269,14 @@ var _ interface {
 } = ListenerConfValidationError{}
 
 // Validate checks the field values on ProducerConf with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
 func (m *ProducerConf) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ProducerConf with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in ProducerConfMultiError, or
-// nil if none found.
-func (m *ProducerConf) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ProducerConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetRabbit()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ProducerConfValidationError{
-					field:  "Rabbit",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ProducerConfValidationError{
-					field:  "Rabbit",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetRabbit()).(interface{ Validate() error }); ok {
+	if v, ok := interface{}(m.GetRabbit()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ProducerConfValidationError{
 				field:  "Rabbit",
@@ -464,28 +288,8 @@ func (m *ProducerConf) validate(all bool) error {
 
 	// no validation rules for ContentType
 
-	if len(errors) > 0 {
-		return ProducerConfMultiError(errors)
-	}
-
 	return nil
 }
-
-// ProducerConfMultiError is an error wrapping multiple validation errors
-// returned by ProducerConf.ValidateAll() if the designated constraints aren't met.
-type ProducerConfMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ProducerConfMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ProducerConfMultiError) AllErrors() []error { return m }
 
 // ProducerConfValidationError is the validation error returned by
 // ProducerConf.Validate if the designated constraints aren't met.
@@ -542,53 +346,19 @@ var _ interface {
 } = ProducerConfValidationError{}
 
 // Validate checks the field values on ExchangeConf with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
 func (m *ExchangeConf) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ExchangeConf with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in ExchangeConfMultiError, or
-// nil if none found.
-func (m *ExchangeConf) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ExchangeConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
-
-	var errors []error
 
 	// no validation rules for Exchange
 
 	// no validation rules for Key
 
-	if len(errors) > 0 {
-		return ExchangeConfMultiError(errors)
-	}
-
 	return nil
 }
-
-// ExchangeConfMultiError is an error wrapping multiple validation errors
-// returned by ExchangeConf.ValidateAll() if the designated constraints aren't met.
-type ExchangeConfMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ExchangeConfMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ExchangeConfMultiError) AllErrors() []error { return m }
 
 // ExchangeConfValidationError is the validation error returned by
 // ExchangeConf.Validate if the designated constraints aren't met.
@@ -645,51 +415,16 @@ var _ interface {
 } = ExchangeConfValidationError{}
 
 // Validate checks the field values on QueueConf with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
+// proto definition for this message. If any rules are violated, an error is returned.
 func (m *QueueConf) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on QueueConf with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in QueueConfMultiError, or nil
-// if none found.
-func (m *QueueConf) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *QueueConf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	// no validation rules for Name
-
-	if len(errors) > 0 {
-		return QueueConfMultiError(errors)
-	}
 
 	return nil
 }
-
-// QueueConfMultiError is an error wrapping multiple validation errors returned
-// by QueueConf.ValidateAll() if the designated constraints aren't met.
-type QueueConfMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m QueueConfMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m QueueConfMultiError) AllErrors() []error { return m }
 
 // QueueConfValidationError is the validation error returned by
 // QueueConf.Validate if the designated constraints aren't met.

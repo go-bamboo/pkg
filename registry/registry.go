@@ -1,7 +1,9 @@
 package registry
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/contrib/registry/kubernetes/v2"
@@ -12,10 +14,12 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	etcdv3 "go.etcd.io/etcd/client/v3"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+	"os"
 	"path/filepath"
 )
 
@@ -62,6 +66,16 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 		if err != nil {
 			panic(err)
 		}
+		pod, err := cli.CoreV1().Pods(c.Kube.Namespace).List(context.TODO(), v1.ListOptions{
+			LabelSelector: fmt.Sprintf("app=%v", c.Kube.PodName),
+		})
+		if err != nil {
+			panic(err)
+		}
+		if len(pod.Items) < 1 {
+			panic("fetch resource error")
+		}
+		os.Setenv("HOSTNAME", pod.Items[0].Name)
 		r := kuberegistry.NewRegistry(cli)
 		return r, r
 	} else if c.Nacos.Enable {
