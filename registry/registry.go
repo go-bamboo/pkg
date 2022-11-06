@@ -71,7 +71,7 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 		}
 		cc := constant.ClientConfig{
 			NamespaceId: c.Nacos.Namespace,
-			TimeoutMs:   5000,
+			TimeoutMs:   60000,
 		}
 		client, err := clients.NewNamingClient(
 			vo.NacosClientParam{
