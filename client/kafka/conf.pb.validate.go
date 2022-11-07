@@ -11,6 +11,7 @@ import (
 	"net/mail"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -31,16 +32,50 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
+	_ = sort.Sort
 )
 
 // Validate checks the field values on Net with the rules defined in the proto
-// definition for this message. If any rules are violated, an error is returned.
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
 func (m *Net) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Net with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in NetMultiError, or nil if none found.
+func (m *Net) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Net) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	if v, ok := interface{}(m.GetSasl()).(interface{ Validate() error }); ok {
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetSasl()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NetValidationError{
+					field:  "Sasl",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NetValidationError{
+					field:  "Sasl",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSasl()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return NetValidationError{
 				field:  "Sasl",
@@ -50,7 +85,26 @@ func (m *Net) Validate() error {
 		}
 	}
 
-	if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NetValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NetValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return NetValidationError{
 				field:  "Tls",
@@ -60,8 +114,28 @@ func (m *Net) Validate() error {
 		}
 	}
 
+	if len(errors) > 0 {
+		return NetMultiError(errors)
+	}
+
 	return nil
 }
+
+// NetMultiError is an error wrapping multiple validation errors returned by
+// Net.ValidateAll() if the designated constraints aren't met.
+type NetMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NetMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NetMultiError) AllErrors() []error { return m }
 
 // NetValidationError is the validation error returned by Net.Validate if the
 // designated constraints aren't met.
@@ -118,13 +192,46 @@ var _ interface {
 } = NetValidationError{}
 
 // Validate checks the field values on Conf with the rules defined in the proto
-// definition for this message. If any rules are violated, an error is returned.
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
 func (m *Conf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Conf with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ConfMultiError, or nil if none found.
+func (m *Conf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Conf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
-	if v, ok := interface{}(m.GetNet()).(interface{ Validate() error }); ok {
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetNet()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Net",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Net",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetNet()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Net",
@@ -140,7 +247,26 @@ func (m *Conf) Validate() error {
 
 	// no validation rules for Offset
 
-	if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetReadTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "ReadTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "ReadTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "ReadTimeout",
@@ -150,7 +276,26 @@ func (m *Conf) Validate() error {
 		}
 	}
 
-	if v, ok := interface{}(m.GetWriteTimeout()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetWriteTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "WriteTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "WriteTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetWriteTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "WriteTimeout",
@@ -162,8 +307,28 @@ func (m *Conf) Validate() error {
 
 	// no validation rules for Acks
 
+	if len(errors) > 0 {
+		return ConfMultiError(errors)
+	}
+
 	return nil
 }
+
+// ConfMultiError is an error wrapping multiple validation errors returned by
+// Conf.ValidateAll() if the designated constraints aren't met.
+type ConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ConfMultiError) AllErrors() []error { return m }
 
 // ConfValidationError is the validation error returned by Conf.Validate if the
 // designated constraints aren't met.
@@ -220,11 +385,26 @@ var _ interface {
 } = ConfValidationError{}
 
 // Validate checks the field values on Net_SASL with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *Net_SASL) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Net_SASL with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in Net_SASLMultiError, or nil
+// if none found.
+func (m *Net_SASL) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Net_SASL) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for Enable
 
@@ -232,8 +412,28 @@ func (m *Net_SASL) Validate() error {
 
 	// no validation rules for Password
 
+	if len(errors) > 0 {
+		return Net_SASLMultiError(errors)
+	}
+
 	return nil
 }
+
+// Net_SASLMultiError is an error wrapping multiple validation errors returned
+// by Net_SASL.ValidateAll() if the designated constraints aren't met.
+type Net_SASLMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Net_SASLMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Net_SASLMultiError) AllErrors() []error { return m }
 
 // Net_SASLValidationError is the validation error returned by
 // Net_SASL.Validate if the designated constraints aren't met.
@@ -290,11 +490,25 @@ var _ interface {
 } = Net_SASLValidationError{}
 
 // Validate checks the field values on Net_TLS with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *Net_TLS) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Net_TLS with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in Net_TLSMultiError, or nil if none found.
+func (m *Net_TLS) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Net_TLS) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for Enable
 
@@ -308,8 +522,28 @@ func (m *Net_TLS) Validate() error {
 
 	// no validation rules for Key
 
+	if len(errors) > 0 {
+		return Net_TLSMultiError(errors)
+	}
+
 	return nil
 }
+
+// Net_TLSMultiError is an error wrapping multiple validation errors returned
+// by Net_TLS.ValidateAll() if the designated constraints aren't met.
+type Net_TLSMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Net_TLSMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Net_TLSMultiError) AllErrors() []error { return m }
 
 // Net_TLSValidationError is the validation error returned by Net_TLS.Validate
 // if the designated constraints aren't met.

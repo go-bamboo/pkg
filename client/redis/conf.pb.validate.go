@@ -11,6 +11,7 @@ import (
 	"net/mail"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -31,19 +32,54 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
+	_ = sort.Sort
 )
 
 // Validate checks the field values on Tls with the rules defined in the proto
-// definition for this message. If any rules are violated, an error is returned.
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
 func (m *Tls) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Tls with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in TlsMultiError, or nil if none found.
+func (m *Tls) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Tls) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
+	var errors []error
+
 	// no validation rules for InsecureSkipVerify
+
+	if len(errors) > 0 {
+		return TlsMultiError(errors)
+	}
 
 	return nil
 }
+
+// TlsMultiError is an error wrapping multiple validation errors returned by
+// Tls.ValidateAll() if the designated constraints aren't met.
+type TlsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m TlsMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m TlsMultiError) AllErrors() []error { return m }
 
 // TlsValidationError is the validation error returned by Tls.Validate if the
 // designated constraints aren't met.
@@ -100,17 +136,50 @@ var _ interface {
 } = TlsValidationError{}
 
 // Validate checks the field values on Conf with the rules defined in the proto
-// definition for this message. If any rules are violated, an error is returned.
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
 func (m *Conf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Conf with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ConfMultiError, or nil if none found.
+func (m *Conf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Conf) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for Network
 
 	// no validation rules for Addr
 
-	if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetReadTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "ReadTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "ReadTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "ReadTimeout",
@@ -120,7 +189,26 @@ func (m *Conf) Validate() error {
 		}
 	}
 
-	if v, ok := interface{}(m.GetWriteTimeout()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetWriteTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "WriteTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "WriteTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetWriteTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "WriteTimeout",
@@ -130,7 +218,26 @@ func (m *Conf) Validate() error {
 		}
 	}
 
-	if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetDialTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "DialTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "DialTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "DialTimeout",
@@ -140,7 +247,26 @@ func (m *Conf) Validate() error {
 		}
 	}
 
-	if v, ok := interface{}(m.GetExpireTimeout()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetExpireTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "ExpireTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "ExpireTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetExpireTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "ExpireTimeout",
@@ -156,7 +282,26 @@ func (m *Conf) Validate() error {
 
 	// no validation rules for Db
 
-	if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Tls",
@@ -166,8 +311,28 @@ func (m *Conf) Validate() error {
 		}
 	}
 
+	if len(errors) > 0 {
+		return ConfMultiError(errors)
+	}
+
 	return nil
 }
+
+// ConfMultiError is an error wrapping multiple validation errors returned by
+// Conf.ValidateAll() if the designated constraints aren't met.
+type ConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ConfMultiError) AllErrors() []error { return m }
 
 // ConfValidationError is the validation error returned by Conf.Validate if the
 // designated constraints aren't met.

@@ -11,6 +11,7 @@ import (
 	"net/mail"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -31,32 +32,76 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
+	_ = sort.Sort
 )
 
 // Validate checks the field values on CheckResourceRequest with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned.
+// violated, the first error encountered is returned, or nil if there are no violations.
 func (m *CheckResourceRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CheckResourceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CheckResourceRequestMultiError, or nil if none found.
+func (m *CheckResourceRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CheckResourceRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
+	var errors []error
+
 	if utf8.RuneCountInString(m.GetPath()) < 2 {
-		return CheckResourceRequestValidationError{
+		err := CheckResourceRequestValidationError{
 			field:  "Path",
 			reason: "value length must be at least 2 runes",
 		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	if utf8.RuneCountInString(m.GetMethod()) < 2 {
-		return CheckResourceRequestValidationError{
+		err := CheckResourceRequestValidationError{
 			field:  "Method",
 			reason: "value length must be at least 2 runes",
 		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return CheckResourceRequestMultiError(errors)
 	}
 
 	return nil
 }
+
+// CheckResourceRequestMultiError is an error wrapping multiple validation
+// errors returned by CheckResourceRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CheckResourceRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CheckResourceRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CheckResourceRequestMultiError) AllErrors() []error { return m }
 
 // CheckResourceRequestValidationError is the validation error returned by
 // CheckResourceRequest.Validate if the designated constraints aren't met.
@@ -116,16 +161,51 @@ var _ interface {
 
 // Validate checks the field values on CheckResourceReply with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned.
+// violated, the first error encountered is returned, or nil if there are no violations.
 func (m *CheckResourceReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CheckResourceReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CheckResourceReplyMultiError, or nil if none found.
+func (m *CheckResourceReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CheckResourceReply) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
+	var errors []error
+
 	// no validation rules for Ok
+
+	if len(errors) > 0 {
+		return CheckResourceReplyMultiError(errors)
+	}
 
 	return nil
 }
+
+// CheckResourceReplyMultiError is an error wrapping multiple validation errors
+// returned by CheckResourceReply.ValidateAll() if the designated constraints
+// aren't met.
+type CheckResourceReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CheckResourceReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CheckResourceReplyMultiError) AllErrors() []error { return m }
 
 // CheckResourceReplyValidationError is the validation error returned by
 // CheckResourceReply.Validate if the designated constraints aren't met.
@@ -184,22 +264,60 @@ var _ interface {
 } = CheckResourceReplyValidationError{}
 
 // Validate checks the field values on AuthRequest with the rules defined in
-// the proto definition for this message. If any rules are violated, an error
-// is returned.
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *AuthRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AuthRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AuthRequestMultiError, or
+// nil if none found.
+func (m *AuthRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AuthRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
+	var errors []error
+
 	if utf8.RuneCountInString(m.GetAccessToken()) < 1 {
-		return AuthRequestValidationError{
+		err := AuthRequestValidationError{
 			field:  "AccessToken",
 			reason: "value length must be at least 1 runes",
 		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return AuthRequestMultiError(errors)
 	}
 
 	return nil
 }
+
+// AuthRequestMultiError is an error wrapping multiple validation errors
+// returned by AuthRequest.ValidateAll() if the designated constraints aren't met.
+type AuthRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AuthRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AuthRequestMultiError) AllErrors() []error { return m }
 
 // AuthRequestValidationError is the validation error returned by
 // AuthRequest.Validate if the designated constraints aren't met.
@@ -256,11 +374,26 @@ var _ interface {
 } = AuthRequestValidationError{}
 
 // Validate checks the field values on AuthResp with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is returned.
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
 func (m *AuthResp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AuthResp with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AuthRespMultiError, or nil
+// if none found.
+func (m *AuthResp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AuthResp) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for DataScope
 
@@ -270,8 +403,28 @@ func (m *AuthResp) Validate() error {
 
 	// no validation rules for RoleKey
 
+	if len(errors) > 0 {
+		return AuthRespMultiError(errors)
+	}
+
 	return nil
 }
+
+// AuthRespMultiError is an error wrapping multiple validation errors returned
+// by AuthResp.ValidateAll() if the designated constraints aren't met.
+type AuthRespMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AuthRespMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AuthRespMultiError) AllErrors() []error { return m }
 
 // AuthRespValidationError is the validation error returned by
 // AuthResp.Validate if the designated constraints aren't met.
@@ -329,18 +482,53 @@ var _ interface {
 
 // Validate checks the field values on CheckRoleLevelRequest with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned.
+// violated, the first error encountered is returned, or nil if there are no violations.
 func (m *CheckRoleLevelRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CheckRoleLevelRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CheckRoleLevelRequestMultiError, or nil if none found.
+func (m *CheckRoleLevelRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CheckRoleLevelRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
+
+	var errors []error
 
 	// no validation rules for RoleId
 
 	// no validation rules for Target
 
+	if len(errors) > 0 {
+		return CheckRoleLevelRequestMultiError(errors)
+	}
+
 	return nil
 }
+
+// CheckRoleLevelRequestMultiError is an error wrapping multiple validation
+// errors returned by CheckRoleLevelRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CheckRoleLevelRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CheckRoleLevelRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CheckRoleLevelRequestMultiError) AllErrors() []error { return m }
 
 // CheckRoleLevelRequestValidationError is the validation error returned by
 // CheckRoleLevelRequest.Validate if the designated constraints aren't met.
@@ -400,14 +588,49 @@ var _ interface {
 
 // Validate checks the field values on CheckRoleLevelReply with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned.
+// violated, the first error encountered is returned, or nil if there are no violations.
 func (m *CheckRoleLevelReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CheckRoleLevelReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CheckRoleLevelReplyMultiError, or nil if none found.
+func (m *CheckRoleLevelReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CheckRoleLevelReply) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
+	var errors []error
+
+	if len(errors) > 0 {
+		return CheckRoleLevelReplyMultiError(errors)
+	}
+
 	return nil
 }
+
+// CheckRoleLevelReplyMultiError is an error wrapping multiple validation
+// errors returned by CheckRoleLevelReply.ValidateAll() if the designated
+// constraints aren't met.
+type CheckRoleLevelReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CheckRoleLevelReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CheckRoleLevelReplyMultiError) AllErrors() []error { return m }
 
 // CheckRoleLevelReplyValidationError is the validation error returned by
 // CheckRoleLevelReply.Validate if the designated constraints aren't met.
