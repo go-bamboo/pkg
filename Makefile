@@ -21,6 +21,9 @@ install:
 	go install github.com/go-kratos/kratos/cmd/kratos/v2@v2.0.0-20221102101533-2a65502be27b
 	go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2@v2.0.0-20221102101533-2a65502be27b
 	go install github.com/go-kratos/kratos/cmd/protoc-gen-go-errors/v2@v2.0.0-20221102101533-2a65502be27b
+	go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
+	go install github.com/google/gnostic@latest
+	go install github.com/googleapis/gnostic-go-generator@latest
 
 
 .PHONY: upgrade
@@ -39,7 +42,7 @@ protoapi:
 		   --go-http_out=paths=source_relative:. \
 		   --go-errors_out=paths=source_relative:. \
 		   --validate_out=lang=go,paths=source_relative:. \
-		   --openapiv2_out=. \
+		   --openapi_out=. \
 		   ./api/status/status.proto \
 		   ./api/sys/sys.proto
 
@@ -63,6 +66,14 @@ proto:
            ./rest/conf.proto \
            ./store/mongox/conf.proto \
            ./store/gormx/conf.proto
+
+.PHONY: swift
+swift:
+	gnostic openapi.yaml --swift-generator-out=client
+
+.PHONY: gengo
+gengo:
+	gnostic openapi.yaml --plugin-request-out=.
 
 .PHONY: build
 build:
