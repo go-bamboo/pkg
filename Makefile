@@ -24,6 +24,7 @@ install:
 	go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 	go install github.com/google/gnostic@latest
 	go install github.com/googleapis/gnostic-go-generator@latest
+	go install github.com/google/wire/cmd/wire@latest
 
 
 .PHONY: upgrade
