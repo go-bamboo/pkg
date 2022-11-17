@@ -1,0 +1,23 @@
+syntax = "proto3";
+package client.rocketmq;
+
+option go_package = "github.com/go-bamboo/pkg/client/rocketmq;rocketmq";
+
+import "google/protobuf/duration.proto";
+import "validate/validate.proto";
+
+message Topic {
+  string topic = 1 [(validate.rules).string = {min_len: 1}];
+  string expression = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message Conf {
+  string addr = 1 [(validate.rules).string = {min_len: 1}];
+  string access_key = 2;
+  string secret_key = 3;
+  string channel = 4;
+  string groupId = 5;
+  repeated Topic topics = 6;
+  bool broadcast = 7;
+  string namespace = 8;
+}

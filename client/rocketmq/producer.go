@@ -1,0 +1,91 @@
+package rocketmq
+
+import (
+	"context"
+	"fmt"
+
+	v2 "github.com/apache/rocketmq-client-go/v2"
+	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/apache/rocketmq-client-go/v2/producer"
+	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/queue"
+	"github.com/go-bamboo/pkg/tracing"
+	"github.com/go-kratos/kratos/v2/metrics"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
+)
+
+// rocketProducer 生产者
+type rocketProducer struct {
+	producer   v2.Producer
+	tracer     trace.Tracer
+	propagator propagation.TextMapPropagator
+	pubCounter metrics.Counter // 发送次数
+	// topic      string
+}
+
+func MustNewPusher(c *Conf) queue.Pusher {
+	pub, err := NewPusher(c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return pub
+}
+
+func NewPusher(config *Conf) (queue.Pusher, error) {
+	pd, err := v2.NewProducer(
+		producer.WithGroupName(config.GroupId),
+		producer.WithNameServer([]string{config.Addr}),
+		producer.WithRetry(3),
+		producer.WithCredentials(primitive.Credentials{
+			AccessKey: config.AccessKey,
+			SecretKey: config.SecretKey,
+		}),
+		producer.WithNamespace(config.Namespace),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("create new pd err:%s", err)
+	}
+	if err := pd.Start(); err != nil {
+		return nil, err
+	}
+	tracingPub := &rocketProducer{
+		producer:   pd,
+		tracer:     otel.Tracer("roketmq"),
+		propagator: propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
+		// topic:      c.Topic,
+	}
+	return tracingPub, nil
+}
+
+func (p *rocketProducer) Name() string {
+	return "rocketmq"
+}
+
+func (p *rocketProducer) Push(ctx context.Context, topic string, key, value []byte) error {
+	msg := primitive.NewMessage(topic, value)
+	msg.WithTag("")
+	msg.WithKeys([]string{string(key)})
+
+	operation := "pub:" + topic
+	ctx, span := p.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindProducer))
+	p.propagator.Inject(ctx, &MessageTextMapCarrier{msg: msg})
+	span.SetAttributes(
+		attribute.String("kafka.topic", topic),
+		attribute.String("kafka.key", string(key)),
+	)
+	sendResult, err := p.producer.SendSync(ctx, msg)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	log.Debugf("Delivered message to topic %s [%v] at offset %v", topic, sendResult.RegionID, sendResult.OffsetMsgID)
+	return nil
+}
+
+func (p *rocketProducer) Close() error {
+	p.producer.Shutdown()
+	return nil
+}
