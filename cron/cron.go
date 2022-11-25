@@ -2,6 +2,7 @@ package cron
 
 import (
 	"context"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/rescue"
@@ -19,6 +20,7 @@ type (
 	Cron struct {
 		cr    *cron.Cron
 		specs []Pair
+		level zapcore.Level
 	}
 
 	Option func(alc *Cron)
@@ -34,19 +36,25 @@ func WithSpec(spec string, handler ConsumeHandle) Option {
 	}
 }
 
+func WithLogLevel(lvl zapcore.Level) Option {
+	return func(alc *Cron) {
+		alc.level = lvl
+	}
+}
+
 // New 新cron
 func New(options ...Option) (d *Cron) {
-	stdLogger := log.NewZapLoggerEx(log.GetCore())
-	cr := cron.New(
-		cron.WithSeconds(),
-		cron.WithLogger(stdLogger),
-	)
 	s := &Cron{
-		cr: cr,
+		level: zapcore.DebugLevel,
 	}
 	for _, o := range options {
 		o(s)
 	}
+	stdLogger := NewLogger(log.GetCore(), s.level)
+	cr := cron.New(
+		cron.WithSeconds(),
+		cron.WithLogger(stdLogger),
+	)
 	for _, spec := range s.specs {
 		cr.AddFunc(spec.spec, func() {
 			defer rescue.Recover()
@@ -55,18 +63,19 @@ func New(options ...Option) (d *Cron) {
 			}
 		})
 	}
+	s.cr = cr
 	d = s
 	return
 }
 
-func (s *Cron) Start() error {
-	s.cr.Start()
+func (c *Cron) Start() error {
+	c.cr.Start()
 	log.Infof("[cron] cron start")
 	return nil
 }
 
-func (s *Cron) Stop() error {
-	s.cr.Stop()
+func (c *Cron) Stop() error {
+	c.cr.Stop()
 	log.Infof("[cron] cron stop")
 	return nil
 }
