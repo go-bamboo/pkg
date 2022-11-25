@@ -2,6 +2,7 @@ package redis
 
 import (
 	"crypto/tls"
+	"github.com/go-bamboo/pkg/log"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -37,7 +38,10 @@ func New(c *Conf) *Client {
 		opts.TLSConfig = &tls.Config{InsecureSkipVerify: c.Tls.InsecureSkipVerify}
 	}
 	rdb := redis.NewClient(opts)
-	rdb.AddHook(NewRedisTracingHook())
+	rdb.AddHook(NewRedisTracingHook(c.Debug))
+	if c.Debug {
+		redis.SetLogger(NewLogger(log.GetCore()))
+	}
 	return &Client{
 		Client: *rdb,
 	}

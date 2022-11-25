@@ -311,6 +311,8 @@ func (m *Conf) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for Debug
+
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
 	}

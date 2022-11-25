@@ -20,4 +20,5 @@ message Conf {
   string password = 8;
   int32 db = 9;
   Tls tls = 10;
+  bool debug = 11;
 }

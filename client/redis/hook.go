@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/tracing"
 	"github.com/go-redis/redis/extra/rediscmd/v8"
 	"github.com/go-redis/redis/v8"
@@ -16,14 +17,16 @@ import (
 type tracingHook struct {
 	tracer     trace.Tracer
 	propagator propagation.TextMapPropagator
+	debug      bool
 }
 
 var _ redis.Hook = (*tracingHook)(nil)
 
-func NewRedisTracingHook() *tracingHook {
+func NewRedisTracingHook(debug bool) *tracingHook {
 	return &tracingHook{
 		tracer:     otel.Tracer("redis"),
 		propagator: propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
+		debug:      debug,
 	}
 }
 
@@ -36,6 +39,9 @@ func (h *tracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (conte
 		attribute.String("db.statement", rediscmd.CmdString(cmd)),
 	)
 	ctx = NewSpanContext(ctx, span)
+	if h.debug {
+		log.Debugw("redis hook", "operation", operation, "db.system", "redis", "db.statement", rediscmd.CmdString(cmd))
+	}
 	return ctx, nil
 }
 
@@ -48,9 +54,13 @@ func (h *tracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 	if err = cmd.Err(); err != nil {
 		recordError(ctx, span, err)
 		cmd.SetErr(wrapRedisError(err))
+		if h.debug {
+			log.Debugw("redis hook", "err", err)
+		}
 	} else {
 		span.SetAttributes(attribute.Key("redis.name").String(cmd.Name()))
 	}
+
 	return nil
 }
 
@@ -65,6 +75,9 @@ func (h *tracingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cm
 		attribute.String("db.statement", cmdsString),
 	)
 	ctx = NewSpanContext(ctx, span)
+	if h.debug {
+		log.Debugw("redis hook", "operation", operation, "db.system", "redis", "db.statement", cmdsString)
+	}
 	return ctx, nil
 }
 
@@ -78,6 +91,9 @@ func (h *tracingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmd
 		if err = cmd.Err(); err != nil {
 			recordError(ctx, span, err)
 			cmd.SetErr(wrapRedisError(err))
+			if h.debug {
+				log.Debugw("redis hook", "err", err)
+			}
 		} else {
 			span.SetAttributes(attribute.Key("redis.name").String(cmd.Name()))
 		}
