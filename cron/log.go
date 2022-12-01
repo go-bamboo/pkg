@@ -20,7 +20,7 @@ func NewLogger(core zapcore.Core, lvl zapcore.Level) *Logger {
 
 	// 开启开发模式，堆栈跟踪
 	caller := zap.AddCaller()
-	skip := zap.AddCallerSkip(2)
+	skip := zap.AddCallerSkip(1)
 
 	// 构造日志
 	logger := zap.New(core, caller, skip, zap.IncreaseLevel(rlog))
