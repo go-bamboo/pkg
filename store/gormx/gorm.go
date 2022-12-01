@@ -3,6 +3,7 @@ package gormx
 import (
 	"github.com/go-bamboo/pkg/log"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	gormlog "gorm.io/gorm/logger"
 )
@@ -18,7 +19,13 @@ func MustNew(c *Conf) *DB {
 }
 
 func New(c *Conf) (*DB, error) {
-	dialector := mysql.Open(c.Source)
+	var dialector gorm.Dialector
+	if c.Driver == "mysql" {
+		dialector = mysql.Open(c.Source)
+	}
+	if c.Driver == "sqlite" {
+		dialector = sqlite.Open(c.Source)
+	}
 	gormlogConfig := gormlog.Config{Colorful: true, LogLevel: gormlog.LogLevel(c.LogLevel)}
 	core := log.GetCore()
 	db, err := gorm.Open(dialector, &gorm.Config{
