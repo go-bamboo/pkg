@@ -3,12 +3,12 @@ package rest
 import (
 	_ "net/http/pprof"
 
+	"github.com/felixge/fgprof"
 	"github.com/go-bamboo/pkg/api/status"
 	"github.com/go-bamboo/pkg/middleware/logging"
 	"github.com/go-bamboo/pkg/middleware/metadata"
 	"github.com/go-bamboo/pkg/middleware/metrics/prometheus"
 	"github.com/go-bamboo/pkg/tracing"
-	"github.com/felixge/fgprof"
 	"github.com/go-kratos/aegis/ratelimit/bbr"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
@@ -47,7 +47,6 @@ func NewServer(c *Conf, opts ...Option) *Server {
 	defaultOpts := &options{
 		middlewareChain: []middleware.Middleware{
 			recovery.Recovery(),
-			ratelimit.Server(ratelimit.WithLimiter(limiter)),
 			metadata.Server(),
 			tracing.Server(
 				tracing.WithPropagator(
@@ -56,6 +55,8 @@ func NewServer(c *Conf, opts ...Option) *Server {
 			),
 			prometheus.Server(),
 			logging.Server(),
+			ratelimit.Server(ratelimit.WithLimiter(limiter)),
+			validate.Validator(),
 		},
 	}
 	for _, o := range opts {

@@ -27,7 +27,6 @@ func NewServer(c *Conf) *Server {
 		grpc.Middleware(
 			middleware.Chain(
 				recovery.Recovery(),
-				ratelimit.Server(ratelimit.WithLimiter(limiter)),
 				metadata.Server(),
 				tracing.Server(
 					tracing.WithPropagator(
@@ -36,7 +35,7 @@ func NewServer(c *Conf) *Server {
 				),
 				prometheus.Server(),
 				logging.Server(),
-				ratelimit.Server(),
+				ratelimit.Server(ratelimit.WithLimiter(limiter)),
 				validate.Validator(),
 			),
 		),
