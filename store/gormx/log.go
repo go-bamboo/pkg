@@ -31,6 +31,7 @@ const (
 type Logger struct {
 	logger  *zap.Logger
 	slogger *zap.SugaredLogger
+	level   zapcore.Level
 
 	// grom
 	c                                   logger.Config
@@ -79,6 +80,13 @@ func NewLogger(config logger.Config, core zapcore.Core) *Logger {
 		traceErrStr:  traceErrStr,
 	}
 	return l
+}
+
+func (l Logger) Enabled(lvl zapcore.Level) bool {
+	if lvl >= l.level {
+		return true
+	}
+	return false
 }
 
 // LogMode log mode
