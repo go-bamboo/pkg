@@ -9,62 +9,51 @@ import (
 )
 
 // A Watch is used to run given number of workers to process jobs.
-type Watch struct {
-	job     func(ctx context.Context, data interface{}) error
+type Watch[T any] struct {
+	job     func(ctx context.Context, data T) error
 	workers int
-	ch      chan interface{}
+	ch      chan T
 
-	wg  sync.WaitGroup
-	ctx context.Context
-	cf  context.CancelFunc
+	wg sync.WaitGroup
 }
 
-// NewWatch returns a Broadcast with given job and workers.
-func NewWatch(job func(ctx context.Context, data interface{}) error, workers int) *Watch {
-	ctx, cf := context.WithCancel(context.TODO())
-	return &Watch{
+// NewWatch returns a Watch with given job and workers.
+func NewWatch[T any](job func(ctx context.Context, data T) error, workers int) *Watch[T] {
+	return &Watch[T]{
 		job:     job,
 		workers: workers,
-		ch:      make(chan interface{}, 1),
-
-		ctx: ctx,
-		cf:  cf,
+		ch:      make(chan T, 1),
 	}
 }
 
 // Start starts a Broadcast.
-func (b Watch) Start() error {
+func (b Watch[T]) Start() error {
 	for i := 0; i < b.workers; i++ {
 		b.wg.Add(1)
 		go func() {
-			for {
-				select {
-				case <-b.ctx.Done():
-					return
-				case data := <-b.ch:
-					b.run(data)
-				}
+			for ch := range b.ch {
+				b.run(ch)
 			}
 		}()
 	}
 	return nil
 }
 
-func (b Watch) Send(data interface{}) {
+func (b Watch[T]) Send(data T) {
 	b.ch <- data
 }
 
-func (b Watch) Stop() error {
-	b.cf()
+func (b Watch[T]) Stop() error {
+	close(b.ch)
 	b.wg.Wait()
 	return nil
 }
 
-func (b Watch) run(data interface{}) {
+func (b Watch[T]) run(data T) {
 	defer rescue.Recover(func() {
 		b.wg.Done()
 	})
-	if err := b.job(b.ctx, data); err != nil {
+	if err := b.job(context.Background(), data); err != nil {
 		log.ErrorStack(err)
 	}
 }

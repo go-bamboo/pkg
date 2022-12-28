@@ -9,10 +9,10 @@ import (
 )
 
 // A Broadcast is used to run given number of workers to process jobs.
-type Broadcast struct {
-	job     func(ctx context.Context, data interface{}) error
+type Broadcast[T any] struct {
+	job     func(ctx context.Context, data T) error
 	workers int
-	ch      chan interface{}
+	ch      chan T
 
 	wg  sync.WaitGroup
 	ctx context.Context
@@ -20,12 +20,12 @@ type Broadcast struct {
 }
 
 // NewBroadcast returns a Broadcast with given job and workers.
-func NewBroadcast(job func(ctx context.Context, data interface{}) error, workers int) *Broadcast {
+func NewBroadcast[T any](job func(ctx context.Context, data T) error, workers int) *Broadcast[T] {
 	ctx, cf := context.WithCancel(context.TODO())
-	return &Broadcast{
+	return &Broadcast[T]{
 		job:     job,
 		workers: workers,
-		ch:      make(chan interface{}),
+		ch:      make(chan T),
 
 		ctx: ctx,
 		cf:  cf,
@@ -33,7 +33,7 @@ func NewBroadcast(job func(ctx context.Context, data interface{}) error, workers
 }
 
 // Start starts a Broadcast.
-func (b Broadcast) Start() error {
+func (b Broadcast[T]) Start() error {
 	for i := 0; i < b.workers; i++ {
 		b.wg.Add(1)
 		go func() {
@@ -50,17 +50,17 @@ func (b Broadcast) Start() error {
 	return nil
 }
 
-func (b Broadcast) Send(data interface{}) {
+func (b Broadcast[T]) Send(data T) {
 	b.ch <- data
 }
 
-func (b Broadcast) Stop() error {
+func (b Broadcast[T]) Stop() error {
 	b.cf()
 	b.wg.Wait()
 	return nil
 }
 
-func (b Broadcast) run(data interface{}) {
+func (b Broadcast[T]) run(data T) {
 	defer rescue.Recover(func() {
 		b.wg.Done()
 	})
