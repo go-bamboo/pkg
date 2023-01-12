@@ -350,6 +350,118 @@ var _ interface {
 	ErrorName() string
 } = FluentConfValidationError{}
 
+// Validate checks the field values on CloudWatchConf with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *CloudWatchConf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudWatchConf with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in CloudWatchConfMultiError,
+// or nil if none found.
+func (m *CloudWatchConf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudWatchConf) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enable
+
+	// no validation rules for Level
+
+	// no validation rules for Key
+
+	// no validation rules for Secret
+
+	// no validation rules for Region
+
+	// no validation rules for Profile
+
+	if len(errors) > 0 {
+		return CloudWatchConfMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudWatchConfMultiError is an error wrapping multiple validation errors
+// returned by CloudWatchConf.ValidateAll() if the designated constraints
+// aren't met.
+type CloudWatchConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudWatchConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudWatchConfMultiError) AllErrors() []error { return m }
+
+// CloudWatchConfValidationError is the validation error returned by
+// CloudWatchConf.Validate if the designated constraints aren't met.
+type CloudWatchConfValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudWatchConfValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudWatchConfValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudWatchConfValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudWatchConfValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudWatchConfValidationError) ErrorName() string { return "CloudWatchConfValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CloudWatchConfValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudWatchConf.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudWatchConfValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudWatchConfValidationError{}
+
 // Validate checks the field values on Conf with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
 // encountered is returned, or nil if there are no violations.
@@ -452,6 +564,35 @@ func (m *Conf) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
 				field:  "Fluent",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetCloudWatch()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "CloudWatch",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "CloudWatch",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCloudWatch()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConfValidationError{
+				field:  "CloudWatch",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

@@ -65,7 +65,7 @@ func WithAccessSecret(as string) Option {
 
 type Option func(alc *options)
 
-// NewAliyunLog new a aliyun logger with options.
+// NewAliyunCore new a aliyun logger with options.
 func NewAliyunCore(options ...Option) core.Logger {
 	opts := defaultOptions()
 	for _, o := range options {

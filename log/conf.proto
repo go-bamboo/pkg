@@ -21,8 +21,18 @@ message FluentConf {
   string addr = 3;
 }
 
+message CloudWatchConf {
+  bool enable = 1;
+  int32 level = 2;
+  string key = 3;
+  string secret = 4;
+  string region = 5;
+  string profile = 6;
+}
+
 message Conf {
   StdoutConf console = 1;
   FileConf file = 2;
   FluentConf fluent = 3;
+  CloudWatchConf cloudWatch = 4;
 }
