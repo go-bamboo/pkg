@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"sync"
 	"time"
@@ -119,6 +118,7 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 	if err = logger.checkLogGroup(context.TODO()); err != nil {
 		return nil, err
 	}
+	logger.putLogs(context.TODO(), nil)
 	logger.wg.Add(1)
 	go func() {
 		defer func() {
@@ -126,9 +126,9 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 		}()
 		for event := range logger.queue {
 			fmt.Printf("%v\n", *event.Message)
-			if err := logger.putLogs(context.TODO(), event); err != nil {
-				log.Fatalf("failed to send logs to CloudWatch: %v", err)
-			}
+			//if err := logger.putLogs(context.TODO(), event); err != nil {
+			//	log.Fatalf("failed to send logs to CloudWatch: %v", err)
+			//}
 		}
 	}()
 	return logger, nil
@@ -184,7 +184,7 @@ func (c *cloudWatchCore) Write(ent zapcore.Entry, fields []zapcore.Field) error 
 	ev := new(types.InputLogEvent)
 	ev.Message = aws.String(string(msg))
 	ev.Timestamp = aws.Int64(time.Now().Unix())
-	c.putLogs(context.TODO(), ev)
+	//c.putLogs(context.TODO(), ev)
 	//c.queue <- ev
 	return nil
 }
@@ -261,10 +261,11 @@ func (c *cloudWatchCore) putLogs(ctx context.Context, ev *types.InputLogEvent) e
 		LogStreamName: aws.String(time.Now().Format("2006-01-02")),
 		SequenceToken: c.nextSequenceToken,
 	}
-	fmt.Printf("%v\n", input)
+	fmt.Printf("1==>LogGroupName: %v\n", *input.LogGroupName)
+	fmt.Printf("1==>LogStreamName: %v\n", *input.LogStreamName)
 	output, err := c.c.PutLogEvents(ctx, input)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("--------------->%v\n", err)
 		var dataAlreadyAccepted *types.DataAlreadyAcceptedException
 		var invalidSequenceToken *types.InvalidSequenceTokenException
 		if errors.As(err, &dataAlreadyAccepted) {
@@ -283,7 +284,17 @@ func (c *cloudWatchCore) putLogs(ctx context.Context, ev *types.InputLogEvent) e
 		return err
 	}
 	c.nextSequenceToken = output.NextSequenceToken
-	fmt.Printf("----------------------%v\n", output)
+	if output != nil && output.RejectedLogEventsInfo != nil {
+		if output.RejectedLogEventsInfo.ExpiredLogEventEndIndex != nil {
+			fmt.Printf("--------------------ExpiredLogEventEndIndex--%v\n", *output.RejectedLogEventsInfo.ExpiredLogEventEndIndex)
+		}
+		if output.RejectedLogEventsInfo.TooOldLogEventEndIndex != nil {
+			fmt.Printf("-------------------TooOldLogEventEndIndex---%v\n", *output.RejectedLogEventsInfo.TooOldLogEventEndIndex)
+		}
+		if output.RejectedLogEventsInfo.TooNewLogEventStartIndex != nil {
+			fmt.Printf("-------------------TooNewLogEventStartIndex---%v\n", *output.RejectedLogEventsInfo.TooNewLogEventStartIndex)
+		}
+	}
 	return nil
 }
 
