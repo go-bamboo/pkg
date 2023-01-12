@@ -52,8 +52,10 @@ func NewLoggerCore(c *Conf) (core.Logger, error) {
 	if c.CloudWatch.Enable {
 		c, err := aws.NewCloudWatchCore(
 			aws.Level(zapcore.Level(c.CloudWatch.Level)),
+			aws.WithRegion(c.CloudWatch.Region),
 			aws.WithAccessKey(c.CloudWatch.Key),
 			aws.WithAccessSecret(c.CloudWatch.Secret),
+			aws.WithLogGroupName(c.CloudWatch.LogGroupName),
 		)
 		if err != nil {
 			return nil, err

@@ -31,8 +31,8 @@ install:
 upgrade:
 	kratos upgrade
 
-.PHONY: protoapi
-protoapi:
+.PHONY: api
+api:
 	protoc --proto_path=. \
 		   --proto_path=$(KRATOS) \
 		   --proto_path=$(KRATOS)/api \
@@ -76,10 +76,6 @@ swift:
 .PHONY: gengo
 gengo:
 	gnostic openapi.yaml --plugin-request-out=.
-
-.PHONY: build
-build:
-	mkdir -p bin/ && go build -ldflags "-X main.Version=$(VERSION) -X main.Branch=$(BRANCH) -X main.Revision=$(REVISION) -X main.BuildDate=$(BUILD_DATE)" -o ./bin/ ./...
 
 .PHONY: test
 test:

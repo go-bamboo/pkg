@@ -28,6 +28,7 @@ message CloudWatchConf {
   string secret = 4;
   string region = 5;
   string profile = 6;
+  string logGroupName = 7;
 }
 
 message Conf {

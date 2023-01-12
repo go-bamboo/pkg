@@ -384,6 +384,8 @@ func (m *CloudWatchConf) validate(all bool) error {
 
 	// no validation rules for Profile
 
+	// no validation rules for LogGroupName
+
 	if len(errors) > 0 {
 		return CloudWatchConfMultiError(errors)
 	}

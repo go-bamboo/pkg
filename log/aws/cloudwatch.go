@@ -16,27 +16,24 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/go-bamboo/pkg/log/core"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/gofor-little/ts"
 	"go.uber.org/zap/zapcore"
 )
 
 type cloudWatchCore struct {
-	opts              *options
-	currentDay        int
-	cloudWatchLogs    *cloudwatchlogs.Client
-	logEventsList     *ts.LinkedList
-	logGroupName      *string
+	opts *options
+	c    *cloudwatchlogs.Client
+	//logGroupStream    *string
 	nextSequenceToken *string
-	mutex             sync.RWMutex
+	queue             chan *types.InputLogEvent
+	wg                sync.WaitGroup
 }
 
 type options struct {
 	l            zapcore.Level
 	accessKey    string
 	accessSecret string
+	sessionToken string
 	endpoint     string
-	//project      string
-	//logstore     string
 	profile      string
 	region       string
 	logGroupName string
@@ -44,7 +41,7 @@ type options struct {
 
 func defaultOptions() *options {
 	return &options{
-		profile: "projectName",
+		profile: "default",
 		region:  "app",
 	}
 }
@@ -52,6 +49,12 @@ func defaultOptions() *options {
 func Level(l zapcore.Level) Option {
 	return func(c *options) {
 		c.l = l
+	}
+}
+
+func WithRegion(region string) Option {
+	return func(alc *options) {
+		alc.region = region
 	}
 }
 
@@ -67,9 +70,21 @@ func WithAccessSecret(as string) Option {
 	}
 }
 
+func WithSessionToken(sk string) Option {
+	return func(alc *options) {
+		alc.sessionToken = sk
+	}
+}
+
 func WithEndpoint(endpoint string) Option {
 	return func(alc *options) {
 		alc.endpoint = endpoint
+	}
+}
+
+func WithLogGroupName(logGroupName string) Option {
+	return func(alc *options) {
+		alc.logGroupName = logGroupName
 	}
 }
 
@@ -82,13 +97,13 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 		o(opts)
 	}
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithSharedConfigProfile(opts.profile),
+		//config.WithSharedConfigProfile(opts.profile),
 		config.WithRegion("us-east-2"),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
 				AccessKeyID:     opts.accessKey,
 				SecretAccessKey: opts.accessSecret,
-				SessionToken:    "SESSION",
+				SessionToken:    opts.sessionToken,
 			},
 		}),
 	)
@@ -97,20 +112,21 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 	}
 
 	logger := &cloudWatchCore{
-		currentDay:     time.Now().Day(),
-		cloudWatchLogs: cloudwatchlogs.NewFromConfig(cfg),
-		logEventsList:  &ts.LinkedList{},
-		logGroupName:   aws.String(opts.logGroupName),
+		opts:  opts,
+		c:     cloudwatchlogs.NewFromConfig(cfg),
+		queue: make(chan *types.InputLogEvent, 1000),
 	}
 	if err = logger.checkLogGroup(context.TODO()); err != nil {
 		return nil, err
 	}
+	logger.wg.Add(1)
 	go func() {
-		ticker := time.NewTicker(time.Second / 5)
-
-		for {
-			<-ticker.C
-			if err := logger.putLogs(context.TODO()); err != nil {
+		defer func() {
+			logger.wg.Done()
+		}()
+		for event := range logger.queue {
+			fmt.Printf("%v\n", *event.Message)
+			if err := logger.putLogs(context.TODO(), event); err != nil {
 				log.Fatalf("failed to send logs to CloudWatch: %v", err)
 			}
 		}
@@ -119,7 +135,8 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 }
 
 func (c *cloudWatchCore) Close() {
-	c.putLogs(context.TODO())
+	close(c.queue)
+	c.wg.Wait()
 }
 
 func (c *cloudWatchCore) With(fields []zapcore.Field) zapcore.Core {
@@ -141,6 +158,20 @@ func (c *cloudWatchCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zap
 }
 
 func (c *cloudWatchCore) Write(ent zapcore.Entry, fields []zapcore.Field) error {
+	data := make(map[string]string, len(fields)+4)
+	data["name"] = ent.LoggerName
+	data["msg"] = ent.Message
+	data["caller"] = ent.Caller.String()
+	data["stack"] = ent.Stack
+	data["level"] = ent.Level.String()
+	for _, field := range fields {
+		data[field.Key] = toString(field)
+	}
+	msg, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
 	//buf := ent.Level.String()
 	//levelTitle := "level"
 	//
@@ -150,50 +181,12 @@ func (c *cloudWatchCore) Write(ent zapcore.Entry, fields []zapcore.Field) error 
 	//
 	//fields["level"] = level
 
-	data, err := json.Marshal(fields)
-	if err != nil {
-		return err
-	}
-
-	messages := [][]byte{}
-
-	// Check if the data is larger than the max input log event size.
-	// If so, split it into a slice so the data can be added over multiple
-	// events. This may break the JSON structure of very large amounts of
-	// data as it will be split between multiple log events.
-	for {
-		if len(data) <= maxInputLogEventSize {
-			messages = append(messages, data)
-			break
-		}
-
-		messages = append(messages, data[:maxBatchInputLogEventSize])
-		data = data[maxBatchInputLogEventSize:]
-	}
-
-	// Lock the mutex so we can queue our messages.
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	// Range over the messages and push them to the event list.
-	for _, m := range messages {
-		var tail *CloudWatchLogEventSlice
-
-		// Fetch the tail from the event list. If the message can be added to the
-		// tail add it. Otherwise push to the event list and add to the new tail.
-		if !c.logEventsList.IsEmpty() && c.logEventsList.GetTail().(*CloudWatchLogEventSlice).canAdd(m) {
-			tail = c.logEventsList.GetTail().(*CloudWatchLogEventSlice)
-		} else {
-			tail = &CloudWatchLogEventSlice{}
-			c.logEventsList.Push(tail)
-		}
-
-		if err := tail.add(m); err != nil {
-			return err
-		}
-	}
-
-	return err
+	ev := new(types.InputLogEvent)
+	ev.Message = aws.String(string(msg))
+	ev.Timestamp = aws.Int64(time.Now().Unix())
+	c.putLogs(context.TODO(), ev)
+	//c.queue <- ev
+	return nil
 }
 
 func (c *cloudWatchCore) Sync() error {
@@ -201,11 +194,8 @@ func (c *cloudWatchCore) Sync() error {
 }
 
 // toString 任意类型转string
-func toString(f *zapcore.Field) string {
+func toString(f zapcore.Field) string {
 	var key string
-	if f == nil {
-		return key
-	}
 	switch f.Type {
 	case zapcore.BinaryType:
 		key = string(f.Interface.([]byte))
@@ -258,149 +248,103 @@ func toString(f *zapcore.Field) string {
 	return key
 }
 
-// createLogGroup creates a log group in CloudWatch.
-func (c *cloudWatchCore) createLogGroup(ctx context.Context) error {
-	input := &cloudwatchlogs.CreateLogGroupInput{
-		LogGroupName: c.logGroupName,
-	}
-
-	_, err := c.cloudWatchLogs.CreateLogGroup(ctx, input)
-	return err
-}
-
 // putLogs pops the oldest CloudWatchLogEventList off the queue, then
 // writes it to CloudWatch.
-func (c *cloudWatchCore) putLogs(ctx context.Context) error {
-	if c.logEventsList.IsEmpty() {
-		return nil
-	}
-
-	if err := c.checkLogStream(ctx); err != nil {
-		return err
-	}
-
-	elements := c.logEventsList.Pop().(*CloudWatchLogEventSlice).logEvents.GetElements()
-	inputLogEvents := make([]types.InputLogEvent, len(elements))
-
-	for i, e := range elements {
-		inputLogEvents[i] = e.(types.InputLogEvent)
-	}
-
+func (c *cloudWatchCore) putLogs(ctx context.Context, ev *types.InputLogEvent) error {
+	inputLogEvents := []types.InputLogEvent{types.InputLogEvent{
+		Message:   aws.String("Hello, World"),
+		Timestamp: aws.Int64(time.Now().Unix()),
+	}}
 	input := &cloudwatchlogs.PutLogEventsInput{
 		LogEvents:     inputLogEvents,
-		LogGroupName:  c.logGroupName,
+		LogGroupName:  aws.String(c.opts.logGroupName),
 		LogStreamName: aws.String(time.Now().Format("2006-01-02")),
 		SequenceToken: c.nextSequenceToken,
 	}
-
-	output, err := c.cloudWatchLogs.PutLogEvents(ctx, input)
+	fmt.Printf("%v\n", input)
+	output, err := c.c.PutLogEvents(ctx, input)
 	if err != nil {
+		fmt.Println(err)
 		var dataAlreadyAccepted *types.DataAlreadyAcceptedException
 		var invalidSequenceToken *types.InvalidSequenceTokenException
-
 		if errors.As(err, &dataAlreadyAccepted) {
 			input.SequenceToken = dataAlreadyAccepted.ExpectedSequenceToken
-			_, err = c.cloudWatchLogs.PutLogEvents(ctx, input)
+			_, err = c.c.PutLogEvents(ctx, input)
 			if err != nil {
 				return err
 			}
 		} else if errors.As(err, &invalidSequenceToken) {
 			input.SequenceToken = invalidSequenceToken.ExpectedSequenceToken
-			_, err = c.cloudWatchLogs.PutLogEvents(ctx, input)
+			_, err = c.c.PutLogEvents(ctx, input)
 			if err != nil {
 				return err
 			}
 		}
-
 		return err
 	}
-
 	c.nextSequenceToken = output.NextSequenceToken
-
+	fmt.Printf("----------------------%v\n", output)
 	return nil
-}
-
-// createLogStream creates a log stream in CloudWatch.
-func (c *cloudWatchCore) createLogStream(ctx context.Context) error {
-	input := &cloudwatchlogs.CreateLogStreamInput{
-		LogGroupName:  c.logGroupName,
-		LogStreamName: aws.String(time.Now().Format("2006-01-02")),
-	}
-
-	_, err := c.cloudWatchLogs.CreateLogStream(ctx, input)
-	return err
 }
 
 // checkLogGroup checks if the log group exists in CloudWatch.
 // If it doesn't it will be created.
 func (c *cloudWatchCore) checkLogGroup(ctx context.Context) error {
-	logGroupExists, err := c.logGroupExists(ctx)
+	input := &cloudwatchlogs.DescribeLogGroupsInput{
+		LogGroupNamePrefix: aws.String(c.opts.logGroupName),
+	}
+	output, err := c.c.DescribeLogGroups(ctx, input)
 	if err != nil {
 		return err
 	}
-
-	if logGroupExists {
-		return nil
+	if output.LogGroups != nil {
+		for _, logGroup := range output.LogGroups {
+			if *logGroup.LogGroupName == c.opts.logGroupName {
+				return c.checkLogStream(ctx)
+			}
+		}
 	}
-
 	return c.createLogGroup(ctx)
+}
+
+// createLogGroup creates a log group in CloudWatch.
+func (c *cloudWatchCore) createLogGroup(ctx context.Context) error {
+	input := &cloudwatchlogs.CreateLogGroupInput{
+		LogGroupName: aws.String(c.opts.logGroupName),
+	}
+	_, err := c.c.CreateLogGroup(ctx, input)
+	if err != nil {
+		return err
+	}
+	return c.checkLogStream(ctx)
 }
 
 // checkLogStream checks if the log stream exists in CloudWatch.
 // If it doesn't it will be created.
 func (c *cloudWatchCore) checkLogStream(ctx context.Context) error {
-	logStreamExists, err := c.logStreamExists(ctx)
+	input := &cloudwatchlogs.DescribeLogStreamsInput{
+		LogGroupName: aws.String(c.opts.logGroupName),
+	}
+	output, err := c.c.DescribeLogStreams(ctx, input)
 	if err != nil {
 		return err
 	}
-
-	if logStreamExists {
-		return nil
-	}
-
-	return c.createLogStream(ctx)
-}
-
-// logGroupExists checks if the log group exists in CloudWatch.
-func (c *cloudWatchCore) logGroupExists(ctx context.Context) (bool, error) {
-	input := &cloudwatchlogs.DescribeLogGroupsInput{
-		LogGroupNamePrefix: c.logGroupName,
-	}
-
-	output, err := c.cloudWatchLogs.DescribeLogGroups(ctx, input)
-	if err != nil {
-		return false, err
-	}
-
-	if output.LogGroups != nil {
-		for _, logGroup := range output.LogGroups {
-			if *logGroup.LogGroupName == *c.logGroupName {
-				return true, nil
-			}
-		}
-	}
-
-	return false, nil
-}
-
-// logStreamExists checks if the log stream exists in CloudWatch.
-func (c *cloudWatchCore) logStreamExists(ctx context.Context) (bool, error) {
-	input := &cloudwatchlogs.DescribeLogStreamsInput{
-		LogGroupName: c.logGroupName,
-	}
-
-	output, err := c.cloudWatchLogs.DescribeLogStreams(ctx, input)
-	if err != nil {
-		return false, nil
-	}
-
 	if output.LogStreams != nil {
 		for _, logStream := range output.LogStreams {
 			if *logStream.LogStreamName == time.Now().Format("2006-01-02") {
-				return true, nil
+				return nil
 			}
 		}
 	}
+	return c.createLogStream(ctx)
+}
 
-	return false, nil
+// createLogStream creates a log stream in CloudWatch.
+func (c *cloudWatchCore) createLogStream(ctx context.Context) error {
+	input := &cloudwatchlogs.CreateLogStreamInput{
+		LogGroupName:  aws.String(c.opts.logGroupName),
+		LogStreamName: aws.String(time.Now().Format("2006-01-02")),
+	}
+	_, err := c.c.CreateLogStream(ctx, input)
+	return err
 }
