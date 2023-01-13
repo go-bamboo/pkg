@@ -97,7 +97,7 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 	}
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		//config.WithSharedConfigProfile(opts.profile),
-		config.WithRegion("us-east-2"),
+		config.WithRegion(opts.region),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
 				AccessKeyID:     opts.accessKey,
@@ -118,17 +118,32 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 	if err = logger.checkLogGroup(context.TODO()); err != nil {
 		return nil, err
 	}
-	logger.putLogs(context.TODO(), nil)
 	logger.wg.Add(1)
 	go func() {
 		defer func() {
 			logger.wg.Done()
 		}()
-		for event := range logger.queue {
-			fmt.Printf("%v\n", *event.Message)
-			//if err := logger.putLogs(context.TODO(), event); err != nil {
-			//	log.Fatalf("failed to send logs to CloudWatch: %v", err)
-			//}
+		tk := time.Tick(time.Second)
+		for {
+			<-tk
+			var inputLogEvents []types.InputLogEvent
+		handleGet:
+			ev, isOpen := <-logger.queue
+			if isOpen {
+				inputLogEvents = append(inputLogEvents, *ev)
+			}
+			if len(logger.queue) > 0 && len(inputLogEvents) < 100 {
+				goto handleGet
+			}
+			if len(inputLogEvents) > 0 {
+				if err := logger.putLogs(context.TODO(), inputLogEvents); err != nil {
+					fmt.Printf("failed to send logs to CloudWatch: %v", err)
+				}
+			}
+			if !isOpen {
+				fmt.Printf("cloudwatch exit\n")
+				break
+			}
 		}
 	}()
 	return logger, nil
@@ -172,20 +187,11 @@ func (c *cloudWatchCore) Write(ent zapcore.Entry, fields []zapcore.Field) error 
 		return err
 	}
 
-	//buf := ent.Level.String()
-	//levelTitle := "level"
-	//
-	//for key, value := range c.globalFields {
-	//	fields[key] = value
-	//}
-	//
-	//fields["level"] = level
-
 	ev := new(types.InputLogEvent)
 	ev.Message = aws.String(string(msg))
-	ev.Timestamp = aws.Int64(time.Now().Unix())
+	ev.Timestamp = aws.Int64(time.Now().UnixNano() / int64(time.Millisecond))
 	//c.putLogs(context.TODO(), ev)
-	//c.queue <- ev
+	c.queue <- ev
 	return nil
 }
 
@@ -250,22 +256,15 @@ func toString(f zapcore.Field) string {
 
 // putLogs pops the oldest CloudWatchLogEventList off the queue, then
 // writes it to CloudWatch.
-func (c *cloudWatchCore) putLogs(ctx context.Context, ev *types.InputLogEvent) error {
-	inputLogEvents := []types.InputLogEvent{types.InputLogEvent{
-		Message:   aws.String("Hello, World"),
-		Timestamp: aws.Int64(time.Now().Unix()),
-	}}
+func (c *cloudWatchCore) putLogs(ctx context.Context, logEvents []types.InputLogEvent) error {
 	input := &cloudwatchlogs.PutLogEventsInput{
-		LogEvents:     inputLogEvents,
+		LogEvents:     logEvents,
 		LogGroupName:  aws.String(c.opts.logGroupName),
 		LogStreamName: aws.String(time.Now().Format("2006-01-02")),
 		SequenceToken: c.nextSequenceToken,
 	}
-	fmt.Printf("1==>LogGroupName: %v\n", *input.LogGroupName)
-	fmt.Printf("1==>LogStreamName: %v\n", *input.LogStreamName)
 	output, err := c.c.PutLogEvents(ctx, input)
 	if err != nil {
-		fmt.Printf("--------------->%v\n", err)
 		var dataAlreadyAccepted *types.DataAlreadyAcceptedException
 		var invalidSequenceToken *types.InvalidSequenceTokenException
 		if errors.As(err, &dataAlreadyAccepted) {
@@ -284,17 +283,6 @@ func (c *cloudWatchCore) putLogs(ctx context.Context, ev *types.InputLogEvent) e
 		return err
 	}
 	c.nextSequenceToken = output.NextSequenceToken
-	if output != nil && output.RejectedLogEventsInfo != nil {
-		if output.RejectedLogEventsInfo.ExpiredLogEventEndIndex != nil {
-			fmt.Printf("--------------------ExpiredLogEventEndIndex--%v\n", *output.RejectedLogEventsInfo.ExpiredLogEventEndIndex)
-		}
-		if output.RejectedLogEventsInfo.TooOldLogEventEndIndex != nil {
-			fmt.Printf("-------------------TooOldLogEventEndIndex---%v\n", *output.RejectedLogEventsInfo.TooOldLogEventEndIndex)
-		}
-		if output.RejectedLogEventsInfo.TooNewLogEventStartIndex != nil {
-			fmt.Printf("-------------------TooNewLogEventStartIndex---%v\n", *output.RejectedLogEventsInfo.TooNewLogEventStartIndex)
-		}
-	}
 	return nil
 }
 
@@ -343,6 +331,7 @@ func (c *cloudWatchCore) checkLogStream(ctx context.Context) error {
 	if output.LogStreams != nil {
 		for _, logStream := range output.LogStreams {
 			if *logStream.LogStreamName == time.Now().Format("2006-01-02") {
+				c.nextSequenceToken = output.NextToken
 				return nil
 			}
 		}
