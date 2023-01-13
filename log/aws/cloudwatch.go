@@ -18,6 +18,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+const queueCap = 1000
+
 type cloudWatchCore struct {
 	opts *options
 	c    *cloudwatchlogs.Client
@@ -113,7 +115,7 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 	logger := &cloudWatchCore{
 		opts:  opts,
 		c:     cloudwatchlogs.NewFromConfig(cfg),
-		queue: make(chan *types.InputLogEvent, 1000),
+		queue: make(chan *types.InputLogEvent, queueCap),
 	}
 	if err = logger.checkLogGroup(context.TODO()); err != nil {
 		return nil, err
@@ -123,7 +125,7 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 		defer func() {
 			logger.wg.Done()
 		}()
-		tk := time.Tick(time.Second)
+		tk := time.Tick(time.Second / 2)
 		for {
 			<-tk
 			var inputLogEvents []types.InputLogEvent
@@ -132,7 +134,7 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 			if isOpen {
 				inputLogEvents = append(inputLogEvents, *ev)
 			}
-			if len(logger.queue) > 0 && len(inputLogEvents) < 100 {
+			if len(logger.queue) > 0 && len(inputLogEvents) < queueCap {
 				goto handleGet
 			}
 			if len(inputLogEvents) > 0 {
