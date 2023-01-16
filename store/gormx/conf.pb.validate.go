@@ -62,6 +62,39 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for LogLevel
 
+	// no validation rules for MaxOpenConns
+
+	// no validation rules for MaxIdleConns
+
+	if all {
+		switch v := interface{}(m.GetConnMaxLifetime()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "ConnMaxLifetime",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "ConnMaxLifetime",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetConnMaxLifetime()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConfValidationError{
+				field:  "ConnMaxLifetime",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
 	}

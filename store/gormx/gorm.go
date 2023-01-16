@@ -50,6 +50,19 @@ func New(c *Conf) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+	if c.MaxOpenConns > 0 {
+		sqlDB.SetMaxOpenConns(int(c.MaxOpenConns))
+	}
+	if c.MaxIdleConns > 0 {
+		sqlDB.SetMaxIdleConns(int(c.MaxIdleConns))
+	}
+	if c.ConnMaxLifetime.AsDuration() > 0 {
+		sqlDB.SetConnMaxLifetime(c.ConnMaxLifetime.AsDuration())
+	}
 	if err = db.Use(NewGormTracingHook()); err != nil {
 		return nil, err
 	}

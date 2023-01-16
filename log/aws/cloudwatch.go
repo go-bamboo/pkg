@@ -128,6 +128,9 @@ func NewCloudWatchCore(options ...Option) (c core.Logger, err error) {
 		tk := time.Tick(time.Second / 2)
 		for {
 			<-tk
+			if err := logger.checkLogGroup(context.TODO()); err != nil {
+				fmt.Printf("err: %v", err)
+			}
 			var inputLogEvents []types.InputLogEvent
 		handleGet:
 			ev, isOpen := <-logger.queue

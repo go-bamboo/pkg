@@ -9,4 +9,7 @@ message Conf {
   string driver = 1;
   string source = 2;
   int32 logLevel = 3;
+  int32 maxOpenConns = 4;
+  int32 maxIdleConns = 5;
+  google.protobuf.Duration connMaxLifetime = 6;
 }
