@@ -5,8 +5,17 @@ import "google/protobuf/duration.proto";
 
 option go_package = "github.com/go-bamboo/pkg/store/gormx;gormx";
 
+// dbMySQL Gorm Drivers mysql || postgres || sqlite || sqlserver
+enum DBType {
+  UNKNOWN = 0;
+  mysql = 1;
+  postgres = 2;
+  sqlite = 3;
+  sqlserver = 4;
+}
+
 message Conf {
-  string driver = 1;
+  DBType driver = 1;
   string source = 2;
   int32 logLevel = 3;
   int32 maxOpenConns = 4;
