@@ -96,7 +96,6 @@ func (c *S3Session) UploadImage(imagePath string, fileName string, proxy *url.UR
 		return "", errors.New(fmt.Sprintf("Get Resource Error,StatusCode:%d", resp.StatusCode))
 	}
 	defer resp.Body.Close()
-
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -143,8 +142,9 @@ var (
 )
 
 func (c *S3Session) UploadBytes(dir, fileName string, data []byte) (string, error) {
+	contentMd5 := fmt.Sprintf("%x", md5.Sum(data))
 	if fileName == "" {
-		fileName = hex.EncodeToString(md5.New().Sum(data))
+		fileName = contentMd5
 	}
 	path := fmt.Sprintf("%s/%s", dir, fileName)
 	contentType := aws.String(http.DetectContentType(data))
@@ -155,8 +155,9 @@ func (c *S3Session) UploadBytes(dir, fileName string, data []byte) (string, erro
 			Bucket:        aws.String(c.c.Bucket),
 			Key:           aws.String(path),
 			Body:          bytes.NewReader(data),
-			ContentType:   contentType,
 			ContentLength: int64(size),
+			ContentMD5:    aws.String(contentMd5),
+			ContentType:   contentType,
 		})
 	if err != nil {
 		return "", err
@@ -178,37 +179,25 @@ func (c *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string
 	return "https://" + dstBucket + "/" + fileName, nil
 }
 
-func (c *S3Session) ApiUploadBytes(bucket, dir, filename string, data []byte) (string, error) {
-	fileName := fmt.Sprintf("%s/%s", dir, filename)
-	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:        aws.String(bucket),
-		Key:           aws.String(fileName),
-		Body:          bytes.NewReader(data),
-		ContentType:   aws.String(http.DetectContentType(data)),
-		ContentLength: int64(len(data)),
-	})
-	if err != nil {
-		return "", err
-	}
-	return "https://" + bucket + "/" + fileName, nil
-}
-
-func (c *S3Session) ApiUpload(file multipart.File, fileHeader *multipart.FileHeader, dir string) (string, string, error) {
+func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string) (string, string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
 		return "", "", NotAllowExt
 	}
 	size := fileHeader.Size
+	fn, err := fileHeader.Open()
+	if err != nil {
+		return "", "", err
+	}
 	buffer := make([]byte, size)
-	file.Read(buffer)
+	fn.Read(buffer)
 	sh := md5.New()
 	sh.Write(buffer)
 	imageNameHash := hex.EncodeToString(sh.Sum([]byte("")))
-	s := c
 	fileName := fmt.Sprintf("%s/%s%s", dir, imageNameHash, ext)
-	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:        aws.String(s.c.Bucket),
+	_, err = c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:        aws.String(c.c.Bucket),
 		Key:           aws.String(fileName),
 		Body:          bytes.NewReader(buffer),
 		ContentType:   aws.String(http.DetectContentType(buffer)),

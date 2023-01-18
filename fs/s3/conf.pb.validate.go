@@ -60,6 +60,8 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for Secret
 
+	// no validation rules for Region
+
 	// no validation rules for Bucket
 
 	// no validation rules for Domain

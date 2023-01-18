@@ -8,7 +8,8 @@ import "google/protobuf/duration.proto";
 message Conf {
   string key = 1;
   string secret = 2;
-  string bucket = 3;
-  string domain = 4;
-  string cloud_front = 5;
+  string region = 3;
+  string bucket = 4;
+  string domain = 5;
+  string cloud_front = 6;
 }

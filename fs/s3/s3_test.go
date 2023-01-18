@@ -56,7 +56,7 @@ func TestUploadImage(t *testing.T) {
 }
 
 func TestUploadBytes(t *testing.T) {
-	path, err := s.UploadBytes("metadata", "1.json", "", []byte(`{"image" : "https://a.com/a.jpg", "avatar" : "https://t.com/t.jpg"}`))
+	path, err := s.UploadBytes("metadata", "1.json", []byte(`{"image" : "https://a.com/a.jpg", "avatar" : "https://t.com/t.jpg"}`))
 	if err != nil {
 		t.Fatal(err)
 	}
