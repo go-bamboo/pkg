@@ -230,10 +230,9 @@ func (c *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipar
 	file.Read(buffer)
 	sh := md5.New()
 	sh.Write(buffer)
-	s := c
 	fileName := fmt.Sprintf("%s/%d/%d%s", dir, userId, docId, ext)
 	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:        aws.String(s.c.Bucket),
+		Bucket:        aws.String(c.c.Bucket),
 		Key:           aws.String(fileName),
 		Body:          bytes.NewReader(buffer),
 		ContentType:   aws.String(http.DetectContentType(buffer)),

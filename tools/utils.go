@@ -18,7 +18,6 @@ import (
 	"time"
 
 	pkgstrings "github.com/go-bamboo/pkg/strings"
-
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
