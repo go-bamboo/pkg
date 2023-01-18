@@ -67,7 +67,8 @@ proto:
            ./client/rocketmq/conf.proto \
            ./rest/conf.proto \
            ./store/mongox/conf.proto \
-           ./store/gormx/conf.proto
+           ./store/gormx/conf.proto \
+           ./fs/s3/conf.proto
 
 .PHONY: swift
 swift:

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package fs.s3;
+
+option go_package = "github.com/go-bamboo/pkg/fs/s3;s3";
+
+import "google/protobuf/duration.proto";
+
+message Conf {
+  string key = 1;
+  string secret = 2;
+  string bucket = 3;
+  string domain = 4;
+  string cloud_front = 5;
+}

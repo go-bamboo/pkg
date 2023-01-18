@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// dbMySQL Gorm Drivers mysql || postgres || sqlite || sqlserver
 type DBType int32
 
 const (
