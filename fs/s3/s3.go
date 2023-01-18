@@ -33,7 +33,7 @@ type S3Session struct {
 func New(c *Conf) (s3Sess *S3Session, err error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		//config.WithSharedConfigProfile(opts.profile),
-		config.WithRegion("us-east-2"),
+		config.WithRegion(c.Region),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
 				AccessKeyID:     c.Key,
@@ -178,7 +178,7 @@ func (c *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string
 	return "https://" + dstBucket + "/" + key, nil
 }
 
-func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string) (string, string, error) {
+func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string) (externalUrl string, frontUrl string, err error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
@@ -189,24 +189,33 @@ func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string
 	if err != nil {
 		return "", "", err
 	}
-	buffer := make([]byte, size)
-	fn.Read(buffer)
-	sh := md5.New()
-	sh.Write(buffer)
-	imageNameHash := hex.EncodeToString(sh.Sum([]byte("")))
+	buffer, err := io.ReadAll(fn)
+	if err != nil {
+		return "", "", err
+	}
+	imageNameHash := fmt.Sprintf("%x", md5.Sum(buffer))
 	key := fmt.Sprintf("%s/%s%s", dir, imageNameHash, ext)
-	log.Debugf("bucket[%v], file")
+	log.Debugf("bucket[%v], key[%v]", c.c.Bucket, key)
 	_, err = c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:        aws.String(c.c.Bucket),
 		Key:           aws.String(key),
 		Body:          bytes.NewReader(buffer),
-		ContentType:   aws.String(http.DetectContentType(buffer)),
 		ContentLength: size,
+		//ContentMD5:    aws.String(imageNameHash),
+		ContentType: aws.String(http.DetectContentType(buffer)),
 	})
 	if err != nil {
 		return "", "", err
 	}
-	return path.Join(c.c.Domain, c.c.Bucket, key), path.Join(c.c.CloudFront, key), nil
+	externalUrl, err = url.JoinPath(c.c.Domain, c.c.Bucket, key)
+	if err != nil {
+		return "", "", err
+	}
+	frontUrl, err = url.JoinPath(c.c.CloudFront, key)
+	if err != nil {
+		return "", "", err
+	}
+	return
 }
 
 func (c *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipart.FileHeader, dir string, userId, docId int64) (string, string, error) {
