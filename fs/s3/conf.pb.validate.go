@@ -64,8 +64,6 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for Bucket
 
-	// no validation rules for Domain
-
 	// no validation rules for CloudFront
 
 	if len(errors) > 0 {

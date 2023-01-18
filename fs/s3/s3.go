@@ -26,8 +26,9 @@ import (
 )
 
 type S3Session struct {
-	c  *Conf
-	s3 *s3.Client
+	c      *Conf
+	s3     *s3.Client
+	domain string
 }
 
 func New(c *Conf) (s3Sess *S3Session, err error) {
@@ -47,8 +48,9 @@ func New(c *Conf) (s3Sess *S3Session, err error) {
 	}
 	s3c := s3.NewFromConfig(cfg)
 	s3Sess = &S3Session{
-		c:  c,
-		s3: s3c,
+		c:      c,
+		s3:     s3c,
+		domain: fmt.Sprintf("https://s3.%v.amazonaws.com", c.Region),
 	}
 	return
 }
@@ -162,7 +164,7 @@ func (c *S3Session) UploadBytes(dir, fileName string, data []byte) (string, erro
 		return "", err
 	}
 	log.Info("upload data to s3", output.VersionId)
-	return c.c.Domain + "/" + c.c.Bucket + "/" + path, nil
+	return c.domain + "/" + c.c.Bucket + "/" + path, nil
 }
 
 func (c *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string, error) {
@@ -207,7 +209,7 @@ func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string
 	if err != nil {
 		return "", "", err
 	}
-	externalUrl, err = url.JoinPath(c.c.Domain, c.c.Bucket, key)
+	externalUrl, err = url.JoinPath(c.domain, c.c.Bucket, key)
 	if err != nil {
 		return "", "", err
 	}
@@ -241,7 +243,7 @@ func (c *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipar
 	if err != nil {
 		return "", "", err
 	}
-	return c.c.Domain + "/" + c.c.Bucket + "/" + fileName, c.c.CloudFront + "/" + fileName, nil
+	return c.domain + "/" + c.c.Bucket + "/" + fileName, c.c.CloudFront + "/" + fileName, nil
 }
 
 func (c *S3Session) AdminUploadResource(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
