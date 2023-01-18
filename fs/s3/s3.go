@@ -138,7 +138,6 @@ var (
 		".svg": "svg", ".webp": "webp",
 		".mp4": "video", ".mp3": "audio",
 	}
-	NotAllowExt = errors.New("not allow file extenstion")
 )
 
 func (c *S3Session) UploadBytes(dir, fileName string, data []byte) (string, error) {
@@ -167,23 +166,23 @@ func (c *S3Session) UploadBytes(dir, fileName string, data []byte) (string, erro
 }
 
 func (c *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string, error) {
-	fileName := fmt.Sprintf("%s/%s", dir, filename)
+	key := fmt.Sprintf("%s/%s", dir, filename)
 	_, err := c.s3.CopyObject(context.TODO(), &s3.CopyObjectInput{
 		Bucket:     aws.String(dstBucket),
-		Key:        aws.String(fileName),
-		CopySource: &srcUrl,
+		Key:        aws.String(key),
+		CopySource: aws.String(srcUrl),
 	})
 	if err != nil {
 		return "", err
 	}
-	return "https://" + dstBucket + "/" + fileName, nil
+	return "https://" + dstBucket + "/" + key, nil
 }
 
 func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string) (string, string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
-		return "", "", NotAllowExt
+		return "", "", ErrorNotAllowExt("ext: %v", ext)
 	}
 	size := fileHeader.Size
 	fn, err := fileHeader.Open()
@@ -195,10 +194,11 @@ func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string
 	sh := md5.New()
 	sh.Write(buffer)
 	imageNameHash := hex.EncodeToString(sh.Sum([]byte("")))
-	fileName := fmt.Sprintf("%s/%s%s", dir, imageNameHash, ext)
+	key := fmt.Sprintf("%s/%s%s", dir, imageNameHash, ext)
+	log.Debugf("bucket[%v], file")
 	_, err = c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:        aws.String(c.c.Bucket),
-		Key:           aws.String(fileName),
+		Key:           aws.String(key),
 		Body:          bytes.NewReader(buffer),
 		ContentType:   aws.String(http.DetectContentType(buffer)),
 		ContentLength: size,
@@ -206,14 +206,14 @@ func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string
 	if err != nil {
 		return "", "", err
 	}
-	return c.c.Domain + "/" + c.c.Bucket + "/" + fileName, c.c.CloudFront + "/" + fileName, nil
+	return path.Join(c.c.Domain, c.c.Bucket, key), path.Join(c.c.CloudFront, key), nil
 }
 
 func (c *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipart.FileHeader, dir string, userId, docId int64) (string, string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
-		return "", "", NotAllowExt
+		return "", "", ErrorNotAllowExt("ext: %v", ext)
 	}
 	size := fileHeader.Size
 	buffer := make([]byte, size)
@@ -239,7 +239,7 @@ func (c *S3Session) AdminUploadResource(file multipart.File, fileHeader *multipa
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowAdminFileExt[ext]; !ok {
-		return "", NotAllowExt
+		return "", ErrorNotAllowExt("ext: %v", ext)
 	}
 	size := fileHeader.Size
 	buffer := make([]byte, size)

@@ -4,6 +4,7 @@ package fs.s3;
 option go_package = "github.com/go-bamboo/pkg/fs/s3;s3";
 
 import "google/protobuf/duration.proto";
+import "errors/errors.proto";
 
 message Conf {
   string key = 1;
@@ -12,4 +13,12 @@ message Conf {
   string bucket = 4;
   string domain = 5;
   string cloud_front = 6;
+}
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (errors.default_code) = 500;
+
+  // 为某个枚举单独设置错误码
+  NOT_ALLOW_EXT = 0;
 }
