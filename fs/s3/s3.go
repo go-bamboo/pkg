@@ -209,14 +209,13 @@ func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string
 	if err != nil {
 		return "", "", err
 	}
-	externalUrl, err = url.JoinPath(c.domain, c.c.Bucket, key)
-	if err != nil {
-		return "", "", err
-	}
-	frontUrl, err = url.JoinPath(c.c.CloudFront, key)
-	if err != nil {
-		return "", "", err
-	}
+	//externalUrl, err = url.JoinPath(c.domain, c.c.Bucket, key)
+	externalUrl = c.domain + "/" + c.c.Bucket + "/" + key
+	frontUrl = c.c.CloudFront + "/" + key
+	//frontUrl, err = url.JoinPath(c.c.CloudFront, key)
+	//if err != nil {
+	//	return "", "", err
+	//}
 	return
 }
 
