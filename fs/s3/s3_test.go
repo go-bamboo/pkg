@@ -17,11 +17,15 @@ var s *S3Session
 var ctx = context.Background()
 
 func TestMain(m *testing.M) {
-	accessKey := "AKIA5ACGRTIJ5WAMFTOK"
-	secretKey := "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"
-	bucket := "chat-test.lifeform.cc"
 	var err error
-	s, err = New(accessKey, secretKey, bucket, "https://s3.us-east-2.amazonaws.com", "https://chat-test.lifeform.cc")
+	c := Conf{
+		Key:        "AKIA5ACGRTIJ5WAMFTOK",
+		Secret:     "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",
+		Bucket:     "chat-test.lifeform.cc",
+		Domain:     "https://s3.us-east-2.amazonaws.com",
+		CloudFront: "https://chat-test.lifeform.cc",
+	}
+	s, err = New(&c)
 	if err != nil {
 		return
 	}

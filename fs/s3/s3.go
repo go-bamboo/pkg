@@ -26,20 +26,18 @@ import (
 )
 
 type S3Session struct {
-	s3         *s3.Client
-	bucket     string
-	domain     string
-	cloudFront string
+	c  *Conf
+	s3 *s3.Client
 }
 
-func New(accessKey, secretKey, bucket, domain, cloudFront string) (s3Sess *S3Session, err error) {
+func New(c *Conf) (s3Sess *S3Session, err error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		//config.WithSharedConfigProfile(opts.profile),
 		config.WithRegion("us-east-2"),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
-				AccessKeyID:     accessKey,
-				SecretAccessKey: secretKey,
+				AccessKeyID:     c.Key,
+				SecretAccessKey: c.Secret,
 				SessionToken:    "",
 			},
 		}),
@@ -49,17 +47,15 @@ func New(accessKey, secretKey, bucket, domain, cloudFront string) (s3Sess *S3Ses
 	}
 	s3c := s3.NewFromConfig(cfg)
 	s3Sess = &S3Session{
-		s3:         s3c,
-		bucket:     bucket,
-		domain:     domain,
-		cloudFront: cloudFront,
+		c:  c,
+		s3: s3c,
 	}
 	return
 }
 
 var contentTypeReg = regexp.MustCompile("(video|image|audio)/.+")
 
-func (s3Sess *S3Session) UploadImage(imagePath string, fileName string, proxy *url.URL) (string, error) {
+func (c *S3Session) UploadImage(imagePath string, fileName string, proxy *url.URL) (string, error) {
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			Proxy: nil,
@@ -111,7 +107,7 @@ func (s3Sess *S3Session) UploadImage(imagePath string, fileName string, proxy *u
 	if !contentTypeReg.MatchString(contentType) {
 		return "", errors.New("Wrong ContentType:" + contentType)
 	}
-	s := s3Sess
+	s := c
 	var objBody *bytes.Reader
 	objBody = bytes.NewReader(data)
 
@@ -120,15 +116,14 @@ func (s3Sess *S3Session) UploadImage(imagePath string, fileName string, proxy *u
 		contentLength = objBody.Size()
 	}
 
-	_, err = s3Sess.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:      aws.String(s.bucket),
+	_, err = c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:      aws.String(s.c.Bucket),
 		Key:         aws.String(fileName),
 		Body:        objBody,
 		ContentType: aws.String(contentType),
 		//ContentLength: aws.Int64(contentLength),
 		//ContentDisposition: aws.String("attachment"),
 	})
-
 	if err != nil {
 		return "", err
 	}
@@ -147,18 +142,18 @@ var (
 	NotAllowExt = errors.New("not allow file extenstion")
 )
 
-func (s3Sess *S3Session) UploadBytes(dir, fileName string, data []byte) (string, error) {
+func (c *S3Session) UploadBytes(dir, fileName string, data []byte) (string, error) {
 	if fileName == "" {
 		fileName = hex.EncodeToString(md5.New().Sum(data))
 	}
 	path := fmt.Sprintf("%s/%s", dir, fileName)
 	contentType := aws.String(http.DetectContentType(data))
 	size := len(data)
-	output, err := s3Sess.s3.PutObject(
+	output, err := c.s3.PutObject(
 		context.TODO(),
 		&s3.PutObjectInput{
-			Bucket:        &s3Sess.bucket,
-			Key:           &path,
+			Bucket:        aws.String(c.c.Bucket),
+			Key:           aws.String(path),
 			Body:          bytes.NewReader(data),
 			ContentType:   contentType,
 			ContentLength: int64(size),
@@ -167,12 +162,12 @@ func (s3Sess *S3Session) UploadBytes(dir, fileName string, data []byte) (string,
 		return "", err
 	}
 	log.Info("upload data to s3", output.VersionId)
-	return s3Sess.domain + "/" + s3Sess.bucket + "/" + path, nil
+	return c.c.Domain + "/" + c.c.Bucket + "/" + path, nil
 }
 
-func (s3Sess *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string, error) {
+func (c *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string, error) {
 	fileName := fmt.Sprintf("%s/%s", dir, filename)
-	_, err := s3Sess.s3.CopyObject(context.TODO(), &s3.CopyObjectInput{
+	_, err := c.s3.CopyObject(context.TODO(), &s3.CopyObjectInput{
 		Bucket:     aws.String(dstBucket),
 		Key:        aws.String(fileName),
 		CopySource: &srcUrl,
@@ -183,9 +178,9 @@ func (s3Sess *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (s
 	return "https://" + dstBucket + "/" + fileName, nil
 }
 
-func (s3Sess *S3Session) ApiUploadBytes(bucket, dir, filename string, data []byte) (string, error) {
+func (c *S3Session) ApiUploadBytes(bucket, dir, filename string, data []byte) (string, error) {
 	fileName := fmt.Sprintf("%s/%s", dir, filename)
-	_, err := s3Sess.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:        aws.String(bucket),
 		Key:           aws.String(fileName),
 		Body:          bytes.NewReader(data),
@@ -198,7 +193,7 @@ func (s3Sess *S3Session) ApiUploadBytes(bucket, dir, filename string, data []byt
 	return "https://" + bucket + "/" + fileName, nil
 }
 
-func (s3Sess *S3Session) ApiUpload(file multipart.File, fileHeader *multipart.FileHeader, dir string) (string, string, error) {
+func (c *S3Session) ApiUpload(file multipart.File, fileHeader *multipart.FileHeader, dir string) (string, string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
@@ -210,10 +205,10 @@ func (s3Sess *S3Session) ApiUpload(file multipart.File, fileHeader *multipart.Fi
 	sh := md5.New()
 	sh.Write(buffer)
 	imageNameHash := hex.EncodeToString(sh.Sum([]byte("")))
-	s := s3Sess
+	s := c
 	fileName := fmt.Sprintf("%s/%s%s", dir, imageNameHash, ext)
-	_, err := s3Sess.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:        aws.String(s.bucket),
+	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:        aws.String(s.c.Bucket),
 		Key:           aws.String(fileName),
 		Body:          bytes.NewReader(buffer),
 		ContentType:   aws.String(http.DetectContentType(buffer)),
@@ -222,10 +217,10 @@ func (s3Sess *S3Session) ApiUpload(file multipart.File, fileHeader *multipart.Fi
 	if err != nil {
 		return "", "", err
 	}
-	return s3Sess.domain + "/" + s3Sess.bucket + "/" + fileName, s3Sess.cloudFront + "/" + fileName, nil
+	return c.c.Domain + "/" + c.c.Bucket + "/" + fileName, c.c.CloudFront + "/" + fileName, nil
 }
 
-func (s3Sess *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipart.FileHeader, dir string, userId, docId int64) (string, string, error) {
+func (c *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipart.FileHeader, dir string, userId, docId int64) (string, string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
@@ -236,10 +231,10 @@ func (s3Sess *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *mul
 	file.Read(buffer)
 	sh := md5.New()
 	sh.Write(buffer)
-	s := s3Sess
+	s := c
 	fileName := fmt.Sprintf("%s/%d/%d%s", dir, userId, docId, ext)
-	_, err := s3Sess.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:        aws.String(s.bucket),
+	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:        aws.String(s.c.Bucket),
 		Key:           aws.String(fileName),
 		Body:          bytes.NewReader(buffer),
 		ContentType:   aws.String(http.DetectContentType(buffer)),
@@ -248,10 +243,10 @@ func (s3Sess *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *mul
 	if err != nil {
 		return "", "", err
 	}
-	return s3Sess.domain + "/" + s3Sess.bucket + "/" + fileName, s3Sess.cloudFront + "/" + fileName, nil
+	return c.c.Domain + "/" + c.c.Bucket + "/" + fileName, c.c.CloudFront + "/" + fileName, nil
 }
 
-func (s3Sess *S3Session) AdminUploadResource(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+func (c *S3Session) AdminUploadResource(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowAdminFileExt[ext]; !ok {
@@ -263,10 +258,10 @@ func (s3Sess *S3Session) AdminUploadResource(file multipart.File, fileHeader *mu
 	sh := md5.New()
 	sh.Write(buffer)
 	imageNameHash := hex.EncodeToString(sh.Sum([]byte("")))
-	s := s3Sess
+	s := c
 	fileName := fmt.Sprintf("images/official/%s%s", imageNameHash, ext)
-	_, err := s3Sess.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:        aws.String(s.bucket),
+	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:        aws.String(s.c.Bucket),
 		Key:           aws.String(fileName),
 		Body:          bytes.NewReader(buffer),
 		ContentType:   aws.String(http.DetectContentType(buffer)),
@@ -278,7 +273,7 @@ func (s3Sess *S3Session) AdminUploadResource(file multipart.File, fileHeader *mu
 	return fileName, nil
 }
 
-func (s3Sess *S3Session) LazyMintUploadFile(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+func (c *S3Session) LazyMintUploadFile(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := strings.ToLower(path.Ext(originFilename))
 	size := fileHeader.Size
@@ -287,10 +282,10 @@ func (s3Sess *S3Session) LazyMintUploadFile(file multipart.File, fileHeader *mul
 	sh := md5.New()
 	sh.Write(buffer)
 	imageNameHash := hex.EncodeToString(sh.Sum([]byte("")))
-	s := s3Sess
+	s := c
 	fileName := fmt.Sprintf("images/lazy_mint/%s%s", imageNameHash, ext)
-	_, err := s3Sess.s3.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:        aws.String(s.bucket),
+	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:        aws.String(s.c.Bucket),
 		Key:           aws.String(fileName),
 		Body:          bytes.NewReader(buffer),
 		ContentType:   aws.String(http.DetectContentType(buffer)),
@@ -302,6 +297,6 @@ func (s3Sess *S3Session) LazyMintUploadFile(file multipart.File, fileHeader *mul
 	return fileName, nil
 }
 
-func (s3Sess *S3Session) ResizeImage(imageUrl string, fileName string, width, height int) error {
+func (c *S3Session) ResizeImage(imageUrl string, fileName string, width, height int) error {
 	return nil
 }
