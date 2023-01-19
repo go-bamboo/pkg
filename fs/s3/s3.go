@@ -142,7 +142,11 @@ var (
 	}
 )
 
-func (c *S3Session) UploadBytes(dir, fileName string, data []byte) (string, error) {
+func (c *S3Session) UploadBytes(fileName string, data []byte) (string, error) {
+	return c.UploadBytesToDir(c.c.Dir, fileName, data)
+}
+
+func (c *S3Session) UploadBytesToDir(dir string, fileName string, data []byte) (string, error) {
 	contentMd5 := fmt.Sprintf("%x", md5.Sum(data))
 	if fileName == "" {
 		fileName = contentMd5
@@ -180,7 +184,7 @@ func (c *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string
 	return "https://" + dstBucket + "/" + key, nil
 }
 
-func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string) (externalUrl string, frontUrl string, err error) {
+func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader) (externalUrl string, frontUrl string, err error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
@@ -196,7 +200,7 @@ func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader, dir string
 		return "", "", err
 	}
 	imageNameHash := fmt.Sprintf("%x", md5.Sum(buffer))
-	key := fmt.Sprintf("%s/%s%s", dir, imageNameHash, ext)
+	key := fmt.Sprintf("%s/%s%s", c.c.Dir, imageNameHash, ext)
 	log.Debugf("bucket[%v], key[%v]", c.c.Bucket, key)
 	_, err = c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:        aws.String(c.c.Bucket),

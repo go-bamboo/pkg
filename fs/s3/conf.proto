@@ -11,6 +11,7 @@ message Conf {
   string secret = 2;
   string region = 3;
   string bucket = 4;
+  string dir = 5;
   string cloud_front = 6;
 }
 
