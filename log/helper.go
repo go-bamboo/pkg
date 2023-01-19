@@ -27,11 +27,11 @@ func With(c zapcore.Core, kv ...interface{}) zapcore.Core {
 
 func NewLoggerCore(c *Conf) (core.Logger, error) {
 	hooks := make([]core.Logger, 0)
-	if c.Console.Enable {
+	if c.Console != nil && c.Console.Enable {
 		c := std.NewStdCore(zapcore.Level(c.Console.Level))
 		hooks = append(hooks, c)
 	}
-	if c.File.Enable {
+	if c.File != nil && c.File.Enable {
 		c := file.NewFileCore(
 			file.Level(zapcore.Level(c.File.Level)),
 			file.WithPath(c.File.Path),
@@ -39,7 +39,7 @@ func NewLoggerCore(c *Conf) (core.Logger, error) {
 		)
 		hooks = append(hooks, c)
 	}
-	if c.Fluent.Enable {
+	if c.Fluent != nil && c.Fluent.Enable {
 		c, err := fluent.NewFluentCore(
 			fluent.Level(zapcore.Level(c.Fluent.Level)),
 			fluent.WithAddr(c.Fluent.Addr),
@@ -49,7 +49,7 @@ func NewLoggerCore(c *Conf) (core.Logger, error) {
 		}
 		hooks = append(hooks, c)
 	}
-	if c.CloudWatch.Enable {
+	if c.CloudWatch != nil && c.CloudWatch.Enable {
 		c, err := aws.NewCloudWatchCore(
 			aws.Level(zapcore.Level(c.CloudWatch.Level)),
 			aws.WithRegion(c.CloudWatch.Region),
