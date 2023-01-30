@@ -267,5 +267,5 @@ func (s *ZapLogger) LogRoundTrip(
 // RequestBodyEnabled makes the client pass request body to logger
 func (s *ZapLogger) RequestBodyEnabled() bool { return true }
 
-// RequestBodyEnabled makes the client pass response body to logger
+// ResponseBodyEnabled makes the client pass response body to logger
 func (s *ZapLogger) ResponseBodyEnabled() bool { return true }
