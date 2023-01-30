@@ -8,13 +8,18 @@ import (
 	sls "github.com/aliyun/aliyun-log-go-sdk"
 	"github.com/aliyun/aliyun-log-go-sdk/producer"
 	"github.com/go-bamboo/pkg/log/core"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/protobuf/proto"
 )
 
 type aliyunCore struct {
-	producer *producer.Producer
+	zapcore.LevelEnabler
+	// enc
+	fields []*sls.LogContent
+	// out
 	opts     *options
+	producer *producer.Producer
 }
 
 type options struct {
@@ -79,6 +84,10 @@ func NewAliyunCore(options ...Option) core.Logger {
 	producerInst := producer.InitProducer(producerConfig)
 
 	return &aliyunCore{
+		LevelEnabler: zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+			return lvl >= opts.l
+		}),
+		fields:   make([]*sls.LogContent, 0),
 		opts:     opts,
 		producer: producerInst,
 	}
@@ -89,15 +98,22 @@ func (c *aliyunCore) Close() {
 	c.producer.Close(timeoutMs.Microseconds())
 }
 
-func (c *aliyunCore) With(fields []zapcore.Field) zapcore.Core {
-	//clone := c.clone()
-	//addFields(clone.enc, fields)
-	//return clone
-	return nil
+func (c *aliyunCore) Level() zapcore.Level {
+	return zapcore.LevelOf(c.LevelEnabler)
 }
 
-func (c *aliyunCore) Enabled(lvl zapcore.Level) bool {
-	return lvl >= c.opts.l
+func (c *aliyunCore) With(fields []zapcore.Field) zapcore.Core {
+	clone := c.clone()
+	// addFields
+	for i := 0; i < len(fields); i++ {
+		key := fields[i].Key
+		value := toString(&fields[i])
+		c.fields = append(c.fields, &sls.LogContent{
+			Key:   &key,
+			Value: &value,
+		})
+	}
+	return clone
 }
 
 func (c *aliyunCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
@@ -133,12 +149,20 @@ func (c *aliyunCore) Write(ent zapcore.Entry, fields []zapcore.Field) error {
 	}
 
 	err := c.producer.SendLog(c.opts.project, c.opts.logstore, "", "", logInst)
-
 	return err
 }
 
 func (c *aliyunCore) Sync() error {
 	return nil
+}
+
+func (c *aliyunCore) clone() *aliyunCore {
+	return &aliyunCore{
+		LevelEnabler: c.LevelEnabler,
+		fields:       c.fields,
+		opts:         c.opts,
+		producer:     c.producer,
+	}
 }
 
 // toString 任意类型转string
