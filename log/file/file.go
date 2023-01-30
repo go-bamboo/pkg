@@ -60,8 +60,8 @@ func getWriter(path, prefix string, lvl zapcore.Level) (zapcore.WriteSyncer, *lu
 }
 
 type fileCore struct {
-	opts options
-
+	zapcore.LevelEnabler
+	opts  options
 	hooks []*lumberjack.Logger
 	core  zapcore.Core
 }
@@ -130,6 +130,9 @@ func NewFileCore(opts ...Option) core.Logger {
 	}
 	core := zapcore.NewTee(cores...)
 	return &fileCore{
+		LevelEnabler: zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+			return lvl >= _options.l
+		}),
 		opts:  _options,
 		hooks: hooks,
 		core:  core,
@@ -142,22 +145,26 @@ func (c *fileCore) Close() {
 	}
 }
 
+func (c *fileCore) Level() zapcore.Level {
+	return zapcore.LevelOf(c.LevelEnabler)
+}
+
 // With 复制操作
 func (c *fileCore) With(fields []zapcore.Field) zapcore.Core {
 	core := c.core.With(fields)
 	return &fileCore{
-		opts:  c.opts,
-		hooks: c.hooks,
-		core:  core,
+		LevelEnabler: c.LevelEnabler,
+		opts:         c.opts,
+		hooks:        c.hooks,
+		core:         core,
 	}
 }
 
-func (c *fileCore) Enabled(lvl zapcore.Level) bool {
-	return lvl >= c.opts.l
-}
-
 func (c *fileCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
-	return c.core.Check(ent, ce)
+	if c.Enabled(ent.Level) {
+		return ce.AddCore(ent, c)
+	}
+	return ce
 }
 
 func (c *fileCore) Write(ent zapcore.Entry, fields []zapcore.Field) error {
