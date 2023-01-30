@@ -128,12 +128,12 @@ func (c *aliyunCore) Write(ent zapcore.Entry, fields []zapcore.Field) error {
 	levelTitle := "level"
 
 	// level
-	contents := make([]*sls.LogContent, len(fields)+4)
+	contents := make([]*sls.LogContent, 1+len(c.fields)+len(fields))
 	contents = append(contents, &sls.LogContent{
 		Key:   &levelTitle,
 		Value: &buf,
 	})
-
+	contents = append(contents, c.fields...)
 	for i := 0; i < len(fields); i++ {
 		key := fields[i].Key
 		value := toString(&fields[i])
