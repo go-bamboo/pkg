@@ -39,7 +39,7 @@ func getClientSet() (*kubernetes.Clientset, error) {
 }
 
 func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
-	if c.Etcd.Enable {
+	if c.Etcd != nil && c.Etcd.Enable {
 		cli, err := etcdv3.New(etcdv3.Config{
 			Endpoints: c.Etcd.Endpoints,
 		})
@@ -48,7 +48,7 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 		}
 		r := etcd.New(cli)
 		return r, r
-	} else if c.Consul.Enable {
+	} else if c.Consul != nil && c.Consul.Enable {
 		// consul
 		consulConfig := api.DefaultConfig()
 		consulConfig.Address = c.Consul.Address
@@ -58,14 +58,14 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 		}
 		r := consul.New(consulClient)
 		return r, r
-	} else if c.Kube.Enable {
+	} else if c.Kube != nil && c.Kube.Enable {
 		cli, err := getClientSet()
 		if err != nil {
 			panic(err)
 		}
 		r := kuberegistry.NewRegistry(cli)
 		return r, r
-	} else if c.Nacos.Enable {
+	} else if c.Nacos != nil && c.Nacos.Enable {
 		sc := []constant.ServerConfig{
 			*constant.NewServerConfig(c.Nacos.IpAddr, c.Nacos.Port),
 		}
