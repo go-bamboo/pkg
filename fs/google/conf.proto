@@ -1,0 +1,24 @@
+syntax = "proto3";
+package fs.google;
+
+option go_package = "github.com/go-bamboo/pkg/fs/google;google";
+
+import "google/protobuf/duration.proto";
+import "errors/errors.proto";
+
+message Conf {
+  string key = 1;
+  string secret = 2;
+  string region = 3;
+  string bucket = 4;
+  string dir = 5;
+  string cloud_front = 6;
+}
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (errors.default_code) = 500;
+
+  // 为某个枚举单独设置错误码
+  NOT_ALLOW_EXT = 0;
+}
