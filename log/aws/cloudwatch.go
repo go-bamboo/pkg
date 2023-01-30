@@ -1,9 +1,6 @@
 package aws
 
 import (
-	"encoding/json"
-	"fmt"
-	"math"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -127,24 +124,30 @@ func (c *cloudWatchCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zap
 }
 
 func (c *cloudWatchCore) Write(ent zapcore.Entry, fields []zapcore.Field) error {
-	data := make(map[string]string, len(fields)+4)
-	data["name"] = ent.LoggerName
-	data["msg"] = ent.Message
-	data["caller"] = ent.Caller.String()
-	data["stack"] = ent.Stack
-	data["level"] = ent.Level.String()
-	for _, field := range fields {
-		data[field.Key] = toString(field)
-	}
-	msg, err := json.Marshal(data)
+
+	//data := make(map[string]string, len(fields)+4)
+	//data["name"] = ent.LoggerName
+	//data["msg"] = ent.Message
+	//data["caller"] = ent.Caller.String()
+	//data["stack"] = ent.Stack
+	//data["level"] = ent.Level.String()
+	//for _, field := range fields {
+	//	data[field.Key] = toString(field)
+	//}
+	//msg, err := json.Marshal(data)
+	//if err != nil {
+	//	return err
+	//}
+
+	buf, err := c.enc.EncodeEntry(ent, fields)
 	if err != nil {
 		return err
 	}
-
 	ev := new(types.InputLogEvent)
-	ev.Message = aws.String(string(msg))
+	ev.Message = aws.String(string(buf.Bytes()))
 	ev.Timestamp = aws.Int64(time.Now().UnixNano() / int64(time.Millisecond))
 	c.out.Write(ev)
+	buf.Free()
 	return nil
 }
 
@@ -167,56 +170,56 @@ func addFields(enc zapcore.ObjectEncoder, fields []zapcore.Field) {
 }
 
 // toString 任意类型转string
-func toString(f zapcore.Field) string {
-	var key string
-	switch f.Type {
-	case zapcore.BinaryType:
-		key = string(f.Interface.([]byte))
-	case zapcore.BoolType:
-		key = fmt.Sprint(f.Integer == 1)
-	case zapcore.ByteStringType:
-		key = string(f.Interface.([]byte))
-	case zapcore.Complex128Type:
-		key = fmt.Sprint(f.Interface.(complex128))
-	case zapcore.Complex64Type:
-		key = fmt.Sprint(f.Interface.(complex64))
-	case zapcore.DurationType:
-		key = fmt.Sprintf("%fs", time.Duration(f.Integer).Seconds())
-	case zapcore.Float64Type:
-		key = fmt.Sprintf("%f", math.Float64frombits(uint64(f.Integer)))
-	case zapcore.Float32Type:
-		key = fmt.Sprintf("%f", math.Float32frombits(uint32(f.Integer)))
-	case zapcore.Int64Type:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.Int32Type:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.Int16Type:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.Int8Type:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.StringType:
-		key = f.String
-	case zapcore.TimeType:
-		if f.Interface != nil {
-			key = fmt.Sprint(time.Unix(0, f.Integer).In(f.Interface.(*time.Location)))
-		} else {
-			// Fall back to UTC if location is nil.
-			key = fmt.Sprint(time.Unix(0, f.Integer))
-		}
-	case zapcore.TimeFullType:
-		key = f.Interface.(time.Time).Format("2006-01-02 15:04:05")
-	case zapcore.Uint64Type:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.Uint32Type:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.Uint16Type:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.Uint8Type:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.UintptrType:
-		key = fmt.Sprintf("%d", f.Integer)
-	case zapcore.ReflectType:
-		key = fmt.Sprintf("%v", f.Interface)
-	}
-	return key
-}
+//func toString(f zapcore.Field) string {
+//	var key string
+//	switch f.Type {
+//	case zapcore.BinaryType:
+//		key = string(f.Interface.([]byte))
+//	case zapcore.BoolType:
+//		key = fmt.Sprint(f.Integer == 1)
+//	case zapcore.ByteStringType:
+//		key = string(f.Interface.([]byte))
+//	case zapcore.Complex128Type:
+//		key = fmt.Sprint(f.Interface.(complex128))
+//	case zapcore.Complex64Type:
+//		key = fmt.Sprint(f.Interface.(complex64))
+//	case zapcore.DurationType:
+//		key = fmt.Sprintf("%fs", time.Duration(f.Integer).Seconds())
+//	case zapcore.Float64Type:
+//		key = fmt.Sprintf("%f", math.Float64frombits(uint64(f.Integer)))
+//	case zapcore.Float32Type:
+//		key = fmt.Sprintf("%f", math.Float32frombits(uint32(f.Integer)))
+//	case zapcore.Int64Type:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.Int32Type:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.Int16Type:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.Int8Type:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.StringType:
+//		key = f.String
+//	case zapcore.TimeType:
+//		if f.Interface != nil {
+//			key = fmt.Sprint(time.Unix(0, f.Integer).In(f.Interface.(*time.Location)))
+//		} else {
+//			// Fall back to UTC if location is nil.
+//			key = fmt.Sprint(time.Unix(0, f.Integer))
+//		}
+//	case zapcore.TimeFullType:
+//		key = f.Interface.(time.Time).Format("2006-01-02 15:04:05")
+//	case zapcore.Uint64Type:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.Uint32Type:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.Uint16Type:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.Uint8Type:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.UintptrType:
+//		key = fmt.Sprintf("%d", f.Integer)
+//	case zapcore.ReflectType:
+//		key = fmt.Sprintf("%v", f.Interface)
+//	}
+//	return key
+//}
