@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 	"github.com/go-bamboo/pkg/log"
-	"github.com/go-bamboo/pkg/otel"
+	otelext "github.com/go-bamboo/pkg/otel"
 	"github.com/go-redis/redis/extra/rediscmd/v8"
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel"
@@ -25,7 +25,7 @@ var _ redis.Hook = (*tracingHook)(nil)
 func NewRedisTracingHook(debug bool) *tracingHook {
 	return &tracingHook{
 		tracer:     otel.Tracer("redis"),
-		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, otel.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
 		debug:      debug,
 	}
 }

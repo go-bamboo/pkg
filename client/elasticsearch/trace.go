@@ -3,7 +3,7 @@ package elasticsearch
 import (
 	"net/http"
 
-	"github.com/go-bamboo/pkg/otel"
+	otelext "github.com/go-bamboo/pkg/otel"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -19,7 +19,7 @@ func NewEsTransportTracing() *EsTransportTracing {
 	return &EsTransportTracing{
 		tracer:     otel.Tracer("es"),
 		kind:       trace.SpanKindClient,
-		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, otel.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
 	}
 }
 

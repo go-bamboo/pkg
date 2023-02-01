@@ -8,7 +8,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/go-bamboo/pkg/log"
-	"github.com/go-bamboo/pkg/otel"
+	otelext "github.com/go-bamboo/pkg/otel"
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
 	"github.com/go-kratos/kratos/v2/errors"
@@ -107,7 +107,7 @@ func newKafkaQueue(config *Conf, handler queue.ConsumeHandler) (k *rocketQueue, 
 
 		sub:        cs,
 		tracer:     otel.Tracer("rocketmq"),
-		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, otel.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
 
 		//ctx: ctx,
 		//cf:  cf,

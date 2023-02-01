@@ -3,8 +3,8 @@ package tracing
 import (
 	"context"
 	"fmt"
-	"github.com/go-bamboo/pkg/otel"
 
+	otelext "github.com/go-bamboo/pkg/otel"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
@@ -29,7 +29,7 @@ type Tracer struct {
 // NewTracer create tracer instance
 func NewTracer(kind trace.SpanKind, opts ...Option) *Tracer {
 	op := options{
-		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, propagation.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
 	}
 	for _, o := range opts {
 		o(&op)

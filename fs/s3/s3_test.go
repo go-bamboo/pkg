@@ -22,7 +22,6 @@ func TestMain(m *testing.M) {
 		Key:        "AKIA5ACGRTIJ5WAMFTOK",
 		Secret:     "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",
 		Bucket:     "chat-test.lifeform.cc",
-		Domain:     "https://s3.us-east-2.amazonaws.com",
 		CloudFront: "https://chat-test.lifeform.cc",
 	}
 	s, err = New(&c)
@@ -56,7 +55,7 @@ func TestUploadImage(t *testing.T) {
 }
 
 func TestUploadBytes(t *testing.T) {
-	path, err := s.UploadBytes("metadata", "1.json", []byte(`{"image" : "https://a.com/a.jpg", "avatar" : "https://t.com/t.jpg"}`))
+	path, err := s.UploadBytes("1.json", []byte(`{"image" : "https://a.com/a.jpg", "avatar" : "https://t.com/t.jpg"}`))
 	if err != nil {
 		t.Fatal(err)
 	}

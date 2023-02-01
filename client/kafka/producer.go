@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-bamboo/pkg/log"
-	"github.com/go-bamboo/pkg/otel"
+	otelext "github.com/go-bamboo/pkg/otel"
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
@@ -35,7 +35,7 @@ func NewProducer(c *Conf) (*Producer, error) {
 	}
 	tracingPub := &Producer{
 		tracer:     otel.Tracer("kafka"),
-		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, otel.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
 		pub:        &pub,
 	}
 	return tracingPub, nil

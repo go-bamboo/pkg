@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
-	"github.com/go-bamboo/pkg/otel"
+	otelext "github.com/go-bamboo/pkg/otel"
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
 	"github.com/go-kratos/kratos/v2/errors"
@@ -118,7 +118,7 @@ func NewConsumer(c *Conf, handler queue.ConsumeHandler) (*Consumer, error) {
 
 		sub:        sub,
 		tracer:     otel.Tracer("kafka"),
-		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, otel.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
 
 		ctx: ctx,
 		cf:  cf,
