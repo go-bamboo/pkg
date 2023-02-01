@@ -7,8 +7,8 @@ import (
 	"github.com/go-bamboo/pkg/api/status"
 	"github.com/go-bamboo/pkg/middleware/logging"
 	"github.com/go-bamboo/pkg/middleware/metadata"
-	"github.com/go-bamboo/pkg/middleware/metrics/prometheus"
-	"github.com/go-bamboo/pkg/tracing"
+	"github.com/go-bamboo/pkg/middleware/metrics"
+	"github.com/go-bamboo/pkg/middleware/tracing"
 	"github.com/go-kratos/aegis/ratelimit/bbr"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
@@ -16,7 +16,6 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.opentelemetry.io/otel/propagation"
 )
 
 type (
@@ -48,12 +47,8 @@ func NewServer(c *Conf, opts ...Option) *Server {
 		middlewareChain: []middleware.Middleware{
 			recovery.Recovery(),
 			metadata.Server(),
-			tracing.Server(
-				tracing.WithPropagator(
-					propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
-				),
-			),
-			prometheus.Server(),
+			tracing.Server(),
+			metrics.Server(),
 			logging.Server(),
 			ratelimit.Server(ratelimit.WithLimiter(limiter)),
 			validate.Validator(),

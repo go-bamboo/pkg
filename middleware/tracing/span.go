@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/go-bamboo/pkg/tracing"
 	"github.com/go-kratos/kratos/v2/metadata"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
-
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
@@ -84,7 +84,7 @@ func setServerSpan(ctx context.Context, span trace.Span, m interface{}) {
 		attrs = append(attrs, attribute.Key("recv_msg.size").Int(proto.Size(p)))
 	}
 	if md, ok := metadata.FromServerContext(ctx); ok {
-		attrs = append(attrs, semconv.PeerServiceKey.String(md.Get(serviceHeader)))
+		attrs = append(attrs, semconv.PeerServiceKey.String(md.Get(tracing.ServiceHeader)))
 	}
 
 	span.SetAttributes(attrs...)

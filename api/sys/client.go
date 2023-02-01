@@ -2,11 +2,12 @@ package sys
 
 import (
 	"context"
+	tracing2 "github.com/go-bamboo/pkg/tracing"
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/middleware/logging"
-	"github.com/go-bamboo/pkg/tracing"
+	"github.com/go-bamboo/pkg/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/metadata"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -27,7 +28,7 @@ func MustNew(ctx context.Context, timeout time.Duration, r registry.Discovery) (
 			metadata.Client(),
 			tracing.Client(
 				tracing.WithPropagator(
-					propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
+					propagation.NewCompositeTextMapPropagator(tracing2.Metadata{}, propagation.Baggage{}, tracing2.TraceContext{}),
 				),
 			),
 			logging.Client(),

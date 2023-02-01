@@ -17,6 +17,10 @@ const (
 	MetaIPCount = "ip_count"
 	// MetaConnCount meta conn count
 	MetaConnCount = "conn_count"
+	// MetaTcpEndpoint meta conn count
+	MetaTcpEndpoint = "tcp"
+	// MetaWsEndpoint meta conn count
+	MetaWsEndpoint = "ws"
 
 	// PlatformWeb platform web
 	PlatformWeb = "web"

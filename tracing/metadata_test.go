@@ -38,8 +38,8 @@ func TestMetadata_Inject(t *testing.T) {
 			ctx := kratos.NewContext(context.Background(), a)
 			m := new(Metadata)
 			m.Inject(ctx, tt.args.carrier)
-			if res := tt.args.carrier.Get(serviceHeader); tt.want != res {
-				t.Errorf("Get(serviceHeader) :%s want: %s", res, tt.want)
+			if res := tt.args.carrier.Get(ServiceHeader); tt.want != res {
+				t.Errorf("Get(ServiceHeader) :%s want: %s", res, tt.want)
 			}
 		})
 	}
@@ -78,7 +78,7 @@ func TestMetadata_Extract(t *testing.T) {
 			ctx := b.Extract(tt.args.parent, tt.args.carrier)
 			md, ok := metadata.FromServerContext(ctx)
 			assert.Equal(t, ok, true)
-			assert.Equal(t, md.Get(serviceHeader), tt.want)
+			assert.Equal(t, md.Get(ServiceHeader), tt.want)
 		})
 	}
 }
