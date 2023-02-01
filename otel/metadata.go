@@ -1,4 +1,4 @@
-package tracing
+package otel
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 const ServiceHeader = "x-md-service-name"
 
-// Metadata is tracing metadata propagator
+// Metadata is otel metadata propagator
 type Metadata struct{}
 
 var _ propagation.TextMapPropagator = Metadata{}

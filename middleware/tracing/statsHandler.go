@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/stats"
 )
 
-// ClientHandler is tracing ClientHandler
+// ClientHandler is otel ClientHandler
 type ClientHandler struct{}
 
 // HandleConn exists to satisfy gRPC stats.Handler.
@@ -20,7 +20,7 @@ func (c *ClientHandler) TagConn(ctx context.Context, cti *stats.ConnTagInfo) con
 	return ctx
 }
 
-// HandleRPC implements per-RPC tracing and stats instrumentation.
+// HandleRPC implements per-RPC otel and stats instrumentation.
 func (c *ClientHandler) HandleRPC(ctx context.Context, rs stats.RPCStats) {
 	if _, ok := rs.(*stats.OutHeader); ok {
 		if p, ok := peer.FromContext(ctx); ok {

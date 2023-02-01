@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/go-bamboo/pkg/tracing"
+	"github.com/go-bamboo/pkg/otel"
 	"github.com/go-kratos/kratos/v2/metadata"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -84,7 +84,7 @@ func setServerSpan(ctx context.Context, span trace.Span, m interface{}) {
 		attrs = append(attrs, attribute.Key("recv_msg.size").Int(proto.Size(p)))
 	}
 	if md, ok := metadata.FromServerContext(ctx); ok {
-		attrs = append(attrs, semconv.PeerServiceKey.String(md.Get(tracing.ServiceHeader)))
+		attrs = append(attrs, semconv.PeerServiceKey.String(md.Get(otel.ServiceHeader)))
 	}
 
 	span.SetAttributes(attrs...)

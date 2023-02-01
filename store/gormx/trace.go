@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-bamboo/pkg/tracing"
+	"github.com/go-bamboo/pkg/otel"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
@@ -69,7 +69,7 @@ type GormTracingHook struct {
 func NewGormTracingHook() gorm.Plugin {
 	return &GormTracingHook{
 		tracer:     otel.Tracer("gorm"),
-		propagator: propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, otel.TraceContext{}),
 	}
 }
 

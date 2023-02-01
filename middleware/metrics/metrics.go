@@ -39,10 +39,9 @@ type options struct {
 
 // Server is middleware server-side metrics.
 func Server(opts ...Option) middleware.Middleware {
-	meter := global.MeterProvider().Meter("")
-
-	requests, _ := meter.Int64Counter("requests", instrument.WithDescription("a simple counter"))
-	seconds, _ := meter.Float64Histogram("seconds", instrument.WithDescription("a simple counter"))
+	meter := global.MeterProvider().Meter("middleware.server")
+	requests, _ := meter.Int64Counter("requests", instrument.WithDescription("a requests counter"))
+	seconds, _ := meter.Float64Histogram("seconds", instrument.WithDescription("a seconds histogram"))
 	op := options{
 		requests: requests,
 		seconds:  seconds,
@@ -90,7 +89,13 @@ func Server(opts ...Option) middleware.Middleware {
 
 // Client is middleware client-side metrics.
 func Client(opts ...Option) middleware.Middleware {
-	op := options{}
+	meter := global.MeterProvider().Meter("middleware.client")
+	requests, _ := meter.Int64Counter("requests", instrument.WithDescription("a requests counter"))
+	seconds, _ := meter.Float64Histogram("seconds", instrument.WithDescription("a seconds histogram"))
+	op := options{
+		requests: requests,
+		seconds:  seconds,
+	}
 	for _, o := range opts {
 		o(&op)
 	}

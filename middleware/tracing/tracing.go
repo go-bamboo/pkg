@@ -10,7 +10,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// Option is tracing option.
+// Option is otel option.
 type Option func(*options)
 
 type options struct {

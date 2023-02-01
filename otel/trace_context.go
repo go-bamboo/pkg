@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tracing // import "go.opentelemetry.io/otel/propagation"
+package otel // import "go.opentelemetry.io/otel/propagation"
 
 import (
 	"context"
@@ -42,7 +42,7 @@ type TraceContext struct{}
 
 var _ propagation.TextMapPropagator = TraceContext{}
 
-//var traceCtxRegExp = regexp.MustCompile("^(?P<version>[0-9a-f]{2})-(?P<traceID>[a-f0-9]{32})-(?P<spanID>[a-f0-9]{16})-(?P<traceFlags>[a-f0-9]{2})(?:-.*)?$")
+// var traceCtxRegExp = regexp.MustCompile("^(?P<version>[0-9a-f]{2})-(?P<traceID>[a-f0-9]{32})-(?P<spanID>[a-f0-9]{16})-(?P<traceFlags>[a-f0-9]{2})(?:-.*)?$")
 var traceCtxRegExp = regexp.MustCompile("^(?P<traceID>[a-f0-9]{32}):(?P<spanID>[a-f0-9]{16}):(?P<sampled>[a-f0-9]{16}):(?P<traceFlags>[a-f0-9]+)$")
 
 // Inject set tracecontext from the Context into the carrier.

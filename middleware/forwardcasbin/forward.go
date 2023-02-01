@@ -20,7 +20,7 @@ func IsErrUnauthorizedPath(err error) bool {
 	return se.Reason == "ErrUnauthorizedPath" && se.Code == 401
 }
 
-// Option is tracing option.
+// Option is otel option.
 type Option func(*options)
 
 type options struct {

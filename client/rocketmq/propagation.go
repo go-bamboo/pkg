@@ -2,11 +2,14 @@ package rocketmq
 
 import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type MessageTextMapCarrier struct {
 	msg *primitive.Message
 }
+
+var _ propagation.TextMapCarrier = &MessageTextMapCarrier{}
 
 // Get returns the value associated with the passed key.
 func (carrier *MessageTextMapCarrier) Get(key string) string {

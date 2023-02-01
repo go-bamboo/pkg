@@ -57,7 +57,7 @@ proto:
            --go_out=paths=source_relative:. \
            --validate_out=lang=go,paths=source_relative:. \
            --go-errors_out=paths=source_relative:. \
-           ./tracing/conf.proto \
+           ./otel/conf.proto \
            ./meta/meta.proto \
            ./registry/conf.proto \
            ./log/conf.proto \

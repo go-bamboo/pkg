@@ -1,7 +1,7 @@
 syntax = "proto3";
-package tracing;
+package otel;
 
-option go_package = "github.com/go-bamboo/pkg/tracing;tracing";
+option go_package = "github.com/go-bamboo/pkg/otel;otel";
 
 message Jaeger {
   bool enable = 1;

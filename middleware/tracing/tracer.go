@@ -3,7 +3,7 @@ package tracing
 import (
 	"context"
 	"fmt"
-	"github.com/go-bamboo/pkg/tracing"
+	"github.com/go-bamboo/pkg/otel"
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/segmentio/kafka-go"
@@ -29,7 +29,7 @@ type Tracer struct {
 // NewTracer create tracer instance
 func NewTracer(kind trace.SpanKind, opts ...Option) *Tracer {
 	op := options{
-		propagator: propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, propagation.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, propagation.TraceContext{}),
 	}
 	for _, o := range opts {
 		o(&op)
@@ -52,7 +52,7 @@ func NewTracer(kind trace.SpanKind, opts ...Option) *Tracer {
 	}
 }
 
-// Start start tracing span
+// Start start otel span
 func (t *Tracer) Start(ctx context.Context, operation string, carrier propagation.TextMapCarrier) (context.Context, trace.Span) {
 	if t.kind == trace.SpanKindServer {
 		ctx = t.opt.propagator.Extract(ctx, carrier)
@@ -73,7 +73,7 @@ func (t *Tracer) Start(ctx context.Context, operation string, carrier propagatio
 	return ctx, span
 }
 
-// End finish tracing span
+// End finish otel span
 func (t *Tracer) End(ctx context.Context, span trace.Span, m interface{}, err error) {
 	if err != nil {
 		span.RecordError(err)

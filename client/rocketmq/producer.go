@@ -8,8 +8,8 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/otel"
 	"github.com/go-bamboo/pkg/queue"
-	"github.com/go-bamboo/pkg/tracing"
 	"github.com/go-kratos/kratos/v2/metrics"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -54,7 +54,7 @@ func NewPusher(config *Conf) (queue.Pusher, error) {
 	tracingPub := &rocketProducer{
 		producer:   pd,
 		tracer:     otel.Tracer("roketmq"),
-		propagator: propagation.NewCompositeTextMapPropagator(tracing.Metadata{}, propagation.Baggage{}, tracing.TraceContext{}),
+		propagator: propagation.NewCompositeTextMapPropagator(otel.Metadata{}, propagation.Baggage{}, otel.TraceContext{}),
 		// topic:      c.Topic,
 	}
 	return tracingPub, nil

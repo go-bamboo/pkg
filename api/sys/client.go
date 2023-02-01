@@ -2,7 +2,7 @@ package sys
 
 import (
 	"context"
-	tracing2 "github.com/go-bamboo/pkg/tracing"
+	tracing2 "github.com/go-bamboo/pkg/otel"
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
