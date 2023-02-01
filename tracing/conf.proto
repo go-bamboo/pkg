@@ -23,6 +23,7 @@ message Otlp {
   string endpoint = 2;
   bool metrics = 3;
   bool traces = 4;
+  bool xray = 5;
 }
 
 message Prometheus {

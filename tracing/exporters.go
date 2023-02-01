@@ -10,11 +10,11 @@ import (
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/net/ip"
 	prom "github.com/prometheus/client_golang/prometheus"
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
@@ -24,6 +24,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Provider struct {
@@ -85,7 +87,14 @@ func (*noOutput) Write(p []byte) (n int, err error) {
 }
 
 func newTracerProvider(c *Conf, serviceName string, uuid string) (tp *tracesdk.TracerProvider, err error) {
-	var exp tracesdk.SpanExporter
+	res := tracesdk.WithResource(resource.NewSchemaless(
+		semconv.ServiceNameKey.String(serviceName),
+		semconv.ServiceInstanceIDKey.String(uuid),
+		semconv.ProcessPIDKey.Int(os.Getpid()),
+		attribute.String("environment", "development"),
+		attribute.String("ip", ip.InternalIP()),
+	))
+	sampler := tracesdk.WithSampler(tracesdk.AlwaysSample())
 	if c.Stdout != nil && c.Stdout.Enable && c.Stdout.Traces {
 		var w io.Writer = os.Stdout
 		if len(c.Stdout.TraceOutput) > 0 {
@@ -100,43 +109,67 @@ func newTracerProvider(c *Conf, serviceName string, uuid string) (tp *tracesdk.T
 				w = f
 			}
 		}
-		exp, err = stdouttrace.New(
+		exp, err := stdouttrace.New(
 			stdouttrace.WithWriter(w),
 			stdouttrace.WithPrettyPrint(),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("creating stdout exporter: %w", err)
 		}
+		return tracesdk.NewTracerProvider(
+			sampler,
+			// Record information about this application in an Resource.
+			res,
+			// Always be sure to batch in production.
+			tracesdk.WithSpanProcessor(tracesdk.NewBatchSpanProcessor(exp)),
+		), nil
 	} else if c.Otlp != nil && c.Otlp.Enable && c.Otlp.Traces {
-		client := otlptracegrpc.NewClient(otlptracegrpc.WithEndpoint(c.Otlp.Endpoint), otlptracegrpc.WithInsecure())
-		exp, err = otlptrace.New(context.TODO(), client)
-		if err != nil {
-			return nil, fmt.Errorf("creating OTLP trace exporter: %w", err)
-		}
-	} else if c.Jaeger != nil && c.Jaeger.Enable && c.Jaeger.Traces {
-		exp, err = jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(c.Jaeger.Endpoint)))
+		conn, err := grpc.DialContext(context.TODO(), c.Otlp.Endpoint,
+			// Note the use of insecure transport here. TLS is recommended in production.
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithBlock(),
+		)
 		if err != nil {
 			return nil, err
 		}
+		exp, err := otlptracegrpc.New(context.TODO(), otlptracegrpc.WithGRPCConn(conn))
+		if err != nil {
+			return nil, err
+		}
+		if c.Otlp.Xray {
+			idg := xray.NewIDGenerator()
+			return tracesdk.NewTracerProvider(
+				sampler,
+				// Record information about this application in an Resource.
+				res,
+				// Always be sure to batch in production.
+				tracesdk.WithSpanProcessor(tracesdk.NewBatchSpanProcessor(exp)),
+				tracesdk.WithIDGenerator(idg),
+			), nil
+		} else {
+			return tracesdk.NewTracerProvider(
+				sampler,
+				// Record information about this application in an Resource.
+				res,
+				// Always be sure to batch in production.
+				tracesdk.WithSpanProcessor(tracesdk.NewBatchSpanProcessor(exp)),
+			), nil
+		}
+	} else if c.Jaeger != nil && c.Jaeger.Enable && c.Jaeger.Traces {
+		exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(c.Jaeger.Endpoint)))
+		if err != nil {
+			return nil, err
+		}
+		return tracesdk.NewTracerProvider(
+			sampler,
+			// Record information about this application in an Resource.
+			res,
+			// Always be sure to batch in production.
+			tracesdk.WithSpanProcessor(tracesdk.NewBatchSpanProcessor(exp)),
+		), nil
 	} else {
 		return nil, fmt.Errorf("not support trace")
 	}
-	res := tracesdk.WithResource(resource.NewSchemaless(
-		semconv.ServiceNameKey.String(serviceName),
-		semconv.ServiceInstanceIDKey.String(uuid),
-		semconv.ProcessPIDKey.Int(os.Getpid()),
-		attribute.String("environment", "development"),
-		attribute.String("ip", ip.InternalIP()),
-	))
-	bsp := tracesdk.NewBatchSpanProcessor(exp)
-	tp = tracesdk.NewTracerProvider(
-		tracesdk.WithSampler(tracesdk.AlwaysSample()),
-		// Record information about this application in an Resource.
-		res,
-		// Always be sure to batch in production.
-		tracesdk.WithSpanProcessor(bsp),
-	)
-	return tp, nil
 }
 
 func newMeterProvider(c *Conf, serviceName string, uuid string) (sdk *metric.MeterProvider, err error) {
@@ -162,21 +195,21 @@ func newMeterProvider(c *Conf, serviceName string, uuid string) (sdk *metric.Met
 			return nil, err
 		}
 		reader = metric.NewPeriodicReader(exp)
-	}
-	if c.Otlp != nil && c.Otlp.Enable {
+	} else if c.Otlp != nil && c.Otlp.Enable {
 		ctx := context.Background()
 		exp, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithEndpoint(c.Otlp.Endpoint), otlpmetricgrpc.WithInsecure())
 		if err != nil {
 			return nil, err
 		}
 		reader = metric.NewPeriodicReader(exp)
-	}
-	if c.Prom != nil && c.Prom.Enable && c.Prom.Metrics {
+	} else if c.Prom != nil && c.Prom.Enable && c.Prom.Metrics {
 		registry := prom.NewRegistry()
 		reader, err = prometheus.New(prometheus.WithRegisterer(registry))
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		return nil, fmt.Errorf("not support metrics")
 	}
 	// Register the exporter with an SDK via a periodic reader.
 	sdk = metric.NewMeterProvider(

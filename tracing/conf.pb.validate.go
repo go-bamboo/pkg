@@ -278,6 +278,8 @@ func (m *Otlp) validate(all bool) error {
 
 	// no validation rules for Traces
 
+	// no validation rules for Xray
+
 	if len(errors) > 0 {
 		return OtlpMultiError(errors)
 	}
