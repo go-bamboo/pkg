@@ -1,12 +1,35 @@
 syntax = "proto3";
 
-package pkg.meta;
+package meta;
 
-option go_package = "bls/pkg/meta;meta";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "errors/errors.proto";
+
+option go_package = "github.com/go-bamboo/pkg/meta;meta";
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (errors.default_code) = 500;
+
+  // 为某个枚举单独设置错误码
+  MD_NOT_FOUND = 0;
+
+  DP_NOT_FOUND = 1;
+
+  TOKEN_NOT_FOUND = 2;
+
+  UA_NOT_FOUND = 3;
+
+  REMOTE_ADDR_NOT_FOUND = 4;
+}
 
 message DataPermission {
-  string dataScope = 1;
-	uint64 userId = 2;
-	int32 roleId = 3;
-  string roleKey = 4;
+	uint64 userId = 1;
+	int32 roleId = 2;
+  string roleKey = 3;
+  string dataScope = 4;
 }
+

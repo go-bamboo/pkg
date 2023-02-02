@@ -57,13 +57,13 @@ func (m *DataPermission) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for DataScope
-
 	// no validation rules for UserId
 
 	// no validation rules for RoleId
 
 	// no validation rules for RoleKey
+
+	// no validation rules for DataScope
 
 	if len(errors) > 0 {
 		return DataPermissionMultiError(errors)

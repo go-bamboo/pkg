@@ -10,14 +10,14 @@ import (
 func GetDataPermissions(ctx context.Context) (permission *DataPermission, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
-		err = ErrNotExistMd("不存在md")
+		err = ErrorMdNotFound("不存在md")
 		return
 	}
 	v := md.Get("X-Md-Global-Dp")
 	if len(v) <= 0 {
 		v = md.Get("x-md-global-dp")
 		if len(v) <= 0 {
-			err = ErrNotExistDp("不存在dp")
+			err = ErrorDpNotFound("不存在dp")
 			return
 		}
 	}
@@ -32,12 +32,12 @@ func GetDataPermissions(ctx context.Context) (permission *DataPermission, err er
 func GetToken(ctx context.Context) (token string, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
-		err = ErrNotExistMd("不存在md")
+		err = ErrorMdNotFound("不存在md")
 		return
 	}
 	v := md.Get("x-md-global-token")
 	if len(v) <= 0 {
-		err = ErrNotExistDp("不存在token")
+		err = ErrorTokenNotFound("不存在token")
 		return
 	}
 	token = v
@@ -47,12 +47,12 @@ func GetToken(ctx context.Context) (token string, err error) {
 func GetUA(ctx context.Context) (ua string, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
-		err = ErrNotExistMd("不存在md")
+		err = ErrorMdNotFound("不存在md")
 		return
 	}
 	v := md.Get("x-md-global-ua")
 	if len(v) <= 0 {
-		err = ErrNotExistDp("meta")
+		err = ErrorUaNotFound("ua")
 		return
 	}
 	ua = v
@@ -62,12 +62,12 @@ func GetUA(ctx context.Context) (ua string, err error) {
 func GetRemoteAddr(ctx context.Context) (remoteAddr string, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
-		err = ErrNotExistMd("不存在md")
+		err = ErrorMdNotFound("不存在md")
 		return
 	}
 	v := md.Get("x-md-global-token-remote_addr")
 	if len(v) <= 0 {
-		err = ErrNotExistDp("meta")
+		err = ErrorRemoteAddrNotFound("remote ip")
 		return
 	}
 	remoteAddr = v
