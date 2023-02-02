@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/go-bamboo/pkg/meta"
 	"github.com/go-kratos/kratos/v2/metadata"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
@@ -43,6 +44,7 @@ func WithPropagatedPrefix(prefix ...string) Option {
 
 // Server is middleware server-side metadata.
 func Server(opts ...Option) middleware.Middleware {
+	// X-Forwarded 兼容traffic
 	options := &options{
 		prefix: []string{"x-md-", "X-Forwarded"}, // x-md-global-, x-md-local
 	}
@@ -57,6 +59,19 @@ func Server(opts ...Option) middleware.Middleware {
 				for _, k := range header.Keys() {
 					if options.hasPrefix(k) {
 						md.Set(k, header.Get(k))
+					}
+					// 单独设置
+					if k == "User-Agent" {
+						md.Set(meta.KeyUA, header.Get(k))
+					}
+					if k == "X-Real-IP" {
+						md.Set(meta.KeyRealIP, header.Get(k))
+					}
+					if k == "X-Forwarded-For" {
+						ips := strings.Split(header.Get(k), ",")
+						if len(ips) > 0 {
+							md.Set(meta.KeyRealIP, ips[0])
+						}
 					}
 				}
 				ctx = metadata.NewServerContext(ctx, md)

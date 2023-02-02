@@ -7,19 +7,23 @@ import (
 	"github.com/go-kratos/kratos/v2/metadata"
 )
 
+const (
+	KeyToken  = "x-md-global-token"
+	KeyDP     = "x-md-global-dp"
+	KeyUA     = "x-md-global-ua"
+	KeyRealIP = "x-md-global-real-ip"
+)
+
 func GetDataPermissions(ctx context.Context) (permission *DataPermission, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
 		err = ErrorMdNotFound("不存在md")
 		return
 	}
-	v := md.Get("X-Md-Global-Dp")
+	v := md.Get(KeyDP)
 	if len(v) <= 0 {
-		v = md.Get("x-md-global-dp")
-		if len(v) <= 0 {
-			err = ErrorDpNotFound("不存在dp")
-			return
-		}
+		err = ErrorDpNotFound("不存在dp")
+		return
 	}
 	var dp DataPermission
 	if err = jsonx.Unmarshal([]byte(v), &dp); err != nil {
@@ -35,7 +39,7 @@ func GetToken(ctx context.Context) (token string, err error) {
 		err = ErrorMdNotFound("不存在md")
 		return
 	}
-	v := md.Get("x-md-global-token")
+	v := md.Get(KeyToken)
 	if len(v) <= 0 {
 		err = ErrorTokenNotFound("不存在token")
 		return
@@ -50,7 +54,7 @@ func GetUA(ctx context.Context) (ua string, err error) {
 		err = ErrorMdNotFound("不存在md")
 		return
 	}
-	v := md.Get("x-md-global-ua")
+	v := md.Get(KeyUA)
 	if len(v) <= 0 {
 		err = ErrorUaNotFound("ua")
 		return
@@ -59,17 +63,15 @@ func GetUA(ctx context.Context) (ua string, err error) {
 	return
 }
 
-func GetRemoteAddr(ctx context.Context) (remoteAddr string, err error) {
+func GetRealIP(ctx context.Context) (ip string, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
-		err = ErrorMdNotFound("不存在md")
-		return
+		return "", ErrorMdNotFound("不存在md")
 	}
-	v := md.Get("x-md-global-token-remote_addr")
+	v := md.Get(KeyRealIP)
 	if len(v) <= 0 {
 		err = ErrorRemoteAddrNotFound("remote ip")
 		return
 	}
-	remoteAddr = v
-	return
+	return v, nil
 }
