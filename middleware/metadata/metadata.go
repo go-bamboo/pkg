@@ -59,15 +59,11 @@ func Server(opts ...Option) middleware.Middleware {
 				for _, k := range header.Keys() {
 					if options.hasPrefix(k) {
 						md.Set(k, header.Get(k))
-					}
-					// 单独设置
-					if k == "User-Agent" {
+					} else if k == "User-Agent" { // 单独设置
 						md.Set(meta.KeyUA, header.Get(k))
-					}
-					if k == "X-Real-IP" {
+					} else if k == "X-Real-IP" {
 						md.Set(meta.KeyRealIP, header.Get(k))
-					}
-					if k == "X-Forwarded-For" {
+					} else if k == "X-Forwarded-For" {
 						ips := strings.Split(header.Get(k), ",")
 						if len(ips) > 0 {
 							md.Set(meta.KeyRealIP, ips[0])
