@@ -4,10 +4,11 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
-	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
-	kuberegistry "github.com/go-kratos/kratos/contrib/registry/kubernetes/v2"
-	"github.com/go-kratos/kratos/contrib/registry/nacos/v2"
+	"github.com/go-bamboo/pkg/registry/consul"
+	"github.com/go-bamboo/pkg/registry/core"
+	"github.com/go-bamboo/pkg/registry/etcd"
+	kuberegistry "github.com/go-bamboo/pkg/registry/kubernetes"
+	"github.com/go-bamboo/pkg/registry/nacos"
 	kreg "github.com/go-kratos/kratos/v2/registry"
 	"github.com/hashicorp/consul/api"
 	"github.com/nacos-group/nacos-sdk-go/clients"
@@ -38,7 +39,7 @@ func getClientSet() (*kubernetes.Clientset, error) {
 	return clientSet, nil
 }
 
-func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
+func New(c *Conf) (core.Registrar, kreg.Discovery) {
 	if c.Etcd != nil && c.Etcd.Enable {
 		cli, err := etcdv3.New(etcdv3.Config{
 			Endpoints: c.Etcd.Endpoints,
@@ -56,7 +57,7 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 		if err != nil {
 			panic(err)
 		}
-		r := consul.New(consulClient, consul.WithHealthCheck(false))
+		r := consul.New(consulClient)
 		return r, r
 	} else if c.Kube != nil && c.Kube.Enable {
 		cli, err := getClientSet()

@@ -18,10 +18,6 @@ require (
 	github.com/go-kratos/aegis v0.1.3
 	github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20220927151429-0ecc2b422f28
 	github.com/go-kratos/kratos/contrib/config/nacos/v2 v2.0.0-20221014030943-7a99e8bbdc01
-	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20221014030943-7a99e8bbdc01
-	github.com/go-kratos/kratos/contrib/registry/etcd/v2 v2.0.0-20221014030943-7a99e8bbdc01
-	github.com/go-kratos/kratos/contrib/registry/kubernetes/v2 v2.0.0-20221014030943-7a99e8bbdc01
-	github.com/go-kratos/kratos/contrib/registry/nacos/v2 v2.0.0-20221028122214-f0878b0a7892
 	github.com/go-kratos/kratos/v2 v2.5.3
 	github.com/go-playground/form/v4 v4.2.0
 	github.com/go-redis/cache/v8 v8.4.3
@@ -33,6 +29,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/hashicorp/consul/api v1.14.0
+	github.com/json-iterator/go v1.1.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/nacos-group/nacos-sdk-go v1.1.2
@@ -60,6 +57,7 @@ require (
 	go.uber.org/zap v1.23.0
 	golang.org/x/crypto v0.1.0
 	golang.org/x/net v0.4.0
+	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af
 	google.golang.org/genproto v0.0.0-20221201164419-0e50fba7f41c
 	google.golang.org/grpc v1.52.0
 	google.golang.org/protobuf v1.28.1
@@ -70,6 +68,8 @@ require (
 	gorm.io/driver/sqlite v1.4.3
 	gorm.io/driver/sqlserver v1.4.1
 	gorm.io/gorm v1.24.1
+	k8s.io/api v0.25.3
+	k8s.io/apimachinery v0.25.3
 	k8s.io/client-go v0.25.3
 )
 
@@ -153,7 +153,6 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.7 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
@@ -213,15 +212,12 @@ require (
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/term v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
-	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.102.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.25.3 // indirect
-	k8s.io/apimachinery v0.25.3 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
 	k8s.io/utils v0.0.0-20221012122500-cfd413dd9e85 // indirect
