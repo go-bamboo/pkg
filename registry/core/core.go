@@ -11,3 +11,7 @@ type Registrar interface {
 	// Update the registration.
 	Update(ctx context.Context, service *kreg.ServiceInstance) error
 }
+
+type Discovery = kreg.Discovery
+
+type ServiceInstance = kreg.ServiceInstance

@@ -225,6 +225,62 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 	return nil
 }
 
+// Update register service instance to consul
+func (c *Client) Update(_ context.Context, svc *registry.ServiceInstance, enableHealthCheck bool) error {
+	addresses := make(map[string]api.ServiceAddress, len(svc.Endpoints))
+	checkAddresses := make([]string, 0, len(svc.Endpoints))
+	for _, endpoint := range svc.Endpoints {
+		raw, err := url.Parse(endpoint)
+		if err != nil {
+			return err
+		}
+		addr := raw.Hostname()
+		port, _ := strconv.ParseUint(raw.Port(), 10, 16)
+
+		checkAddresses = append(checkAddresses, net.JoinHostPort(addr, strconv.FormatUint(port, 10)))
+		addresses[raw.Scheme] = api.ServiceAddress{Address: endpoint, Port: int(port)}
+	}
+	asr := &api.AgentServiceRegistration{
+		ID:              svc.ID,
+		Name:            svc.Name,
+		Meta:            svc.Metadata,
+		Tags:            []string{fmt.Sprintf("version=%s", svc.Version)},
+		TaggedAddresses: addresses,
+	}
+	if len(checkAddresses) > 0 {
+		host, portRaw, _ := net.SplitHostPort(checkAddresses[0])
+		port, _ := strconv.ParseInt(portRaw, 10, 32)
+		asr.Address = host
+		asr.Port = int(port)
+	}
+	if enableHealthCheck {
+		for _, address := range checkAddresses {
+			asr.Checks = append(asr.Checks, &api.AgentServiceCheck{
+				TCP:                            address,
+				Interval:                       fmt.Sprintf("%ds", c.healthcheckInterval),
+				DeregisterCriticalServiceAfter: fmt.Sprintf("%ds", c.deregisterCriticalServiceAfter),
+				Timeout:                        "5s",
+			})
+		}
+		// custom checks
+		asr.Checks = append(asr.Checks, c.serviceChecks...)
+	}
+	if c.heartbeat {
+		asr.Checks = append(asr.Checks, &api.AgentServiceCheck{
+			CheckID:                        "service:" + svc.ID,
+			TTL:                            fmt.Sprintf("%ds", c.healthcheckInterval*2),
+			DeregisterCriticalServiceAfter: fmt.Sprintf("%ds", c.deregisterCriticalServiceAfter),
+		})
+	}
+	err := c.cli.Agent().ServiceRegisterOpts(asr, api.ServiceRegisterOpts{
+		ReplaceExistingChecks: false,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Deregister service by service ID
 func (c *Client) Deregister(_ context.Context, serviceID string) error {
 	c.cancel()

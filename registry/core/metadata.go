@@ -1,4 +1,4 @@
-package registry
+package core
 
 const (
 	// MetaWeight meta region
