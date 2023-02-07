@@ -68,6 +68,19 @@ func Server(opts ...Option) middleware.Middleware {
 						if len(ips) > 0 {
 							md.Set(meta.KeyRealIP, ips[0])
 						}
+					} else if k == "Locale" || k == "locale" {
+						locale := header.Get(k)
+						locale = strings.ToUpper(locale)
+						if strings.Contains(locale, "EN") {
+							locale = "EN"
+						}
+						if strings.Contains(locale, "CN") {
+							locale = "CN"
+						}
+						if locale != "EN" && locale != "CN" {
+							locale = "EN"
+						}
+						md.Set(meta.KeyLocale, locale)
 					}
 				}
 				ctx = metadata.NewServerContext(ctx, md)

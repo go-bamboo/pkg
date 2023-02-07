@@ -12,6 +12,7 @@ const (
 	KeyDP     = "x-md-global-dp"
 	KeyUA     = "x-md-global-ua"
 	KeyRealIP = "x-md-global-real-ip"
+	KeyLocale = "x-md-global-locale"
 )
 
 func GetDataPermissions(ctx context.Context) (permission *DataPermission, err error) {
@@ -71,6 +72,19 @@ func GetRealIP(ctx context.Context) (ip string, err error) {
 	v := md.Get(KeyRealIP)
 	if len(v) <= 0 {
 		err = ErrorRemoteAddrNotFound("remote ip")
+		return
+	}
+	return v, nil
+}
+
+func GetLocale(ctx context.Context) (ip string, err error) {
+	md, ok := metadata.FromServerContext(ctx)
+	if !ok {
+		return "", ErrorMdNotFound("不存在md")
+	}
+	v := md.Get(KeyLocale)
+	if len(v) <= 0 {
+		err = ErrorRemoteAddrNotFound("locale")
 		return
 	}
 	return v, nil

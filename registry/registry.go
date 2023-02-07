@@ -56,7 +56,7 @@ func New(c *Conf) (kreg.Registrar, kreg.Discovery) {
 		if err != nil {
 			panic(err)
 		}
-		r := consul.New(consulClient)
+		r := consul.New(consulClient, consul.WithHealthCheck(false))
 		return r, r
 	} else if c.Kube != nil && c.Kube.Enable {
 		cli, err := getClientSet()

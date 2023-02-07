@@ -218,6 +218,8 @@ func (m *Consul) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for EnableHealthCheck
+
 	if len(errors) > 0 {
 		return ConsulMultiError(errors)
 	}
