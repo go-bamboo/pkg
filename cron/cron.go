@@ -68,6 +68,14 @@ func New(options ...Option) (d *Cron) {
 	return
 }
 
+func New1(options ...Option) (d *Cron, cf func()) {
+	d = New(options...)
+	d.Start()
+	return d, func() {
+		d.Stop()
+	}
+}
+
 func (c *Cron) Start() error {
 	c.cr.Start()
 	log.Infof("[cron] cron start")

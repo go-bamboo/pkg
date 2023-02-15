@@ -142,11 +142,15 @@ var (
 	}
 )
 
-func (c *S3Session) UploadBytes(fileName string, data []byte) (string, error) {
-	return c.UploadBytesToDir(c.c.Dir, fileName, data)
+func (c *S3Session) UploadBytes(ctx context.Context, fileName string, data []byte) (string, error) {
+	return c.UploadBytesToDir(ctx, c.c.Dir, fileName, data)
 }
 
-func (c *S3Session) UploadBytesToDir(dir string, fileName string, data []byte) (string, error) {
+func (c *S3Session) UploadBytesToDir(ctx context.Context, dir, fileName string, data []byte) (string, error) {
+	return c.UploadBytesToBucketDir(ctx, c.c.Bucket, dir, fileName, data)
+}
+
+func (c *S3Session) UploadBytesToBucketDir(ctx context.Context, bucket, dir, fileName string, data []byte) (string, error) {
 	contentMd5 := fmt.Sprintf("%x", md5.Sum(data))
 	if fileName == "" {
 		fileName = contentMd5
@@ -154,20 +158,21 @@ func (c *S3Session) UploadBytesToDir(dir string, fileName string, data []byte) (
 	path := fmt.Sprintf("%s/%s", dir, fileName)
 	contentType := aws.String(http.DetectContentType(data))
 	size := len(data)
-	output, err := c.s3.PutObject(
-		context.TODO(),
+	_, err := c.s3.PutObject(
+		ctx,
 		&s3.PutObjectInput{
-			Bucket:        aws.String(c.c.Bucket),
+			Bucket:        aws.String(bucket),
 			Key:           aws.String(path),
 			Body:          bytes.NewReader(data),
 			ContentLength: int64(size),
-			ContentMD5:    aws.String(contentMd5),
-			ContentType:   contentType,
+			//ContentMD5:    aws.String(contentMd5),
+			ContentType: contentType,
 		})
 	if err != nil {
 		return "", err
 	}
-	log.Info("upload data to s3", output.VersionId)
+	//versionId := output.VersionId
+	//log.Infof("upload data to s3, version(%v)", *versionId)
 	return c.domain + "/" + c.c.Bucket + "/" + path, nil
 }
 
@@ -297,8 +302,4 @@ func (c *S3Session) LazyMintUploadFile(file multipart.File, fileHeader *multipar
 		return "", err
 	}
 	return fileName, nil
-}
-
-func (c *S3Session) ResizeImage(imageUrl string, fileName string, width, height int) error {
-	return nil
 }
