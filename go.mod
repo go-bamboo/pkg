@@ -32,6 +32,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/mojocn/base64Captcha v1.3.5
+	github.com/mssola/user_agent v0.5.3
 	github.com/nacos-group/nacos-sdk-go v1.1.2
 	github.com/panjf2000/ants/v2 v2.5.0
 	github.com/philchia/agollo/v4 v4.1.4

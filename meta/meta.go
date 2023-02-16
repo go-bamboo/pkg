@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-bamboo/pkg/jsonx"
 	"github.com/go-kratos/kratos/v2/metadata"
+	"github.com/mssola/user_agent"
 )
 
 const (
@@ -49,7 +50,7 @@ func GetToken(ctx context.Context) (token string, err error) {
 	return
 }
 
-func GetUA(ctx context.Context) (ua string, err error) {
+func GetUA(ctx context.Context) (ua *user_agent.UserAgent, err error) {
 	md, ok := metadata.FromServerContext(ctx)
 	if !ok {
 		err = ErrorMdNotFound("不存在md")
@@ -60,8 +61,7 @@ func GetUA(ctx context.Context) (ua string, err error) {
 		err = ErrorUaNotFound("ua")
 		return
 	}
-	ua = v
-	return
+	return user_agent.New(v), nil
 }
 
 func GetRealIP(ctx context.Context) (ip string, err error) {
