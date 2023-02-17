@@ -173,7 +173,7 @@ func (c *S3Session) UploadBytesToBucketDir(ctx context.Context, bucket, dir, fil
 	}
 	//versionId := output.VersionId
 	//log.Infof("upload data to s3, version(%v)", *versionId)
-	return c.domain + "/" + c.c.Bucket + "/" + path, nil
+	return c.domain + "/" + bucket + "/" + path, nil
 }
 
 func (c *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string, error) {
