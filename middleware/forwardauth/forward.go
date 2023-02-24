@@ -8,6 +8,7 @@ import (
 
 	ssopb "github.com/go-bamboo/pkg/api/sys"
 	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/meta"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
@@ -34,12 +35,12 @@ func Server() middleware.Middleware {
 				}
 				areq := req.(*ssopb.AuthRequest)
 				areq.AccessToken = token
-				reply, err = handler(ctx, req)
+				reply, err = handler(ctx, areq)
 				if err != nil {
 					return
 				}
 				dp, _ := json.Marshal(reply)
-				info.ReplyHeader().Set("x-md-global-dp", string(dp))
+				info.ReplyHeader().Set(meta.KeyDP, string(dp))
 				return
 			}
 			return handler(ctx, req)

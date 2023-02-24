@@ -51,7 +51,6 @@ func NewServer(c *Conf, opts ...Option) *Server {
 			metrics.Server(),
 			logging.Server(),
 			ratelimit.Server(ratelimit.WithLimiter(limiter)),
-			validate.Validator(),
 		},
 	}
 	for _, o := range opts {

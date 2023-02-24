@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	syspb "github.com/go-bamboo/pkg/api/sys"
+	"github.com/go-bamboo/pkg/meta"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
@@ -36,7 +37,7 @@ func Server(opts ...Option) middleware.Middleware {
 			if info, ok := transport.FromServerContext(ctx); ok {
 				rawUri := info.RequestHeader().Get("X-Forwarded-Uri")
 				method := info.RequestHeader().Get("X-Forwarded-Method")
-				dp := info.RequestHeader().Get("x-md-global-dp")
+				dp := info.RequestHeader().Get(meta.KeyDP)
 				uri, err1 := url.Parse(rawUri)
 				if err1 != nil {
 					err = err1
@@ -46,7 +47,7 @@ func Server(opts ...Option) middleware.Middleware {
 				x.Path = uri.Path
 				x.Method = method
 				reply, err = handler(ctx, x)
-				info.ReplyHeader().Set("x-md-global-dp", dp)
+				info.ReplyHeader().Set(meta.KeyDP, dp)
 				return
 			}
 			return handler(ctx, req)
