@@ -13,7 +13,7 @@ option go_package = "github.com/go-bamboo/pkg/api/sys;sys";
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 	info: {
-		title: "sso服务";
+		title: "sys服务";
 		version: "1.0";
 	};
 	schemes: HTTP;
@@ -47,7 +47,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 			};
 			schema: {
 				json_schema: {
-					ref: ".errors.Error";
+					ref: ".errors.Status";
 				}
 			}
 		}

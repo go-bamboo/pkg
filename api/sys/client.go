@@ -2,11 +2,11 @@ package sys
 
 import (
 	"context"
-	tracing2 "github.com/go-bamboo/pkg/otel"
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/middleware/logging"
+	"github.com/go-bamboo/pkg/middleware/metrics"
 	"github.com/go-bamboo/pkg/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/metadata"
@@ -14,23 +14,19 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	"go.opentelemetry.io/otel/propagation"
 )
 
 // AppID .
 const appID = "discovery:///sys"
 
-// NewSys new sso
+// MustNew new sys
 func MustNew(ctx context.Context, timeout time.Duration, r registry.Discovery) (addressc SysClient) {
 	m := grpc.WithMiddleware(
 		middleware.Chain(
 			recovery.Recovery(),
 			metadata.Client(),
-			tracing.Client(
-				tracing.WithPropagator(
-					propagation.NewCompositeTextMapPropagator(tracing2.Metadata{}, propagation.Baggage{}, tracing2.TraceContext{}),
-				),
-			),
+			tracing.Client(),
+			metrics.Client(),
 			logging.Client(),
 			validate.Validator(),
 			//circuitbreaker.Client(),
