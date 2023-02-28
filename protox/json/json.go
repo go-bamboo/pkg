@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -29,6 +30,11 @@ func MarshalAny(m interface{}) ([]byte, error) {
 }
 
 // Unmarshal unmarshals data bytes into v.
-func Unmarshal(data []byte, v interface{}) error {
+func Unmarshal(data []byte, v proto.Message) error {
+	return protojson.Unmarshal(data, v)
+}
+
+// UnmarshalAny unmarshals data bytes into v.
+func UnmarshalAny(data []byte, v interface{}) error {
 	return json.Unmarshal(data, v)
 }
