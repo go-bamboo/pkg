@@ -84,7 +84,6 @@ func (p *GormTracer) after(db *gorm.DB) {
 	}
 	if db.Error != nil {
 		span.RecordError(db.Error)
-		db.Error = WrapGormError(db.Error)
 	}
 	span.End()
 	return

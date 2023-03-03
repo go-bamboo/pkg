@@ -55,5 +55,8 @@ func New(c *Conf) (*DB, error) {
 	if err = db.Use(NewGormTracer()); err != nil {
 		return nil, err
 	}
+	if err = db.Use(NewGormError()); err != nil {
+		return nil, err
+	}
 	return db, nil
 }
