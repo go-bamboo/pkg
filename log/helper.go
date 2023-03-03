@@ -20,7 +20,31 @@ func With(c zapcore.Core, kv ...interface{}) zapcore.Core {
 	var keysAndValues []zapcore.Field
 	for i := 0; i < len(kv); i += 2 {
 		key := kv[i]
-		keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.StringType, String: kv[i+1].(string)})
+		val := kv[2]
+		switch val.(type) {
+		case int:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Int32Type, Integer: int64(val.(int))})
+		case uint:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Uint32Type, Integer: int64(val.(uint))})
+		case int8:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Int32Type, Integer: int64(val.(int8))})
+		case uint8:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Uint32Type, Integer: int64(val.(uint8))})
+		case int16:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Int16Type, Integer: int64(val.(int16))})
+		case uint16:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Uint16Type, Integer: int64(val.(uint16))})
+		case int32:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Int32Type, Integer: int64(val.(int32))})
+		case uint32:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Uint32Type, Integer: int64(val.(uint32))})
+		case int64:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Int64Type, Integer: int64(val.(int64))})
+		case uint64:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Uint64Type, Integer: int64(val.(uint64))})
+		case string:
+			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.StringType, String: val.(string)})
+		}
 	}
 	return c.With(keysAndValues)
 }
