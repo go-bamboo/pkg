@@ -20,7 +20,7 @@ func With(c zapcore.Core, kv ...interface{}) zapcore.Core {
 	var keysAndValues []zapcore.Field
 	for i := 0; i < len(kv); i += 2 {
 		key := kv[i]
-		val := kv[2]
+		val := kv[i+1]
 		switch val.(type) {
 		case int:
 			keysAndValues = append(keysAndValues, zapcore.Field{Key: key.(string), Type: zapcore.Int32Type, Integer: int64(val.(int))})
