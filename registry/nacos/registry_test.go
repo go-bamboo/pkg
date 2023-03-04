@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
-
-	"github.com/go-kratos/kratos/v2/registry"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func TestRegistry_Register(t *testing.T) {
@@ -24,9 +24,10 @@ func TestRegistry_Register(t *testing.T) {
 		NotLoadCacheAtStart: true,
 		LogDir:              "/tmp/nacos/log",
 		CacheDir:            "/tmp/nacos/cache",
-		RotateTime:          "1h",
-		MaxAge:              3,
-		LogLevel:            "debug",
+		LogRollingConfig: &lumberjack.Logger{
+			MaxAge: 3,
+		},
+		LogLevel: "debug",
 	}
 
 	// a more graceful way to create naming client
@@ -241,9 +242,10 @@ func TestRegistry_Deregister(t *testing.T) {
 					NotLoadCacheAtStart: true,
 					LogDir:              "/tmp/nacos/log",
 					CacheDir:            "/tmp/nacos/cache",
-					RotateTime:          "1h",
-					MaxAge:              3,
-					LogLevel:            "debug",
+					LogRollingConfig: &lumberjack.Logger{
+						MaxAge: 3,
+					},
+					LogLevel: "debug",
 				}
 
 				// a more graceful way to create naming client
@@ -302,9 +304,10 @@ func TestRegistry_Deregister(t *testing.T) {
 				NotLoadCacheAtStart: true,
 				LogDir:              "/tmp/nacos/log",
 				CacheDir:            "/tmp/nacos/cache",
-				RotateTime:          "1h",
-				MaxAge:              3,
-				LogLevel:            "debug",
+				LogRollingConfig: &lumberjack.Logger{
+					MaxAge: 3,
+				},
+				LogLevel: "debug",
 			}
 
 			// a more graceful way to create naming client
@@ -339,9 +342,10 @@ func TestRegistry_GetService(t *testing.T) {
 		NotLoadCacheAtStart: true,
 		LogDir:              "/tmp/nacos/log",
 		CacheDir:            "/tmp/nacos/cache",
-		RotateTime:          "1h",
-		MaxAge:              3,
-		LogLevel:            "debug",
+		LogRollingConfig: &lumberjack.Logger{
+			MaxAge: 3,
+		},
+		LogLevel: "debug",
 	}
 
 	// a more graceful way to create naming client
@@ -455,9 +459,10 @@ func TestRegistry_Watch(t *testing.T) {
 		NotLoadCacheAtStart: true,
 		LogDir:              "/tmp/nacos/log",
 		CacheDir:            "/tmp/nacos/cache",
-		RotateTime:          "1h",
-		MaxAge:              3,
-		LogLevel:            "debug",
+		LogRollingConfig: &lumberjack.Logger{
+			MaxAge: 3,
+		},
+		LogLevel: "debug",
 	}
 
 	// a more graceful way to create naming client
