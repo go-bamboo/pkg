@@ -29,6 +29,15 @@ func MarshalAny(m interface{}) ([]byte, error) {
 	return buf, nil
 }
 
+// MarshalAnyToString marshals v into a string.
+func MarshalAnyToString(v interface{}) (string, error) {
+	data, err := MarshalAny(v)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
 // Unmarshal unmarshals data bytes into v.
 func Unmarshal(data []byte, v proto.Message) error {
 	return protojson.Unmarshal(data, v)
