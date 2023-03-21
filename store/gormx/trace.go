@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	gormSpanKey        = "__gorm_span"
-	callBackBeforeName = "opentracing:before"
-	callBackAfterName  = "opentracing:after"
-	gormPluginName     = "opentracingPlugin"
+	gormSpanKey       = "__gorm_span"
+	tracingBeforeName = "opentracing:before"
+	tracingAfterName  = "opentracing:after"
+	gormPluginName    = "opentracingPlugin"
 )
 
 type GormTracer struct {
@@ -37,20 +37,20 @@ func (p *GormTracer) Name() string {
 func (p *GormTracer) Initialize(db *gorm.DB) error {
 
 	// 开始前
-	db.Callback().Create().Before("gorm:before_create").Register(callBackBeforeName, p.before)
-	db.Callback().Query().Before("gorm:query").Register(callBackBeforeName, p.before)
-	db.Callback().Delete().Before("gorm:before_delete").Register(callBackBeforeName, p.before)
-	db.Callback().Update().Before("gorm:setup_reflect_value").Register(callBackBeforeName, p.before)
-	db.Callback().Row().Before("gorm:row").Register(callBackBeforeName, p.before)
-	db.Callback().Raw().Before("gorm:raw").Register(callBackBeforeName, p.before)
+	db.Callback().Create().Before("gorm:tracing_create").Register(tracingBeforeName, p.before)
+	db.Callback().Delete().Before("gorm:tracing_delete").Register(tracingBeforeName, p.before)
+	db.Callback().Update().Before("gorm:tracing_update").Register(tracingBeforeName, p.before)
+	db.Callback().Query().Before("gorm:tracing_query").Register(tracingBeforeName, p.before)
+	db.Callback().Row().Before("gorm:tracing_row").Register(tracingBeforeName, p.before)
+	db.Callback().Raw().Before("gorm:tracing_raw").Register(tracingBeforeName, p.before)
 
 	// 结束后
-	db.Callback().Create().After("gorm:after_create").Register(callBackAfterName, p.after)
-	db.Callback().Query().After("gorm:after_query").Register(callBackAfterName, p.after)
-	db.Callback().Delete().After("gorm:after_delete").Register(callBackAfterName, p.after)
-	db.Callback().Update().After("gorm:after_update").Register(callBackAfterName, p.after)
-	db.Callback().Row().After("gorm:row").Register(callBackAfterName, p.after)
-	db.Callback().Raw().After("gorm:raw").Register(callBackAfterName, p.after)
+	db.Callback().Create().After("gorm:tracing_create").Register(tracingAfterName, p.after)
+	db.Callback().Delete().After("gorm:tracing_delete").Register(tracingAfterName, p.after)
+	db.Callback().Update().After("gorm:tracing_update").Register(tracingAfterName, p.after)
+	db.Callback().Query().After("gorm:tracing_query").Register(tracingAfterName, p.after)
+	db.Callback().Row().After("gorm:tracing_row").Register(tracingAfterName, p.after)
+	db.Callback().Raw().After("gorm:tracing_raw").Register(tracingAfterName, p.after)
 	return nil
 }
 

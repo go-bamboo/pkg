@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const errorAfterName = "error:after"
+
 type GormError struct{}
 
 func NewGormError() gorm.Plugin {
@@ -17,12 +19,12 @@ func (p *GormError) Name() string {
 
 func (p *GormError) Initialize(db *gorm.DB) error {
 	// 结束后
-	db.Callback().Create().After("gorm:after_create").Register(callBackAfterName, p.after)
-	db.Callback().Query().After("gorm:after_query").Register(callBackAfterName, p.after)
-	db.Callback().Delete().After("gorm:after_delete").Register(callBackAfterName, p.after)
-	db.Callback().Update().After("gorm:after_update").Register(callBackAfterName, p.after)
-	db.Callback().Row().After("gorm:row").Register(callBackAfterName, p.after)
-	db.Callback().Raw().After("gorm:raw").Register(callBackAfterName, p.after)
+	db.Callback().Create().After("gorm:error_create").Register(errorAfterName, p.after)
+	db.Callback().Query().After("gorm:error_query").Register(errorAfterName, p.after)
+	db.Callback().Delete().After("gorm:error_delete").Register(errorAfterName, p.after)
+	db.Callback().Update().After("gorm:error_update").Register(errorAfterName, p.after)
+	db.Callback().Row().After("gorm:error_row").Register(errorAfterName, p.after)
+	db.Callback().Raw().After("gorm:error_raw").Register(errorAfterName, p.after)
 	return nil
 }
 
