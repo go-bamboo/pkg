@@ -21,7 +21,7 @@ var global = &loggerAppliance{}
 // make logger change will affect all sub-logger.
 type loggerAppliance struct {
 	lock sync.Mutex
-	ZapLogger
+	*ZapLogger
 }
 
 func init() {
@@ -31,7 +31,7 @@ func init() {
 func (a *loggerAppliance) SetLogger(in *ZapLogger) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
-	a.ZapLogger = *in
+	a.ZapLogger = in
 }
 
 func (a *loggerAppliance) GetLogger() *zap.SugaredLogger {
@@ -46,7 +46,7 @@ func SetLogger(logger *ZapLogger) {
 
 // GetLogger returns global logger appliance as logger in current process.
 func GetLogger() *ZapLogger {
-	return &global.ZapLogger
+	return global.ZapLogger
 }
 
 func GetCore() zapcore.Core {
@@ -57,6 +57,12 @@ func GetCore() zapcore.Core {
 //func Log(level Level, keyvals ...interface{}) {
 //	global.slogger.l(level, keyvals...)
 //}
+
+func With(kv ...interface{}) *ZapLogger {
+	core := global.ZapLogger.logger.Core()
+	core = WithCore(core, kv...)
+	return NewLogger(core, 1)
+}
 
 // Debug logs a message at debug level.
 func Debug(a ...interface{}) {
