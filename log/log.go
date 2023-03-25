@@ -48,6 +48,12 @@ func NewZapLogger(core zapcore.Core, n int) *ZapLogger {
 	}
 }
 
+func (s *ZapLogger) With(kv ...interface{}) *ZapLogger {
+	core := s.logger.Core()
+	core = WithCore(core, kv...)
+	return NewLogger(core, 1)
+}
+
 // Log print the kv pairs log.
 func (s *ZapLogger) Log(level log.Level, keyvals ...interface{}) error {
 	if len(keyvals) == 0 {
