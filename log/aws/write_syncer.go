@@ -160,14 +160,16 @@ func (ws *cloudWatchWriteSyncer) createLogGroup(ctx context.Context) error {
 // checkLogStream checks if the log stream exists in CloudWatch.
 // If it doesn't it will be created.
 func (ws *cloudWatchWriteSyncer) checkLogStream(ctx context.Context) error {
+	now := time.Now()
 	input := &cloudwatchlogs.DescribeLogStreamsInput{
-		LogGroupName: aws.String(ws.opts.logGroupName),
+		LogGroupName:        aws.String(ws.opts.logGroupName),
+		LogStreamNamePrefix: aws.String(now.Format("2006-01")),
+		OrderBy:             types.OrderByLogStreamName,
 	}
 	output, err := ws.c.DescribeLogStreams(ctx, input)
 	if err != nil {
 		return err
 	}
-	now := time.Now()
 	if output.LogStreams != nil {
 		for _, logStream := range output.LogStreams {
 			fmt.Printf("--------- stream[%v], now[%v]\n", *logStream.LogStreamName, now.Format("2006-01-02"))
