@@ -23,7 +23,6 @@ require (
 	github.com/go-redis/cache/v8 v8.4.3
 	github.com/go-redis/redis/extra/rediscmd/v8 v8.11.5
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/gofor-little/env v1.0.9
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0

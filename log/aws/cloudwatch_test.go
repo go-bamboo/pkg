@@ -3,16 +3,14 @@ package aws_test
 import (
 	"testing"
 	"time"
-
-	"github.com/gofor-little/env"
 )
 
 func TestCloudWatchLogger(t *testing.T) {
 	//is := is.New(t)
 
-	if err := env.Load(".env"); err != nil {
-		t.Log(".env file not found, ignore this if running in CI/CD Pipeline")
-	}
+	//if err := env.Load(".env"); err != nil {
+	//	t.Log(".env file not found, ignore this if running in CI/CD Pipeline")
+	//}
 
 	//var err error
 	// AWS_PROFILE
