@@ -170,7 +170,7 @@ func (ws *cloudWatchWriteSyncer) checkLogStream(ctx context.Context) error {
 	now := time.Now()
 	if output.LogStreams != nil {
 		for _, logStream := range output.LogStreams {
-			fmt.Printf("--------- %v", logStream.LogStreamName)
+			fmt.Printf("--------- stream[%v], now[%v]\n", *logStream.LogStreamName, now.Format("2006-01-02"))
 			if *logStream.LogStreamName == now.Format("2006-01-02") {
 				ws.nextSequenceToken = output.NextToken
 				return nil
