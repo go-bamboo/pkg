@@ -176,17 +176,17 @@ func (c *S3Session) UploadBytesToBucketDir(ctx context.Context, bucket, dir, fil
 	return c.domain + "/" + bucket + "/" + path, nil
 }
 
-func (c *S3Session) ApiCopyFile(dstBucket, srcUrl, dir, filename string) (string, error) {
+func (c *S3Session) CopyObject(ctx context.Context, dst, src, dir, filename string) (string, error) {
 	key := fmt.Sprintf("%s/%s", dir, filename)
-	_, err := c.s3.CopyObject(context.TODO(), &s3.CopyObjectInput{
-		Bucket:     aws.String(dstBucket),
+	_, err := c.s3.CopyObject(ctx, &s3.CopyObjectInput{
+		Bucket:     aws.String(dst),
 		Key:        aws.String(key),
-		CopySource: aws.String(srcUrl),
+		CopySource: aws.String(src),
 	})
 	if err != nil {
 		return "", err
 	}
-	return "https://" + dstBucket + "/" + key, nil
+	return "https://" + dst + "/" + key, nil
 }
 
 func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader) (externalUrl string, frontUrl string, err error) {

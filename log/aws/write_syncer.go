@@ -15,9 +15,9 @@ import (
 )
 
 type cloudWatchWriteSyncer struct {
-	opts *options
-	c    *cloudwatchlogs.Client
-	//logGroupStream    *string
+	opts              *options
+	c                 *cloudwatchlogs.Client
+	logStreamName     *string
 	nextSequenceToken *string
 	queue             chan *types.InputLogEvent
 	wg                sync.WaitGroup
@@ -99,7 +99,7 @@ func (ws *cloudWatchWriteSyncer) putLogs(ctx context.Context, logEvents []types.
 	input := &cloudwatchlogs.PutLogEventsInput{
 		LogEvents:     logEvents,
 		LogGroupName:  aws.String(ws.opts.logGroupName),
-		LogStreamName: aws.String(time.Now().Format("2006-01-02")),
+		LogStreamName: ws.logStreamName,
 		SequenceToken: ws.nextSequenceToken,
 	}
 	output, err := ws.c.PutLogEvents(ctx, input)
@@ -173,6 +173,7 @@ func (ws *cloudWatchWriteSyncer) checkLogStream(ctx context.Context) error {
 	if output.LogStreams != nil {
 		for _, logStream := range output.LogStreams {
 			if *logStream.LogStreamName == now.Format("2006-01-02") {
+				ws.logStreamName = aws.String(now.Format("2006-01-02"))
 				ws.nextSequenceToken = output.NextToken
 				return nil
 			}
@@ -183,10 +184,15 @@ func (ws *cloudWatchWriteSyncer) checkLogStream(ctx context.Context) error {
 
 // createLogStream creates a log stream in CloudWatch.
 func (ws *cloudWatchWriteSyncer) createLogStream(ctx context.Context) error {
+	now := time.Now()
 	input := &cloudwatchlogs.CreateLogStreamInput{
 		LogGroupName:  aws.String(ws.opts.logGroupName),
-		LogStreamName: aws.String(time.Now().Format("2006-01-02")),
+		LogStreamName: aws.String(now.Format("2006-01-02")),
 	}
 	_, err := ws.c.CreateLogStream(ctx, input)
-	return err
+	if err != nil {
+		return err
+	}
+	ws.logStreamName = aws.String(now.Format("2006-01-02"))
+	return nil
 }
