@@ -1,7 +1,7 @@
 package core
 
 const (
-	// MetaWeight meta region
+	// MetaRegion meta region
 	MetaRegion = "region"
 	// MetaZone meta region
 	MetaZone = "zone"
@@ -21,6 +21,8 @@ const (
 	MetaTcpEndpoint = "tcp"
 	// MetaWsEndpoint meta conn count
 	MetaWsEndpoint = "ws"
+	// MetaLastTS meta LastTs
+	MetaLastTS = "LastTs"
 
 	// PlatformWeb platform web
 	PlatformWeb = "web"
