@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/go-bamboo/pkg/middleware/realip"
 	_ "net/http/pprof"
 
 	"github.com/felixge/fgprof"
@@ -47,6 +48,7 @@ func NewServer(c *Conf, opts ...Option) *Server {
 		middlewareChain: []middleware.Middleware{
 			recovery.Recovery(),
 			metadata.Server(),
+			realip.Server(),
 			tracing.Server(),
 			metrics.Server(),
 			logging.Server(),

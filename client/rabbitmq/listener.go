@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
 	"github.com/streadway/amqp"
 )
@@ -29,7 +30,7 @@ type (
 	}
 )
 
-func MustNewListener(c *ListenerConf, handler ConsumeHandler) *RabbitListener {
+func MustNewListener(c *ListenerConf, handler ConsumeHandler) queue.MessageQueue {
 	listener, err := NewListener(c, handler)
 	if err != nil {
 		log.Fatal(err)
@@ -37,7 +38,7 @@ func MustNewListener(c *ListenerConf, handler ConsumeHandler) *RabbitListener {
 	return listener
 }
 
-func NewListener(c *ListenerConf, handler ConsumeHandler) (consumer *RabbitListener, err error) {
+func NewListener(c *ListenerConf, handler ConsumeHandler) (consumer queue.MessageQueue, err error) {
 	conn, err := amqp.Dial(c.Rabbit.Address)
 	if err != nil {
 		return
@@ -57,6 +58,10 @@ func NewListener(c *ListenerConf, handler ConsumeHandler) (consumer *RabbitListe
 		cf:  cf,
 	}
 	return
+}
+
+func (s *RabbitListener) Name() string {
+	return "rabbitListener"
 }
 
 func (s *RabbitListener) Start(context.Context) error {
