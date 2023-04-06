@@ -40,6 +40,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.34
 	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.8.1
+	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
 	go.etcd.io/etcd/client/v3 v3.5.5
 	go.mongodb.org/mongo-driver v1.10.1
 	go.opentelemetry.io/contrib/propagators/aws v1.13.1-0.20230130185202-67c2b13c261e
@@ -188,7 +189,6 @@ require (
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/tklauser/numcpus v0.4.0 // indirect
-	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.4 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
