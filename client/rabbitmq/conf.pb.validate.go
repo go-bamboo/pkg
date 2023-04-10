@@ -744,3 +744,227 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = QueueConfValidationError{}
+
+// Validate checks the field values on AdminExchangeConf with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *AdminExchangeConf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AdminExchangeConf with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AdminExchangeConfMultiError, or nil if none found.
+func (m *AdminExchangeConf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AdminExchangeConf) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Name
+
+	// no validation rules for Kind
+
+	// no validation rules for Durable
+
+	// no validation rules for AutoDelete
+
+	// no validation rules for Internal
+
+	// no validation rules for NoWait
+
+	if len(errors) > 0 {
+		return AdminExchangeConfMultiError(errors)
+	}
+
+	return nil
+}
+
+// AdminExchangeConfMultiError is an error wrapping multiple validation errors
+// returned by AdminExchangeConf.ValidateAll() if the designated constraints
+// aren't met.
+type AdminExchangeConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AdminExchangeConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AdminExchangeConfMultiError) AllErrors() []error { return m }
+
+// AdminExchangeConfValidationError is the validation error returned by
+// AdminExchangeConf.Validate if the designated constraints aren't met.
+type AdminExchangeConfValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AdminExchangeConfValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AdminExchangeConfValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AdminExchangeConfValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AdminExchangeConfValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AdminExchangeConfValidationError) ErrorName() string {
+	return "AdminExchangeConfValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AdminExchangeConfValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAdminExchangeConf.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AdminExchangeConfValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AdminExchangeConfValidationError{}
+
+// Validate checks the field values on AdminQueueConf with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AdminQueueConf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AdminQueueConf with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AdminQueueConfMultiError,
+// or nil if none found.
+func (m *AdminQueueConf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AdminQueueConf) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Name
+
+	// no validation rules for Durable
+
+	// no validation rules for AutoDelete
+
+	// no validation rules for Exclusive
+
+	// no validation rules for NoWait
+
+	if len(errors) > 0 {
+		return AdminQueueConfMultiError(errors)
+	}
+
+	return nil
+}
+
+// AdminQueueConfMultiError is an error wrapping multiple validation errors
+// returned by AdminQueueConf.ValidateAll() if the designated constraints
+// aren't met.
+type AdminQueueConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AdminQueueConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AdminQueueConfMultiError) AllErrors() []error { return m }
+
+// AdminQueueConfValidationError is the validation error returned by
+// AdminQueueConf.Validate if the designated constraints aren't met.
+type AdminQueueConfValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AdminQueueConfValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AdminQueueConfValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AdminQueueConfValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AdminQueueConfValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AdminQueueConfValidationError) ErrorName() string { return "AdminQueueConfValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AdminQueueConfValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAdminQueueConf.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AdminQueueConfValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AdminQueueConfValidationError{}

@@ -77,7 +77,9 @@ func (s *RabbitListener) Start(context.Context) error {
 func (s *RabbitListener) Stop(context.Context) error {
 	s.cf()
 	s.wg.Wait()
-	s.conn.Close()
+	if err := s.conn.Close(); err != nil {
+		return err
+	}
 	log.Infof("[rabbitmq] stop consumer.")
 	return nil
 }

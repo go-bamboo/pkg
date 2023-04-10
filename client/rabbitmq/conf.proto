@@ -35,3 +35,20 @@ message ExchangeConf {
 message QueueConf {
   string name = 1;
 }
+
+message AdminExchangeConf {
+  string name = 1;
+  string kind = 2;
+  bool durable = 3;
+  bool autoDelete = 4;
+  bool internal = 5;
+  bool noWait = 6;
+}
+
+message AdminQueueConf {
+  string name = 1;
+  bool durable = 3;
+  bool autoDelete = 4;
+  bool exclusive = 5;
+  bool noWait = 6;
+}
