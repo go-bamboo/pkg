@@ -67,8 +67,9 @@ func New(c *Conf) (core.Registrar, kreg.Discovery) {
 		r := kuberegistry.NewRegistry(cli)
 		return r, r
 	} else if c.Nacos != nil && c.Nacos.Enable {
-		sc := []constant.ServerConfig{
-			*constant.NewServerConfig(c.Nacos.IpAddr, c.Nacos.Port),
+		sc := []constant.ServerConfig{}
+		for _, server := range c.Nacos.Servers {
+			sc = append(sc, *constant.NewServerConfig(server.IpAddr, server.Port))
 		}
 		cc := constant.ClientConfig{
 			NamespaceId:         c.Nacos.Namespace,
