@@ -75,8 +75,8 @@ func New(c *Conf) (core.Registrar, kreg.Discovery) {
 			NamespaceId:         c.Nacos.Namespace,
 			TimeoutMs:           5000,
 			NotLoadCacheAtStart: true,
-			LogDir:              "/tmp/nacos/log",
-			CacheDir:            "/tmp/nacos/cache",
+			LogDir:              c.Nacos.LogDir,
+			CacheDir:            c.Nacos.CacheDir,
 			LogLevel:            "debug",
 		}
 		client, err := clients.NewNamingClient(

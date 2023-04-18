@@ -30,6 +30,8 @@ message Nacos {
   bool enable = 1;
   repeated NacosServer servers = 2;
   string namespace = 3;
+  string logDir = 4;
+  string cacheDir = 5;
 }
 
 message Conf {

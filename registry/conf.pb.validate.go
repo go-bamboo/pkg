@@ -456,6 +456,10 @@ func (m *Nacos) validate(all bool) error {
 
 	// no validation rules for Namespace
 
+	// no validation rules for LogDir
+
+	// no validation rules for CacheDir
+
 	if len(errors) > 0 {
 		return NacosMultiError(errors)
 	}
