@@ -1,6 +1,7 @@
 package core
 
 const (
+	MetaID = "id"
 	// MetaRegion meta region
 	MetaRegion = "region"
 	// MetaZone meta region
