@@ -7,9 +7,7 @@ import (
 	"github.com/go-bamboo/pkg/middleware/metadata"
 	"github.com/go-bamboo/pkg/middleware/metrics"
 	"github.com/go-bamboo/pkg/middleware/tracing"
-	"github.com/go-kratos/aegis/ratelimit/bbr"
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -21,7 +19,6 @@ type Server = grpc.Server
 
 // NewServer new a gRPC server.
 func NewServer(c *Conf) *Server {
-	limiter := bbr.NewLimiter()
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			middleware.Chain(
@@ -30,7 +27,6 @@ func NewServer(c *Conf) *Server {
 				tracing.Server(),
 				metrics.Server(),
 				logging.Server(),
-				ratelimit.Server(ratelimit.WithLimiter(limiter)),
 				validate.Validator(),
 			),
 		),

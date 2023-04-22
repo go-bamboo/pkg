@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"github.com/go-bamboo/pkg/middleware/realip"
 	_ "net/http/pprof"
 
 	"github.com/felixge/fgprof"
@@ -9,10 +8,9 @@ import (
 	"github.com/go-bamboo/pkg/middleware/logging"
 	"github.com/go-bamboo/pkg/middleware/metadata"
 	"github.com/go-bamboo/pkg/middleware/metrics"
+	"github.com/go-bamboo/pkg/middleware/realip"
 	"github.com/go-bamboo/pkg/middleware/tracing"
-	"github.com/go-kratos/aegis/ratelimit/bbr"
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -43,7 +41,6 @@ func WithFilter(m ...http.FilterFunc) Option {
 
 // NewServer new a HTTP server.
 func NewServer(c *Conf, opts ...Option) *Server {
-	limiter := bbr.NewLimiter()
 	defaultOpts := &options{
 		middlewareChain: []middleware.Middleware{
 			recovery.Recovery(),
@@ -52,7 +49,7 @@ func NewServer(c *Conf, opts ...Option) *Server {
 			tracing.Server(),
 			metrics.Server(),
 			logging.Server(),
-			ratelimit.Server(ratelimit.WithLimiter(limiter)),
+			validate.Validator(),
 		},
 	}
 	for _, o := range opts {
