@@ -24,9 +24,13 @@ type Client struct {
 	redis.Client
 }
 
+type ClusterClient struct {
+	redis.ClusterClient
+}
+
 func New(c *Conf) *Client {
 	opts := &redis.Options{
-		Addr:         c.Addr,
+		Addr:         c.Addrs[0],
 		DialTimeout:  c.DialTimeout.AsDuration(),
 		ReadTimeout:  c.ReadTimeout.AsDuration(),
 		WriteTimeout: c.DialTimeout.AsDuration(),
@@ -44,5 +48,27 @@ func New(c *Conf) *Client {
 	}
 	return &Client{
 		Client: *rdb,
+	}
+}
+
+func NewCluster(c *Conf) *ClusterClient {
+	opts := &redis.ClusterOptions{
+		Addrs:        c.Addrs,
+		DialTimeout:  c.DialTimeout.AsDuration(),
+		ReadTimeout:  c.ReadTimeout.AsDuration(),
+		WriteTimeout: c.DialTimeout.AsDuration(),
+		//Username:     c.Redis.Username,
+		Password: c.Password,
+	}
+	if c.Tls != nil && c.Tls.InsecureSkipVerify {
+		opts.TLSConfig = &tls.Config{InsecureSkipVerify: c.Tls.InsecureSkipVerify}
+	}
+	rdb := redis.NewClusterClient(opts)
+	rdb.AddHook(NewRedisTracingHook(c.Debug))
+	if c.Debug {
+		redis.SetLogger(NewLogger(log.GetCore()))
+	}
+	return &ClusterClient{
+		ClusterClient: *rdb,
 	}
 }
