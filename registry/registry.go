@@ -77,7 +77,7 @@ func New(c *Conf) (core.Registrar, kreg.Discovery) {
 			NotLoadCacheAtStart: true,
 			LogDir:              c.Nacos.LogDir,
 			CacheDir:            c.Nacos.CacheDir,
-			LogLevel:            "debug",
+			LogLevel:            "info",
 		}
 		client, err := clients.NewNamingClient(
 			vo.NacosClientParam{

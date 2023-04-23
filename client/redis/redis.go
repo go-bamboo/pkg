@@ -34,9 +34,13 @@ func New(c *Conf) *Client {
 		DialTimeout:  c.DialTimeout.AsDuration(),
 		ReadTimeout:  c.ReadTimeout.AsDuration(),
 		WriteTimeout: c.DialTimeout.AsDuration(),
-		//Username:     c.Redis.Username,
-		Password: c.Password,
-		DB:       int(c.Db),
+		DB:           int(c.Db),
+	}
+	if len(c.Username) > 0 {
+		opts.Username = c.Username
+	}
+	if len(c.Password) > 0 {
+		opts.Password = c.Password
 	}
 	if c.Tls != nil && c.Tls.InsecureSkipVerify {
 		opts.TLSConfig = &tls.Config{InsecureSkipVerify: c.Tls.InsecureSkipVerify}
@@ -57,8 +61,12 @@ func NewCluster(c *Conf) *ClusterClient {
 		DialTimeout:  c.DialTimeout.AsDuration(),
 		ReadTimeout:  c.ReadTimeout.AsDuration(),
 		WriteTimeout: c.DialTimeout.AsDuration(),
-		//Username:     c.Redis.Username,
-		Password: c.Password,
+	}
+	if len(c.Username) > 0 {
+		opts.Username = c.Username
+	}
+	if len(c.Password) > 0 {
+		opts.Password = c.Password
 	}
 	if c.Tls != nil && c.Tls.InsecureSkipVerify {
 		opts.TLSConfig = &tls.Config{InsecureSkipVerify: c.Tls.InsecureSkipVerify}
