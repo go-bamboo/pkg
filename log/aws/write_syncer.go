@@ -48,32 +48,38 @@ func newCloudWatchWriteSyncer(opts *options) (ws *cloudWatchWriteSyncer, err err
 	}
 	ws.wg.Add(1)
 	go func() {
+		tg := time.NewTicker(time.Minute)
+		tk := time.NewTicker(time.Second / 2)
 		defer func() {
+			tg.Stop()
+			tk.Stop()
 			ws.wg.Done()
 		}()
-		tk := time.Tick(time.Second / 2)
 		for {
-			<-tk
-			if err := ws.checkLogGroup(context.TODO()); err != nil {
-				fmt.Printf("err: %v", err)
-			}
-			var inputLogEvents []types.InputLogEvent
-		handleGet:
-			ev, isOpen := <-ws.queue
-			if isOpen {
-				inputLogEvents = append(inputLogEvents, *ev)
-			}
-			if len(ws.queue) > 0 && len(inputLogEvents) < queueCap {
-				goto handleGet
-			}
-			if len(inputLogEvents) > 0 {
-				if err := ws.putLogs(context.TODO(), inputLogEvents); err != nil {
-					fmt.Printf("failed to send logs to CloudWatch: %v", err)
+			select {
+			case <-tg.C:
+				if err := ws.checkLogGroup(context.TODO()); err != nil {
+					fmt.Printf("err: %v\n", err)
 				}
-			}
-			if !isOpen {
-				fmt.Printf("cloudwatch exit\n")
-				break
+			case <-tk.C:
+				var inputLogEvents []types.InputLogEvent
+			handleGet:
+				ev, isOpen := <-ws.queue
+				if isOpen {
+					inputLogEvents = append(inputLogEvents, *ev)
+				}
+				if len(ws.queue) > 0 && len(inputLogEvents) < queueCap {
+					goto handleGet
+				}
+				if len(inputLogEvents) > 0 {
+					if err := ws.putLogs(context.TODO(), inputLogEvents); err != nil {
+						fmt.Printf("failed to send logs to CloudWatch: %v", err)
+					}
+				}
+				if !isOpen {
+					fmt.Printf("cloudwatch exit\n")
+					return
+				}
 			}
 		}
 	}()
