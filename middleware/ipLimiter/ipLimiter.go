@@ -20,22 +20,28 @@ func ErrMaxLimit(format string, a ...interface{}) error {
 type Option func(*options)
 
 type options struct {
-	ips sync.Map
-	sec int
-	n   int
+	ips  sync.Map
+	msec int
+	n    int
 }
 
 // WithSec with constant metadata key value.
 func WithSec(sec int) Option {
 	return func(o *options) {
-		o.sec = sec
+		o.msec = sec
+	}
+}
+
+func WithN(n int) Option {
+	return func(o *options) {
+		o.n = n
 	}
 }
 
 func Server(opts ...Option) middleware.Middleware {
 	o := &options{
-		sec: 100,
-		n:   10,
+		msec: 100,
+		n:    3,
 	}
 	for _, opt := range opts {
 		opt(o)
@@ -47,7 +53,7 @@ func Server(opts ...Option) middleware.Middleware {
 				var limiter *rate.Limiter
 				dany, ok := o.ips.Load(realIP)
 				if !ok {
-					limiter = rate.NewLimiter(rate.Every(time.Duration(o.sec)*time.Millisecond), o.n)
+					limiter = rate.NewLimiter(rate.Every(time.Duration(o.msec)*time.Millisecond), o.n)
 					o.ips.Store(realIP, limiter)
 				}
 				limiter, ok = dany.(*rate.Limiter)
