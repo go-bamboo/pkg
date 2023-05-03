@@ -115,6 +115,7 @@ func (q *RabbitMqSender) connect() error {
 	conn.NotifyClose(q.connCloseErr)
 	q.conn = conn
 	q.isConnected.Store(true)
+	log.Infof("rabbitmq connected")
 	return nil
 }
 
@@ -132,6 +133,7 @@ func (q *RabbitMqSender) open() error {
 	channel.NotifyClose(q.channelCloseErr)
 	q.channel = channel
 	q.isChannelOpen.Store(true)
+	log.Infof("rabbitmq channel open")
 	return nil
 }
 
@@ -156,11 +158,15 @@ func (q *RabbitMqSender) reconnect() {
 			log.Infof("rabbitmq sender close")
 			return
 		case err := <-q.channelCloseErr:
-			log.Errorf("channel close notify: %v", err)
-			q.isChannelOpen.Store(false)
+			if err != nil {
+				log.Errorf("channel close notify: %v", err)
+				q.isChannelOpen.Store(false)
+			}
 		case err := <-q.connCloseErr:
-			log.Errorf("conn close notify: %v", err)
-			q.isConnected.Store(false)
+			if err != nil {
+				log.Errorf("conn close notify: %v", err)
+				q.isConnected.Store(false)
+			}
 		}
 		time.Sleep(time.Minute)
 	}
