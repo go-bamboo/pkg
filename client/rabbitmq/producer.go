@@ -53,7 +53,9 @@ func MustNewSender(c *ProducerConf) queue.Sender {
 	if err := sender.connect(); err != nil {
 		log.Fatal(err)
 	}
-
+	if err := sender.open(); err != nil {
+		log.Fatal(err)
+	}
 	sender.wg.Add(1)
 	go sender.reconnect()
 	return sender
@@ -64,11 +66,13 @@ func (q *RabbitMqSender) Name() string {
 }
 
 func (q *RabbitMqSender) Send(ctx context.Context, header map[string]interface{}, exchange string, routeKey string, msg []byte) error {
-	ch, err := q.open()
-	if err != nil {
-		return err
+	if !q.isConnected.Load() {
+		return ErrorDisconnect("")
 	}
-	err = ch.Publish(
+	if !q.isChannelOpen.Load() {
+		return ErrorChannelClosed("")
+	}
+	err := q.channel.Publish(
 		exchange,
 		routeKey,
 		false,
@@ -114,14 +118,21 @@ func (q *RabbitMqSender) connect() error {
 	return nil
 }
 
-func (q *RabbitMqSender) open() (*amqp.Channel, error) {
+func (q *RabbitMqSender) open() error {
 	if !q.isConnected.Load() {
-		return nil, ErrorDisconnect("")
+		return ErrorDisconnect("")
 	}
 	if q.isChannelOpen.Load() {
-		return q.channel, nil
+		return nil
 	}
-	return nil, ErrorChannelClosed("")
+	channel, err := q.conn.Channel()
+	if err != nil {
+		return err
+	}
+	channel.NotifyClose(q.channelCloseErr)
+	q.channel = channel
+	q.isChannelOpen.Store(true)
+	return nil
 }
 
 func (q *RabbitMqSender) reconnect() {
@@ -136,13 +147,8 @@ func (q *RabbitMqSender) reconnect() {
 			}
 		}
 		if q.isConnected.Load() && !q.isChannelOpen.Load() {
-			channel, err := q.conn.Channel()
-			if err != nil {
+			if err := q.open(); err != nil {
 				log.Error(err)
-			} else {
-				channel.NotifyClose(q.channelCloseErr)
-				q.channel = channel
-				q.isChannelOpen.Store(true)
 			}
 		}
 		select {
