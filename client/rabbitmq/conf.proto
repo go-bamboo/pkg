@@ -1,6 +1,8 @@
 syntax = "proto3";
 package client.rabbitmq;
 
+import "errors/errors.proto";
+
 option go_package = "github.com/go-bamboo/pkg/client/rabbitmq;rabbitmq";
 
 message RabbitConf {
@@ -51,4 +53,15 @@ message AdminQueueConf {
   bool autoDelete = 4;
   bool exclusive = 5;
   bool noWait = 6;
+}
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (errors.default_code) = 500;
+
+  UNKOWN = 0;
+
+  DISCONNECT= 1; // 断链接了
+
+  CHANNEL_CLOSED = 2;  // channel 断了
 }
