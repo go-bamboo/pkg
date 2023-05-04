@@ -107,12 +107,12 @@ func (s *RabbitListener) run(ctx context.Context, q *ConsumerConf) {
 			return
 		default:
 			if !s.isConnected.Load() {
-				log.Warnf("rabbitmq disconnect")
+				log.Warnf("[rabbitmq] disconnect")
 				time.Sleep(30 * time.Second)
 				continue
 			}
 			if !s.isChannelOpen.Load() {
-				log.Warnf("rabbitmq channel not open")
+				log.Warnf("[rabbitmq] channel not open")
 				time.Sleep(30 * time.Second)
 				continue
 			}
@@ -175,7 +175,7 @@ func (s *RabbitListener) connect() error {
 	conn.NotifyClose(s.connCloseErr)
 	s.conn = conn
 	s.isConnected.Store(true)
-	log.Infof("rabbitmq connected")
+	log.Infof("[rabbitmq] connected")
 	return nil
 }
 
@@ -193,7 +193,7 @@ func (s *RabbitListener) open() error {
 	channel.NotifyClose(s.channelCloseErr)
 	s.channel = channel
 	s.isChannelOpen.Store(true)
-	log.Infof("rabbitmq channel open")
+	log.Infof("[rabbitmq] channel open")
 	return nil
 }
 
@@ -203,7 +203,7 @@ func (s *RabbitListener) reconnect() {
 	})
 	for {
 		if !s.isConnected.Load() {
-			log.Infof("Attempting to connect")
+			log.Infof("[rabbitmq] Attempting to connect")
 			if err := s.connect(); err != nil {
 				log.Error(err)
 			}
@@ -215,16 +215,16 @@ func (s *RabbitListener) reconnect() {
 		}
 		select {
 		case <-s.ctx.Done():
-			log.Infof("rabbitmq listener close")
+			log.Infof("[rabbitmq] listener close")
 			return
 		case err := <-s.channelCloseErr:
 			if err != nil {
-				log.Errorf("channel close notify: %v", err)
+				log.Errorf("[rabbitmq] channel close notify: %v", err)
 				s.isChannelOpen.Store(false)
 			}
 		case err := <-s.connCloseErr:
 			if err != nil {
-				log.Errorf("conn close notify: %v", err)
+				log.Errorf("[rabbitmq] conn close notify: %v", err)
 				s.isConnected.Store(false)
 			}
 		}
