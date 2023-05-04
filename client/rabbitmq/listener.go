@@ -81,7 +81,6 @@ func (s *RabbitListener) Start(context.Context) error {
 
 func (s *RabbitListener) Stop(context.Context) error {
 	s.cf() // 停掉reconnect
-	s.wg.Wait()
 	if s.isChannelOpen.Load() {
 		if err := s.channel.Close(); err != nil {
 			log.Error(err)
@@ -92,6 +91,7 @@ func (s *RabbitListener) Stop(context.Context) error {
 			log.Error(err)
 		}
 	}
+	s.wg.Wait()
 	log.Infof("[rabbitmq] stop consumer.")
 	return nil
 }
@@ -129,7 +129,7 @@ func (s *RabbitListener) run(ctx context.Context, q *ConsumerConf) {
 				nil,        // args
 			)
 			if nil != err {
-				log.Errorf("[rabbitmq] 获取队列[%s]的消费通道失败: %v", q.Name, err)
+				log.Errorf("[rabbitmq] 获取队列[%s]的消费通道失败: %v, 结束消费队列", q.Name, err)
 				return
 			}
 			log.Infof("[rabbitmq] 开始处理[%s]消息", q.Name)
