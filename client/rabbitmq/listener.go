@@ -60,7 +60,7 @@ func NewListener(c *ListenerConf, handler ConsumeHandler) (consumer queue.Messag
 	if err := listener.open(); err != nil {
 		return nil, err
 	}
-	return
+	return listener, nil
 }
 
 func (s *RabbitListener) Name() string {

@@ -16,7 +16,7 @@ import (
 
 type (
 	RabbitMqSender struct {
-		c           ProducerConf
+		c           *ProducerConf
 		ContentType string
 
 		isConnected     atomic.Bool
@@ -38,7 +38,7 @@ type (
 func MustNewSender(c *ProducerConf) queue.Sender {
 	ctx, cf := context.WithCancel(context.TODO())
 	sender := &RabbitMqSender{
-		c:               *c,
+		c:               c,
 		ContentType:     c.ContentType,
 		connCloseErr:    make(chan *amqp.Error),
 		channelCloseErr: make(chan *amqp.Error),
