@@ -80,17 +80,7 @@ func (s *RabbitListener) Start(context.Context) error {
 }
 
 func (s *RabbitListener) Stop(context.Context) error {
-	if s.isChannelOpen.Load() {
-		if err := s.channel.Close(); err != nil {
-			log.Error(err)
-		}
-	}
-	if s.isConnected.Load() {
-		if err := s.conn.Close(); err != nil {
-			log.Error(err)
-		}
-	}
-	s.cf()
+	s.cf() // 停掉reconnect
 	s.wg.Wait()
 	if s.isChannelOpen.Load() {
 		if err := s.channel.Close(); err != nil {
@@ -225,7 +215,7 @@ func (s *RabbitListener) reconnect() {
 		}
 		select {
 		case <-s.ctx.Done():
-			log.Infof("rabbitmq sender close")
+			log.Infof("rabbitmq listener close")
 			return
 		case err := <-s.channelCloseErr:
 			if err != nil {
