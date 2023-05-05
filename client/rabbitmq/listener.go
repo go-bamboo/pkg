@@ -215,7 +215,7 @@ func (s *RabbitListener) reconnect() {
 		}
 		select {
 		case <-s.ctx.Done():
-			log.Infof("[rabbitmq] listener close")
+			log.Infof("[rabbitmq] listener reconnect close")
 			return
 		case err := <-s.channelCloseErr:
 			if err != nil {
