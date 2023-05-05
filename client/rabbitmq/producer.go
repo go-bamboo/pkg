@@ -93,7 +93,6 @@ func (q *RabbitMqSender) Send(ctx context.Context, header map[string]interface{}
 
 func (q *RabbitMqSender) Close() error {
 	q.cf()
-	q.wg.Wait()
 	if q.isChannelOpen.Load() {
 		if err := q.channel.Close(); err != nil {
 			log.Error(err)
@@ -104,6 +103,8 @@ func (q *RabbitMqSender) Close() error {
 			log.Error(err)
 		}
 	}
+	q.wg.Wait()
+	log.Infof("[rabbitmq][sender] stopping.")
 	return nil
 }
 
