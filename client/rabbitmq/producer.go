@@ -87,7 +87,7 @@ func (q *RabbitMqSender) Send(ctx context.Context, header map[string]interface{}
 	if err != nil {
 		return wrapError(err)
 	}
-	log.Debugw("[rabbitmq] push msg", "exchange", exchange, "routeKey", routeKey, "header", header)
+	log.Debugw("[rabbitmq][sender] push msg", "exchange", exchange, "routeKey", routeKey, "header", header)
 	return nil
 }
 
@@ -115,7 +115,7 @@ func (q *RabbitMqSender) connect() error {
 	conn.NotifyClose(q.connCloseErr)
 	q.conn = conn
 	q.isConnected.Store(true)
-	log.Infof("[rabbitmq] connected")
+	log.Infof("[rabbitmq][sender] connected")
 	return nil
 }
 
@@ -133,7 +133,7 @@ func (q *RabbitMqSender) open() error {
 	channel.NotifyClose(q.channelCloseErr)
 	q.channel = channel
 	q.isChannelOpen.Store(true)
-	log.Infof("[rabbitmq] channel open")
+	log.Infof("[rabbitmq][sender] channel open")
 	return nil
 }
 
@@ -143,7 +143,7 @@ func (q *RabbitMqSender) reconnect() {
 	})
 	for {
 		if !q.isConnected.Load() {
-			log.Infof("[rabbitmq] Attempting to connect")
+			log.Infof("[rabbitmq][sender] Attempting to connect")
 			if err := q.connect(); err != nil {
 				log.Error(err)
 			}
@@ -155,16 +155,16 @@ func (q *RabbitMqSender) reconnect() {
 		}
 		select {
 		case <-q.ctx.Done():
-			log.Infof("[rabbitmq] sender reconnect close")
+			log.Infof("[rabbitmq][sender] sender reconnect close")
 			return
 		case err := <-q.channelCloseErr:
 			if err != nil {
-				log.Errorf("[rabbitmq] channel close notify: %v", err)
+				log.Errorf("[rabbitmq][sender] channel close notify: %v", err)
 				q.isChannelOpen.Store(false)
 			}
 		case err := <-q.connCloseErr:
 			if err != nil {
-				log.Errorf("[rabbitmq] conn close notify: %v", err)
+				log.Errorf("[rabbitmq][sender] conn close notify: %v", err)
 				q.isConnected.Store(false)
 			}
 		}
