@@ -37,7 +37,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/segmentio/kafka-go v0.4.34
-	github.com/streadway/amqp v1.0.0
+	github.com/streadway/amqp v1.0.1-0.20220518090600-2aa28536587a
 	github.com/stretchr/testify v1.8.1
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
 	go.etcd.io/etcd/client/v3 v3.5.5

@@ -9,6 +9,7 @@ import (
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/streadway/amqp"
 )
 
@@ -125,7 +126,7 @@ func (s *RabbitListener) run(ctx context.Context, q *ConsumerConf) {
 				false,      // auto-ack
 				false,      // exclusive
 				false,      // no-local
-				false,      // no-wait
+				true,       // no-wait
 				nil,        // args
 			)
 			if nil != err {
@@ -202,6 +203,26 @@ func (s *RabbitListener) reconnect() {
 		s.wg.Done()
 	})
 	for {
+		select {
+		case <-s.ctx.Done():
+			log.Infof("[rabbitmq][listener] listener reconnect close")
+			return
+		case err := <-s.channelCloseErr:
+			if err != nil && errors.Is(err, amqp.ErrClosed) {
+				log.Errorf("[rabbitmq][listener] channel close notify: %v", err)
+				s.isChannelOpen.Store(false)
+			} else if err != nil {
+				log.Error(err)
+			}
+		case err := <-s.connCloseErr:
+			if err != nil && errors.Is(err, amqp.ErrClosed) {
+				log.Errorf("[rabbitmq][listener] conn close notify: %v", err)
+				s.isConnected.Store(false)
+				s.isChannelOpen.Store(false)
+			} else if err != nil {
+				log.Error(err)
+			}
+		}
 		if !s.isConnected.Load() {
 			log.Infof("[rabbitmq][listener] Attempting to connect")
 			if err := s.connect(); err != nil {
@@ -209,23 +230,9 @@ func (s *RabbitListener) reconnect() {
 			}
 		}
 		if s.isConnected.Load() && !s.isChannelOpen.Load() {
+			log.Infof("[rabbitmq][listener] Attempting to open channel")
 			if err := s.open(); err != nil {
 				log.Error(err)
-			}
-		}
-		select {
-		case <-s.ctx.Done():
-			log.Infof("[rabbitmq][listener] listener reconnect close")
-			return
-		case err := <-s.channelCloseErr:
-			if err != nil {
-				log.Errorf("[rabbitmq][listener] channel close notify: %v", err)
-				s.isChannelOpen.Store(false)
-			}
-		case err := <-s.connCloseErr:
-			if err != nil {
-				log.Errorf("[rabbitmq][listener] conn close notify: %v", err)
-				s.isConnected.Store(false)
 			}
 		}
 		time.Sleep(time.Minute)

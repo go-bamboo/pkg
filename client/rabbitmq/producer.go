@@ -9,6 +9,7 @@ import (
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/streadway/amqp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -92,6 +93,7 @@ func (q *RabbitMqSender) Send(ctx context.Context, header map[string]interface{}
 }
 
 func (q *RabbitMqSender) Close() error {
+	log.Infof("[rabbitmq][sender] stopping ...")
 	q.cf()
 	if q.isChannelOpen.Load() {
 		if err := q.channel.Close(); err != nil {
@@ -143,30 +145,35 @@ func (q *RabbitMqSender) reconnect() {
 		q.wg.Done()
 	})
 	for {
+		select {
+		case <-q.ctx.Done():
+			log.Infof("[rabbitmq][sender] sender reconnect close")
+			return
+		case err := <-q.channelCloseErr:
+			if err != nil && errors.Is(err, amqp.ErrClosed) {
+				log.Errorf("[rabbitmq][sender] channel close notify: %v", err)
+				q.isChannelOpen.Store(false)
+			} else if err != nil {
+				log.Error(err)
+			}
+		case err := <-q.connCloseErr:
+			if err != nil && errors.Is(err, amqp.ErrClosed) {
+				log.Errorf("[rabbitmq][sender] conn close notify: %v", err)
+				q.isConnected.Store(false)
+				q.isChannelOpen.Store(false)
+			}
+		}
 		if !q.isConnected.Load() {
 			log.Infof("[rabbitmq][sender] Attempting to connect")
 			if err := q.connect(); err != nil {
+				log.Error(err)
+			} else if err != nil {
 				log.Error(err)
 			}
 		}
 		if q.isConnected.Load() && !q.isChannelOpen.Load() {
 			if err := q.open(); err != nil {
 				log.Error(err)
-			}
-		}
-		select {
-		case <-q.ctx.Done():
-			log.Infof("[rabbitmq][sender] sender reconnect close")
-			return
-		case err := <-q.channelCloseErr:
-			if err != nil {
-				log.Errorf("[rabbitmq][sender] channel close notify: %v", err)
-				q.isChannelOpen.Store(false)
-			}
-		case err := <-q.connCloseErr:
-			if err != nil {
-				log.Errorf("[rabbitmq][sender] conn close notify: %v", err)
-				q.isConnected.Store(false)
 			}
 		}
 		time.Sleep(time.Minute)
