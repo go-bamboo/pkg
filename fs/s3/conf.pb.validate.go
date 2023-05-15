@@ -66,8 +66,6 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for Dir
 
-	// no validation rules for CloudFront
-
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
 	}

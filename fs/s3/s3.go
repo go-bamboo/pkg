@@ -186,23 +186,24 @@ func (c *S3Session) CopyObject(ctx context.Context, bucket, dir, filename string
 	if err != nil {
 		return "", err
 	}
-	return "https://" + bucket + "/" + key, nil
+	outputURI, _ := url.Parse(c.domain)
+	return outputURI.JoinPath(key).String(), nil
 }
 
-func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader) (externalUrl string, frontUrl string, err error) {
+func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader) (externalUrl string, err error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
-		return "", "", ErrorNotAllowExt("ext: %v", ext)
+		return "", ErrorNotAllowExt("ext: %v", ext)
 	}
 	size := fileHeader.Size
 	fn, err := fileHeader.Open()
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	buffer, err := io.ReadAll(fn)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	imageNameHash := fmt.Sprintf("%x", md5.Sum(buffer))
 	key := fmt.Sprintf("%s/%s%s", c.c.Dir, imageNameHash, ext)
@@ -216,11 +217,10 @@ func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader) (externalU
 		ContentType: aws.String(http.DetectContentType(buffer)),
 	})
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	//externalUrl, err = url.JoinPath(c.domain, c.c.Bucket, key)
 	externalUrl = c.domain + "/" + c.c.Bucket + "/" + key
-	frontUrl = c.c.CloudFront + "/" + key
 	//frontUrl, err = url.JoinPath(c.c.CloudFront, key)
 	//if err != nil {
 	//	return "", "", err
@@ -228,11 +228,11 @@ func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader) (externalU
 	return
 }
 
-func (c *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipart.FileHeader, dir string, userId, docId int64) (string, string, error) {
+func (c *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipart.FileHeader, dir string, userId, docId int64) (string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := path.Ext(originFilename)
 	if _, ok := allowFileExt[ext]; !ok {
-		return "", "", ErrorNotAllowExt("ext: %v", ext)
+		return "", ErrorNotAllowExt("ext: %v", ext)
 	}
 	size := fileHeader.Size
 	buffer := make([]byte, size)
@@ -248,9 +248,9 @@ func (c *S3Session) ApiUploadAvatarDoc(file multipart.File, fileHeader *multipar
 		ContentLength: size,
 	})
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
-	return c.domain + "/" + c.c.Bucket + "/" + fileName, c.c.CloudFront + "/" + fileName, nil
+	return c.domain + "/" + c.c.Bucket + "/" + fileName, nil
 }
 
 func (c *S3Session) AdminUploadResource(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
@@ -280,7 +280,7 @@ func (c *S3Session) AdminUploadResource(file multipart.File, fileHeader *multipa
 	return fileName, nil
 }
 
-func (c *S3Session) LazyMintUploadFile(file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+func (c *S3Session) LazyMintUploadFile(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
 	originFilename := filepath.Base(fileHeader.Filename)
 	ext := strings.ToLower(path.Ext(originFilename))
 	size := fileHeader.Size
@@ -291,7 +291,7 @@ func (c *S3Session) LazyMintUploadFile(file multipart.File, fileHeader *multipar
 	imageNameHash := hex.EncodeToString(sh.Sum([]byte("")))
 	s := c
 	fileName := fmt.Sprintf("images/lazy_mint/%s%s", imageNameHash, ext)
-	_, err := c.s3.PutObject(context.TODO(), &s3.PutObjectInput{
+	_, err := c.s3.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:        aws.String(s.c.Bucket),
 		Key:           aws.String(fileName),
 		Body:          bytes.NewReader(buffer),
