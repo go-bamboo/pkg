@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/go-bamboo/pkg/log/aws"
+	"github.com/go-bamboo/pkg/log/cloudwatch"
 	"github.com/go-bamboo/pkg/log/core"
 	"github.com/go-bamboo/pkg/log/file"
 	"github.com/go-bamboo/pkg/log/fluent"
@@ -74,12 +74,12 @@ func NewLoggerCore(c *Conf) (core.Logger, error) {
 		hooks = append(hooks, c)
 	}
 	if c.CloudWatch != nil && c.CloudWatch.Enable {
-		c, err := aws.NewCloudWatchCore(
-			aws.Level(zapcore.Level(c.CloudWatch.Level)),
-			aws.WithRegion(c.CloudWatch.Region),
-			aws.WithAccessKey(c.CloudWatch.Key),
-			aws.WithAccessSecret(c.CloudWatch.Secret),
-			aws.WithLogGroupName(c.CloudWatch.LogGroupName),
+		c, err := cloudwatch.NewCloudWatchCore(
+			cloudwatch.Level(zapcore.Level(c.CloudWatch.Level)),
+			cloudwatch.WithRegion(c.CloudWatch.Region),
+			cloudwatch.WithAccessKey(c.CloudWatch.Key),
+			cloudwatch.WithAccessSecret(c.CloudWatch.Secret),
+			cloudwatch.WithLogGroupName(c.CloudWatch.LogGroupName),
 		)
 		if err != nil {
 			return nil, err

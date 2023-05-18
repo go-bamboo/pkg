@@ -1,4 +1,4 @@
-package aws_test
+package cloudwatch_test
 
 import (
 	"testing"
