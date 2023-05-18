@@ -1,6 +1,6 @@
 
 
-[![Test Status](https://github.com/go-bamboo/pkg/workflows/go.yml/badge.svg?branch=main)](https://github.com/go-bamboo/pkg/actions)
+[![Test Status](https://github.com/go-bamboo/pkg/workflows/go/badge.svg?branch=main)](https://github.com/go-bamboo/pkg/actions)
 <a href="https://github.com/go-bamboo/pkg/blob/main/LICENSE"><img src="https://img.shields.io/github/license/go-bamboo/pkg" alt="License"></a>
 
 # Pkg
