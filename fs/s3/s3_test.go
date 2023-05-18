@@ -18,12 +18,7 @@ var ctx = context.Background()
 
 func TestMain(m *testing.M) {
 	var err error
-	c := Conf{
-		Key:        "AKIA5ACGRTIJ5WAMFTOK",
-		Secret:     "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",
-		Bucket:     "chat-test.lifeform.cc",
-		CloudFront: "https://chat-test.lifeform.cc",
-	}
+	c := Conf{}
 	s, err = New(&c)
 	if err != nil {
 		return
@@ -33,16 +28,14 @@ func TestMain(m *testing.M) {
 }
 
 func TestApiCopyFile(t *testing.T) {
-	//proxy, err := url.Parse("http://127.0.0.1:7890")
-	url, err := s.ApiCopyFile("ipfs.lifeform.cc", "ipfs-avatar.halonft.art/user_upload/86cc1f4b85a9d0940b7858c1685ff273.jpg",
-		"bsc_test_stage/user_upload", "debug.png")
+	uri, err := s.CopyObject(ctx, "ipfs-v2.halonft.art", "haloworld/L2", "0.jpg", "https://s3.us-east-2.amazonaws.com/ipfs-avatar.halonft.art/avatar_doc/random/haloworld/image/0.jpg")
 	if err != nil {
-
 		t.Fatal(err)
 	}
-	t.Log(url)
+	t.Log(uri)
 	t.Log("success")
 }
+
 func TestUploadImage(t *testing.T) {
 	proxy, err := url.Parse("http://127.0.0.1:7890")
 	contentType, err := s.UploadImage("https://ipfs.io/ipfs/QmYD9AtzyQPjSa9jfZcZq88gSaRssdhGmKqQifUDjGFfXm/sleepy.png",
@@ -55,7 +48,57 @@ func TestUploadImage(t *testing.T) {
 }
 
 func TestUploadBytes(t *testing.T) {
-	path, err := s.UploadBytes(context.TODO(), "1.json", []byte(`{"image" : "https://a.com/a.jpg", "avatar" : "https://t.com/t.jpg"}`))
+	path, err := s.UploadBytes(context.TODO(), "2039.json", []byte(`{
+    "attributes": [
+        {
+            "trait_type": "platform",
+            "value": "web"
+        },
+        {
+            "trait_type": "class",
+            "value": "avatar"
+        },
+        {
+            "trait_type": "Mood",
+            "value": "100"
+        },
+        {
+            "trait_type": "gender",
+            "value": "male"
+        },
+        {
+            "trait_type": "Energy",
+            "value": "100"
+        },
+        {
+            "trait_type": "workAt",
+            "value": "1683122523"
+        },
+        {
+            "trait_type": "Health",
+            "value": "100"
+        },
+        {
+            "trait_type": "HealthMax",
+            "value": "100"
+        },
+        {
+            "trait_type": "ip",
+            "value": "halo"
+        },
+        {
+            "trait_type": "Ability",
+            "value": "1"
+        }
+    ],
+    "description": "Role in HALOWORLD, the founding citizen.",
+    "image": "https://ipfs-v2.halonft.art/bsc_v2/haloworld/L1/image/2039.jpg",
+    "animation_url": "https://ipfs-v2.halonft.art/bsc_v2/haloworld/L1/gif/2039.gif",
+    "modified_url": "https://ipfs-v2.halonft.art/bsc_v2/haloworld/L1/res/2039.main",
+    "original_url": "https://ipfs-v2.halonft.art/bsc_v2/haloworld/L1/original/original_2039.pak",
+    "token_id": 2039,
+    "name": "Origines Citizen"
+}`))
 	if err != nil {
 		t.Fatal(err)
 	}
