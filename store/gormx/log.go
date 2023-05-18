@@ -125,7 +125,7 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 
 	elapsed := time.Since(begin)
 	switch {
-	case err != nil && l.c.LogLevel >= logger.Error && (!errors.Is(err, gorm.ErrRecordNotFound) || !l.c.IgnoreRecordNotFoundError):
+	case err != nil && l.c.LogLevel >= logger.Error && (!errors.Is(err, gorm.ErrRecordNotFound) || !IsGormErrRecordNotFound(err) || !l.c.IgnoreRecordNotFoundError):
 		sql, rows := fc()
 		if rows == -1 {
 			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
