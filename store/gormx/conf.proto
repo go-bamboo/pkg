@@ -21,4 +21,6 @@ message Conf {
   int32 maxOpenConns = 4;
   int32 maxIdleConns = 5;
   google.protobuf.Duration connMaxLifetime = 6;
+  bool ignoreRecordNotFoundError = 7;
+  google.protobuf.Duration slowThreshold = 8;
 }

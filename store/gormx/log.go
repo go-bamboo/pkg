@@ -83,10 +83,7 @@ func NewLogger(config logger.Config, core zapcore.Core) *Logger {
 }
 
 func (l Logger) Enabled(lvl zapcore.Level) bool {
-	if lvl >= l.level {
-		return true
-	}
-	return false
+	return lvl >= l.level
 }
 
 // LogMode log mode
@@ -98,23 +95,17 @@ func (l *Logger) LogMode(level logger.LogLevel) logger.Interface {
 
 // Info print info
 func (l *Logger) Info(ctx context.Context, msg string, data ...interface{}) {
-	if l.c.LogLevel >= logger.Info {
-		l.slogger.Infof(l.infoStr+msg, data...)
-	}
+	l.slogger.Infof(l.infoStr+msg, data...)
 }
 
 // Warn print warn messages
 func (l *Logger) Warn(ctx context.Context, msg string, data ...interface{}) {
-	if l.c.LogLevel >= logger.Warn {
-		l.slogger.Warnf(l.warnStr+msg, data...)
-	}
+	l.slogger.Warnf(l.warnStr+msg, data...)
 }
 
 // Error print error messages
 func (l *Logger) Error(ctx context.Context, msg string, data ...interface{}) {
-	if l.c.LogLevel >= logger.Error {
-		l.slogger.Errorf(l.errStr+msg, data...)
-	}
+	l.slogger.Errorf(l.errStr+msg, data...)
 }
 
 // Trace print sql message

@@ -95,6 +95,37 @@ func (m *Conf) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for IgnoreRecordNotFoundError
+
+	if all {
+		switch v := interface{}(m.GetSlowThreshold()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "SlowThreshold",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConfValidationError{
+					field:  "SlowThreshold",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSlowThreshold()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConfValidationError{
+				field:  "SlowThreshold",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
 	}
