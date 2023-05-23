@@ -155,14 +155,14 @@ func (c *S3Session) UploadBytesToBucketDir(ctx context.Context, bucket, dir, fil
 	if fileName == "" {
 		fileName = contentMd5
 	}
-	path := fmt.Sprintf("%s/%s", dir, fileName)
+	key := fmt.Sprintf("%s/%s", dir, fileName)
 	contentType := aws.String(http.DetectContentType(data))
 	size := len(data)
 	_, err := c.s3.PutObject(
 		ctx,
 		&s3.PutObjectInput{
 			Bucket:        aws.String(bucket),
-			Key:           aws.String(path),
+			Key:           aws.String(key),
 			Body:          bytes.NewReader(data),
 			ContentLength: int64(size),
 			//ContentMD5:    aws.String(contentMd5),
@@ -173,7 +173,7 @@ func (c *S3Session) UploadBytesToBucketDir(ctx context.Context, bucket, dir, fil
 	}
 	//versionId := output.VersionId
 	//log.Infof("upload data to s3, version(%v)", *versionId)
-	return c.domain + "/" + bucket + "/" + path, nil
+	return c.domain + "/" + bucket + "/" + key, nil
 }
 
 func (c *S3Session) CopyObject(ctx context.Context, bucket, dir, filename string, src string) (string, error) {
@@ -187,7 +187,7 @@ func (c *S3Session) CopyObject(ctx context.Context, bucket, dir, filename string
 		return "", err
 	}
 	outputURI, _ := url.Parse(c.domain)
-	return outputURI.JoinPath(key).String(), nil
+	return outputURI.JoinPath(bucket, key).String(), nil
 }
 
 func (c *S3Session) UploadMultipart(fileHeader *multipart.FileHeader) (externalUrl string, err error) {
