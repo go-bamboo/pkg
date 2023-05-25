@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -32,6 +33,15 @@ type S3Session struct {
 }
 
 func New(c *Conf) (s3Sess *S3Session, err error) {
+	if len(c.Key) <= 0 {
+		c.Key = os.Getenv("S3_KEY")
+	}
+	if len(c.Secret) <= 0 {
+		c.Secret = os.Getenv("S3_SECRET")
+	}
+	if len(c.Region) <= 0 {
+		c.Region = os.Getenv("S3_REGION")
+	}
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		//config.WithSharedConfigProfile(opts.profile),
 		config.WithRegion(c.Region),
