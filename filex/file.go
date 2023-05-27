@@ -2,61 +2,44 @@ package filex
 
 import (
 	"archive/zip"
-	"bytes"
+	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
-	"mime/multipart"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 )
 
-func PathExists(path string) (bool, error) {
+func IsExist(path string) bool {
 	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
+	if err != nil && os.IsNotExist(err) {
+		return false
+	} else if err != nil {
+		return false
+	} else {
+		return true
 	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }
 
-func PathCreate(dir string) error {
-	return os.MkdirAll(dir, os.ModePerm)
+// OpenFile 打开文件
+func OpenFile(fpath string, flag int, perm os.FileMode) (f *os.File, err error) {
+	xpath, _ := path.Split(fpath)
+	if !IsExist(xpath) {
+		if err = os.MkdirAll(xpath, os.ModePerm); err != nil {
+			return nil, err
+		}
+	}
+	f, err = os.OpenFile(fpath, flag, perm)
+	if err != nil {
+		return
+	}
+	return
 }
 
-func PathRemove(name string) (err error) {
+func Remove(name string) (err error) {
 	if err = os.RemoveAll(name); err != nil {
-		return
-	}
-	return
-}
-
-func FileCreate(content bytes.Buffer, name string) (err error) {
-	file, err := os.Create(name)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-	_, err = file.WriteString(content.String())
-	if err != nil {
-		return
-	}
-	// for i := n; i < content.Cap(); i++ {
-	// 	//写入byte的slice数据
-	// 	file.Write(content)
-	// 	//写入字符串
-	// 	//
-	// }
-	return
-}
-
-func FileRemove(name string) (err error) {
-	if err = os.Remove(name); err != nil {
 		return
 	}
 	return
@@ -123,74 +106,50 @@ func FileZip(dst, src string, notContPath string) (err error) {
 	})
 }
 
-// 获取文件大小
-func FileGetSize(f multipart.File) (int, error) {
-	content, err := ioutil.ReadAll(f)
-
-	return len(content), err
+// Size 获取文件大小
+func Size(r io.Reader) int {
+	bufr := bufio.NewReader(r)
+	return bufr.Size()
 }
 
-// 获取文件后缀
-func FileGetExt(fileName string) string {
+// Ext 获取文件后缀
+func Ext(fileName string) string {
 	return path.Ext(fileName)
 }
 
-// FileCheckExist 检查文件是否存在
-func FileCheckExist(src string) (bool, error) {
-	_, err := os.Stat(src)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		} else if os.IsExist(err) {
-			return true, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
-// FileCheckPermission 检查文件权限
-func FileCheckPermission(src string) (bool, error) {
-	_, err := os.Stat(src)
+// CheckPermission 检查文件权限
+func CheckPermission(src string, mode os.FileMode) (bool, error) {
+	info, err := os.Stat(src)
 	if err != nil {
 		if os.IsPermission(err) {
 			return true, nil
 		}
 		return false, err
 	}
+	if info.Mode() == mode {
+		return true, nil
+	}
 	return false, nil
 }
 
 // IsNotExistMkDir 如果不存在则新建文件夹
 func IsNotExistMkDir(src string) error {
-	exist, err := FileCheckExist(src)
-	if err != nil {
-		return err
-	}
+	exist := IsExist(src)
 	if !exist {
-		if err := MkDir(src); err != nil {
+		if err := Mkdir(src); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// MkDir 新建文件夹
-func MkDir(src string) error {
+// Mkdir 新建文件夹
+func Mkdir(src string) error {
 	err := os.Mkdir(src, os.ModePerm)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// 打开文件
-func Open(name string, flag int, perm os.FileMode) (f *os.File, err error) {
-	f, err = os.OpenFile(name, flag, perm)
-	if err != nil {
-		return
-	}
-	return
 }
 
 // GetCurrentPath 获取当前路径，比如：E:/abc/data/test
