@@ -3,6 +3,7 @@ package filex
 import (
 	"archive/zip"
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -38,18 +39,21 @@ func OpenFile(fpath string, flag int, perm os.FileMode) (f *os.File, err error) 
 	return
 }
 
-func CreateFile(fpath string) (err error) {
+func CreateFile(buff *bytes.Buffer, fpath string) (err error) {
 	xpath, _ := path.Split(fpath)
 	if !IsExist(xpath) {
 		if err = os.MkdirAll(xpath, os.ModePerm); err != nil {
 			return err
 		}
 	}
-	_, err = os.Create(fpath)
+	fn, err := os.Create(fpath)
 	if err != nil {
 		return
 	}
-	return
+	if _, err := io.Copy(fn, bufio.NewReader(buff)); err != nil {
+		return err
+	}
+	return fn.Close()
 }
 
 func Remove(name string) (err error) {
