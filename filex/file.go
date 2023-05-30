@@ -38,6 +38,20 @@ func OpenFile(fpath string, flag int, perm os.FileMode) (f *os.File, err error) 
 	return
 }
 
+func CreateFile(fpath string) (err error) {
+	xpath, _ := path.Split(fpath)
+	if !IsExist(xpath) {
+		if err = os.MkdirAll(xpath, os.ModePerm); err != nil {
+			return err
+		}
+	}
+	_, err = os.Create(fpath)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func Remove(name string) (err error) {
 	if err = os.RemoveAll(name); err != nil {
 		return
