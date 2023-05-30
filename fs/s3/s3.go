@@ -33,14 +33,26 @@ type S3Session struct {
 }
 
 func New(c *Conf) (s3Sess *S3Session, err error) {
+	if c == nil {
+		return nil, ErrorConfigNotFound("c is nil")
+	}
 	if len(c.Key) <= 0 {
 		c.Key = os.Getenv("S3_KEY")
+		if len(c.Key) <= 0 {
+			return nil, ErrorConfigNotFound("key lost")
+		}
 	}
 	if len(c.Secret) <= 0 {
 		c.Secret = os.Getenv("S3_SECRET")
+		if len(c.Secret) <= 0 {
+			return nil, ErrorConfigNotFound("secret lost")
+		}
 	}
 	if len(c.Region) <= 0 {
 		c.Region = os.Getenv("S3_REGION")
+		if len(c.Region) <= 0 {
+			return nil, ErrorConfigNotFound("region lost")
+		}
 	}
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		//config.WithSharedConfigProfile(opts.profile),

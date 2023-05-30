@@ -20,4 +20,6 @@ enum ErrorReason {
 
   // 为某个枚举单独设置错误码
   NOT_ALLOW_EXT = 0;
+
+  CONFIG_NOT_FOUND = 1;
 }

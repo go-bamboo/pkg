@@ -24,3 +24,15 @@ func IsNotAllowExt(err error) bool {
 func ErrorNotAllowExt(format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorReason_NOT_ALLOW_EXT.String(), fmt.Sprintf(format, args...))
 }
+
+func IsConfigNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_CONFIG_NOT_FOUND.String() && e.Code == 500
+}
+
+func ErrorConfigNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_CONFIG_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
