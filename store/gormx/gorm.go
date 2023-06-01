@@ -31,7 +31,7 @@ func New(c *Conf) (*DB, error) {
 	} else if DBType(c.Driver) == DBType_sqlserver {
 		dialector = sqlserver.Open(c.Source)
 	}
-	gormlogConfig := gormlog.Config{
+	gormLogConfig := gormlog.Config{
 		SlowThreshold:             c.SlowThreshold.AsDuration(),
 		Colorful:                  true,
 		IgnoreRecordNotFoundError: c.IgnoreRecordNotFoundError,
@@ -39,7 +39,7 @@ func New(c *Conf) (*DB, error) {
 	}
 	core := log.GetCore()
 	db, err := gorm.Open(dialector, &gorm.Config{
-		Logger: NewLogger(gormlogConfig, core),
+		Logger: NewLogger(gormLogConfig, core),
 	})
 	if err != nil {
 		return nil, err

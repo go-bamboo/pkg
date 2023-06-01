@@ -2,13 +2,11 @@ package gormx
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
@@ -39,7 +37,7 @@ type Logger struct {
 	traceStr, traceErrStr, traceWarnStr string
 }
 
-func NewLogger(config logger.Config, core zapcore.Core) *Logger {
+func NewLogger(config logger.Config, core zapcore.Core) logger.Interface {
 	// gorm
 	var (
 		infoStr      = "%s\n"
@@ -62,6 +60,7 @@ func NewLogger(config logger.Config, core zapcore.Core) *Logger {
 	// 开启开发模式，堆栈跟踪
 	caller := zap.AddCaller()
 	skip := zap.AddCallerSkip(1)
+	//level := zap.IncreaseLevel(zapcore.LevelOf())
 
 	// 构造日志
 	logger := zap.New(core, caller, skip)
@@ -95,17 +94,23 @@ func (l *Logger) LogMode(level logger.LogLevel) logger.Interface {
 
 // Info print info
 func (l *Logger) Info(ctx context.Context, msg string, data ...interface{}) {
-	l.slogger.Infof(l.infoStr+msg, data...)
+	if l.c.LogLevel >= logger.Info {
+		l.slogger.Infof(l.infoStr+msg, data...)
+	}
 }
 
 // Warn print warn messages
 func (l *Logger) Warn(ctx context.Context, msg string, data ...interface{}) {
-	l.slogger.Warnf(l.warnStr+msg, data...)
+	if l.c.LogLevel >= logger.Warn {
+		l.slogger.Warnf(l.warnStr+msg, data...)
+	}
 }
 
 // Error print error messages
 func (l *Logger) Error(ctx context.Context, msg string, data ...interface{}) {
-	l.slogger.Errorf(l.errStr+msg, data...)
+	if l.c.LogLevel >= logger.Error {
+		l.slogger.Errorf(l.errStr+msg, data...)
+	}
 }
 
 // Trace print sql message
@@ -113,10 +118,9 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 	if l.c.LogLevel <= logger.Silent {
 		return
 	}
-
 	elapsed := time.Since(begin)
 	switch {
-	case err != nil && l.c.LogLevel >= logger.Error && (!errors.Is(err, gorm.ErrRecordNotFound) || !IsGormErrRecordNotFound(err) || !l.c.IgnoreRecordNotFoundError):
+	case err != nil && l.c.LogLevel >= logger.Error && (!IsGormErrRecordNotFound(err) || !l.c.IgnoreRecordNotFoundError):
 		sql, rows := fc()
 		if rows == -1 {
 			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
