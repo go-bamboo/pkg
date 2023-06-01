@@ -35,6 +35,142 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on LoggerConf with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *LoggerConf) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LoggerConf with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in LoggerConfMultiError, or
+// nil if none found.
+func (m *LoggerConf) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LoggerConf) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetSlowThreshold()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, LoggerConfValidationError{
+					field:  "SlowThreshold",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, LoggerConfValidationError{
+					field:  "SlowThreshold",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSlowThreshold()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return LoggerConfValidationError{
+				field:  "SlowThreshold",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Colorful
+
+	// no validation rules for IgnoreRecordNotFoundError
+
+	// no validation rules for ParameterizedQueries
+
+	// no validation rules for LogLevel
+
+	if len(errors) > 0 {
+		return LoggerConfMultiError(errors)
+	}
+
+	return nil
+}
+
+// LoggerConfMultiError is an error wrapping multiple validation errors
+// returned by LoggerConf.ValidateAll() if the designated constraints aren't met.
+type LoggerConfMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LoggerConfMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LoggerConfMultiError) AllErrors() []error { return m }
+
+// LoggerConfValidationError is the validation error returned by
+// LoggerConf.Validate if the designated constraints aren't met.
+type LoggerConfValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LoggerConfValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LoggerConfValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LoggerConfValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LoggerConfValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LoggerConfValidationError) ErrorName() string { return "LoggerConfValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LoggerConfValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLoggerConf.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LoggerConfValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LoggerConfValidationError{}
+
 // Validate checks the field values on Conf with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
 // encountered is returned, or nil if there are no violations.
@@ -59,8 +195,6 @@ func (m *Conf) validate(all bool) error {
 	// no validation rules for Driver
 
 	// no validation rules for Source
-
-	// no validation rules for LogLevel
 
 	// no validation rules for MaxOpenConns
 
@@ -95,14 +229,12 @@ func (m *Conf) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for IgnoreRecordNotFoundError
-
 	if all {
-		switch v := interface{}(m.GetSlowThreshold()).(type) {
+		switch v := interface{}(m.GetLogger()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, ConfValidationError{
-					field:  "SlowThreshold",
+					field:  "Logger",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -110,16 +242,16 @@ func (m *Conf) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, ConfValidationError{
-					field:  "SlowThreshold",
+					field:  "Logger",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetSlowThreshold()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetLogger()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ConfValidationError{
-				field:  "SlowThreshold",
+				field:  "Logger",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

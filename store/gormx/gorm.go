@@ -7,7 +7,6 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
-	gormlog "gorm.io/gorm/logger"
 )
 
 type DB = gorm.DB
@@ -31,15 +30,9 @@ func New(c *Conf) (*DB, error) {
 	} else if DBType(c.Driver) == DBType_sqlserver {
 		dialector = sqlserver.Open(c.Source)
 	}
-	gormLogConfig := gormlog.Config{
-		SlowThreshold:             c.SlowThreshold.AsDuration(),
-		Colorful:                  true,
-		IgnoreRecordNotFoundError: c.IgnoreRecordNotFoundError,
-		LogLevel:                  gormlog.LogLevel(c.LogLevel),
-	}
 	core := log.GetCore()
 	db, err := gorm.Open(dialector, &gorm.Config{
-		Logger: NewLogger(gormLogConfig, core),
+		Logger: NewLogger(c.Logger, core),
 	})
 	if err != nil {
 		return nil, err

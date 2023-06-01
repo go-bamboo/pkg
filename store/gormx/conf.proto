@@ -14,13 +14,19 @@ enum DBType {
   sqlserver = 4;
 }
 
+message LoggerConf {
+  google.protobuf.Duration slowThreshold = 1;
+  bool colorful = 2;
+  bool ignoreRecordNotFoundError = 3;
+  bool parameterizedQueries = 4;
+  int32 logLevel = 5;
+}
+
 message Conf {
   DBType driver = 1;
   string source = 2;
-  int32 logLevel = 3;
   int32 maxOpenConns = 4;
   int32 maxIdleConns = 5;
   google.protobuf.Duration connMaxLifetime = 6;
-  bool ignoreRecordNotFoundError = 7;
-  google.protobuf.Duration slowThreshold = 8;
+  LoggerConf logger = 7;
 }
