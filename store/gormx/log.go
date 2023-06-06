@@ -39,20 +39,20 @@ type Logger struct {
 func NewLogger(config *LoggerConf, core zapcore.Core) logger.Interface {
 	// gorm
 	var (
-		infoStr      = "%s\n"
-		warnStr      = "%s\n"
-		errStr       = "%s\n"
-		traceStr     = "%s\n[%.3fms] [rows:%v] %s"
-		traceWarnStr = "%s %s\n[%.3fms] [rows:%v] %s"
-		traceErrStr  = "%s %s\n[%.3fms] [rows:%v] %s"
+		//infoStr      = "%s\n"
+		//warnStr      = "%s\n"
+		//errStr       = "%s\n"
+		traceStr     = "[%.3fms] [rows:%v] %s"
+		traceWarnStr = "%s [%.3fms] [rows:%v] %s"
+		traceErrStr  = "%s [%.3fms] [rows:%v] %s"
 	)
 
 	if config.Colorful {
-		infoStr = Green + "%s\n" + Reset + Green
-		warnStr = BlueBold + "%s\n" + Reset + Magenta
-		errStr = Magenta + "%s\n" + Reset + Red
-		traceStr = Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
-		traceWarnStr = Green + "%s " + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v]" + Magenta + " %s" + Reset
+		//infoStr = Green + "%s\n" + Reset + Green
+		//warnStr = BlueBold + "%s\n" + Reset + Magenta
+		//errStr = Magenta + "%s\n" + Reset + Red
+		traceStr = Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
+		traceWarnStr = Green + "%s " + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v]" + Magenta + " %s"
 		traceErrStr = RedBold + "%s " + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
 	}
 
@@ -68,9 +68,9 @@ func NewLogger(config *LoggerConf, core zapcore.Core) logger.Interface {
 	l := &Logger{
 		c: config,
 		// gorm
-		infoStr:      infoStr,
-		warnStr:      warnStr,
-		errStr:       errStr,
+		//infoStr:      infoStr,
+		//warnStr:      warnStr,
+		//errStr:       errStr,
 		traceStr:     traceStr,
 		traceWarnStr: traceWarnStr,
 		traceErrStr:  traceErrStr,
@@ -95,21 +95,33 @@ func (l *Logger) LogMode(level logger.LogLevel) logger.Interface {
 // Info print info
 func (l *Logger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.level >= logger.Info {
-		l.slogger.Infof(l.infoStr+msg, data...)
+		if l.c.Colorful {
+			l.slogger.Infof(Green+msg+Reset+Green, data...)
+		} else {
+			l.slogger.Infof(msg, data...)
+		}
 	}
 }
 
 // Warn print warn messages
 func (l *Logger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if l.level >= logger.Warn {
-		l.slogger.Warnf(l.warnStr+msg, data...)
+		if l.c.Colorful {
+			l.slogger.Warnf(BlueBold+msg+Reset+RedBold, data...)
+		} else {
+			l.slogger.Warnf(msg, data...)
+		}
 	}
 }
 
 // Error print error messages
 func (l *Logger) Error(ctx context.Context, msg string, data ...interface{}) {
 	if l.level >= logger.Error {
-		l.slogger.Errorf(l.errStr+msg, data...)
+		if l.c.Colorful {
+			l.slogger.Errorf(Magenta+msg+Reset+Yellow, data...)
+		} else {
+			l.slogger.Errorf(msg, data...)
+		}
 	}
 }
 
