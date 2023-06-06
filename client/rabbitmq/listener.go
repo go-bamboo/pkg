@@ -104,11 +104,11 @@ func (s *RabbitListener) run(ctx context.Context, q *ConsumerConf) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Warnf("[rabbitmq][listener] 结束消费队列[%s], exit.", q.Name)
+			log.Infof("[rabbitmq][listener] 结束消费队列[%s], exit.", q.Name)
 			return
 		default:
 			if !s.isConnected.Load() {
-				log.Warnf("[rabbitmq][listener] disconnect")
+				log.Warn("[rabbitmq][listener] disconnect")
 				time.Sleep(30 * time.Second)
 				continue
 			}
