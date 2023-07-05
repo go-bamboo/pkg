@@ -135,20 +135,16 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 	elapsed := time.Since(begin)
 	switch {
 	case err != nil && l.level >= logger.Error && (!IsGormErrRecordNotFound(err) || !l.c.IgnoreRecordNotFoundError):
+		if errors.Is(err, gorm.ErrRecordNotFound) && l.c.IgnoreRecordNotFoundError {
+			l.slogger.Error(err)
+			return
+		}
 		sql, rows := fc()
 		if rows == -1 {
 			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 		} else {
 			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
-	case err != nil && l.level >= logger.Error && (!errors.Is(err, gorm.ErrRecordNotFound) || !l.c.IgnoreRecordNotFoundError):
-		sql, rows := fc()
-		if rows == -1 {
-			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
-		} else {
-			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
-		}
-		l.slogger.Error(err)
 	case elapsed > l.c.SlowThreshold.AsDuration() && l.c.SlowThreshold.AsDuration() != 0 && l.level >= logger.Warn:
 		sql, rows := fc()
 		slowLog := fmt.Sprintf("SLOW SQL >= %v", l.c.SlowThreshold)
