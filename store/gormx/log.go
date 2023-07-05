@@ -2,13 +2,13 @@ package gormx
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
@@ -135,9 +135,13 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 	elapsed := time.Since(begin)
 	switch {
 	case err != nil && l.level >= logger.Error && (!IsGormErrRecordNotFound(err) || !l.c.IgnoreRecordNotFoundError):
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return
+		sql, rows := fc()
+		if rows == -1 {
+			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+		} else {
+			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
+	case err != nil && l.level >= logger.Error && (!errors.Is(err, gorm.ErrRecordNotFound) || !l.c.IgnoreRecordNotFoundError):
 		sql, rows := fc()
 		if rows == -1 {
 			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
