@@ -148,6 +148,7 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 		} else {
 			l.slogger.Errorf(l.traceErrStr, err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
+		l.slogger.Error(err)
 	case elapsed > l.c.SlowThreshold.AsDuration() && l.c.SlowThreshold.AsDuration() != 0 && l.level >= logger.Warn:
 		sql, rows := fc()
 		slowLog := fmt.Sprintf("SLOW SQL >= %v", l.c.SlowThreshold)
