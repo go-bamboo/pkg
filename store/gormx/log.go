@@ -39,6 +39,23 @@ type Logger struct {
 }
 
 func NewLogger(config *LoggerConf, core zapcore.Core) logger.Interface {
+	defaultConf := LoggerConf{
+		Colorful:                  true,
+		IgnoreRecordNotFoundError: true,
+		ParameterizedQueries:      true,
+		LogLevel:                  2,
+	}
+	if config != nil {
+		if defaultConf.Colorful != config.Colorful {
+			defaultConf.Colorful = config.Colorful
+		}
+		if defaultConf.LogLevel != config.LogLevel {
+			defaultConf.LogLevel = config.LogLevel
+		}
+		if defaultConf.IgnoreRecordNotFoundError != config.IgnoreRecordNotFoundError {
+			defaultConf.IgnoreRecordNotFoundError = config.IgnoreRecordNotFoundError
+		}
+	}
 	// gorm
 	var (
 		//infoStr      = "%s\n"
@@ -49,7 +66,7 @@ func NewLogger(config *LoggerConf, core zapcore.Core) logger.Interface {
 		traceErrStr  = "%s [%.3fms] [rows:%v] %s"
 	)
 
-	if config.Colorful {
+	if defaultConf.Colorful {
 		//infoStr = Green + "%s\n" + Reset + Green
 		//warnStr = BlueBold + "%s\n" + Reset + Magenta
 		//errStr = Magenta + "%s\n" + Reset + Red
@@ -68,7 +85,7 @@ func NewLogger(config *LoggerConf, core zapcore.Core) logger.Interface {
 	zapSugarLogger := zapLogger.Sugar()
 
 	l := &Logger{
-		c: config,
+		c: &defaultConf,
 		// gorm
 		//infoStr:      infoStr,
 		//warnStr:      warnStr,
@@ -78,7 +95,7 @@ func NewLogger(config *LoggerConf, core zapcore.Core) logger.Interface {
 		traceErrStr:  traceErrStr,
 
 		// gorm log
-		level: logger.LogLevel(config.LogLevel),
+		level: logger.LogLevel(defaultConf.LogLevel),
 
 		// zap
 		logger:  zapLogger,
