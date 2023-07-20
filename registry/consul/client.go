@@ -273,7 +273,7 @@ func (c *Client) Update(_ context.Context, svc *registry.ServiceInstance, enable
 		})
 	}
 	err := c.cli.Agent().ServiceRegisterOpts(asr, api.ServiceRegisterOpts{
-		ReplaceExistingChecks: false,
+		ReplaceExistingChecks: true,
 	})
 	if err != nil {
 		return err
