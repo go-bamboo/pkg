@@ -22,6 +22,8 @@ const (
 	MetaTcpEndpoint = "tcp"
 	// MetaWsEndpoint meta conn count
 	MetaWsEndpoint = "ws"
+	// MetaWssEndpoint meta conn count
+	MetaWssEndpoint = "wss"
 	// MetaLastTS meta LastTs
 	MetaLastTS = "LastTs"
 
