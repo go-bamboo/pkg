@@ -133,8 +133,54 @@ func (r *Registry) Register(_ context.Context, si *registry.ServiceInstance) err
 	return nil
 }
 
-// Update register service
-func (r *Registry) Update(ctx context.Context, svc *registry.ServiceInstance) error {
+// Update update service
+func (r *Registry) Update(ctx context.Context, si *registry.ServiceInstance) error {
+	if si.Name == "" {
+		return ErrServiceInstanceNameEmpty
+	}
+	for _, endpoint := range si.Endpoints {
+		u, err := url.Parse(endpoint)
+		if err != nil {
+			return err
+		}
+		host, port, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			return err
+		}
+		p, err := strconv.Atoi(port)
+		if err != nil {
+			return err
+		}
+		var rmd map[string]string
+		if si.Metadata == nil {
+			rmd = map[string]string{
+				"kind":    u.Scheme,
+				"version": si.Version,
+			}
+		} else {
+			rmd = make(map[string]string, len(si.Metadata)+2)
+			for k, v := range si.Metadata {
+				rmd[k] = v
+			}
+			rmd["kind"] = u.Scheme
+			rmd["version"] = si.Version
+		}
+		_, e := r.cli.UpdateInstance(vo.UpdateInstanceParam{
+			Ip:          host,
+			Port:        uint64(p),
+			ServiceName: si.Name + "." + u.Scheme,
+			Weight:      r.opts.weight,
+			Enable:      true,
+			//Healthy:     true,
+			Ephemeral:   true,
+			Metadata:    rmd,
+			ClusterName: r.opts.cluster,
+			GroupName:   r.opts.group,
+		})
+		if e != nil {
+			return fmt.Errorf("UpdateInstance err %v,%v", e, endpoint)
+		}
+	}
 	return nil
 }
 

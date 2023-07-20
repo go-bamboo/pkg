@@ -127,9 +127,9 @@ func (r *Registry) Register(ctx context.Context, svc *registry.ServiceInstance) 
 	return r.cli.Register(ctx, svc, r.enableHealthCheck)
 }
 
-// Update register service
+// Update update service
 func (r *Registry) Update(ctx context.Context, svc *registry.ServiceInstance) error {
-	return r.cli.Register(ctx, svc, r.enableHealthCheck)
+	return r.cli.Update(ctx, svc, r.enableHealthCheck)
 }
 
 // Deregister deregister service
