@@ -32,6 +32,7 @@ require (
 	github.com/mssola/user_agent v0.5.3
 	github.com/nacos-group/nacos-sdk-go v1.1.2
 	github.com/panjf2000/ants/v2 v2.5.0
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/philchia/agollo/v4 v4.1.4
 	github.com/prometheus/client_golang v1.14.0
 	github.com/robfig/cron/v3 v3.0.1
@@ -163,7 +164,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.6.6 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect

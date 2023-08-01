@@ -9,6 +9,7 @@ import (
 	"github.com/go-bamboo/pkg/meta"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/patrickmn/go-cache"
 	"golang.org/x/time/rate"
 )
 
@@ -20,9 +21,11 @@ func ErrMaxLimit(format string, a ...interface{}) error {
 type Option func(*options)
 
 type options struct {
-	ips  sync.Map
-	msec int
-	n    int
+	ips             sync.Map
+	msec            int
+	n               int
+	enableBlackList bool
+	blacklist       *cache.Cache
 }
 
 // WithSec with constant metadata key value.
@@ -38,10 +41,18 @@ func WithN(n int) Option {
 	}
 }
 
+func WithBlackList(enable bool) Option {
+	return func(o *options) {
+		o.enableBlackList = enable
+	}
+}
+
 func Server(opts ...Option) middleware.Middleware {
 	o := &options{
-		msec: 100,
-		n:    3,
+		msec:            200,
+		n:               5,
+		enableBlackList: false,
+		blacklist:       cache.New(30*time.Second, 10*time.Minute),
 	}
 	for _, opt := range opts {
 		opt(o)
@@ -50,6 +61,12 @@ func Server(opts ...Option) middleware.Middleware {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			realIP, err := meta.GetRealIP(ctx)
 			if err == nil {
+				if o.enableBlackList {
+					blocked, ok := o.blacklist.Get(realIP)
+					if ok && blocked.(bool) {
+						return nil, ErrMaxLimit("%v", realIP)
+					}
+				}
 				var limiter *rate.Limiter
 				dany, ok := o.ips.Load(realIP)
 				if !ok {
@@ -59,6 +76,7 @@ func Server(opts ...Option) middleware.Middleware {
 				limiter, ok = dany.(*rate.Limiter)
 				if ok {
 					if !limiter.Allow() {
+						o.blacklist.SetDefault(realIP, true)
 						return nil, ErrMaxLimit("%v", realIP)
 					}
 				}
