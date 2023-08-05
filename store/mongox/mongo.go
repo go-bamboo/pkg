@@ -8,7 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func MustConnect(c *Conf) *mongo.Client {
+type Client = mongo.Client
+
+func MustConnect(c *Conf) *Client {
 	client, err := Connect(c)
 	if err != nil {
 		log.Fatal(err)
@@ -16,7 +18,7 @@ func MustConnect(c *Conf) *mongo.Client {
 	return client
 }
 
-func Connect(c *Conf) (*mongo.Client, error) {
+func Connect(c *Conf) (*Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout.AsDuration())
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(c.Source))
