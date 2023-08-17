@@ -97,18 +97,18 @@ func Client(opts ...Option) middleware.Middleware {
 				header := tr.RequestHeader()
 				// x-md-local-
 				for k, v := range options.md {
-					header.Set(k, v)
+					header.Set(k, strings.Join(v, ","))
 				}
 				if md, ok := metadata.FromClientContext(ctx); ok {
 					for k, v := range md {
-						header.Set(k, v)
+						header.Set(k, strings.Join(v, ","))
 					}
 				}
 				// x-md-global-
 				if md, ok := metadata.FromServerContext(ctx); ok {
 					for k, v := range md {
 						if options.hasPrefix(k) {
-							header.Set(k, v)
+							header.Set(k, strings.Join(v, ","))
 						}
 					}
 				}

@@ -7,10 +7,10 @@ import (
 	"path"
 
 	"github.com/go-bamboo/pkg/apollo"
+	"github.com/go-bamboo/pkg/config/consul"
+	"github.com/go-bamboo/pkg/config/nacos"
 	"github.com/go-bamboo/pkg/filex"
 	"github.com/go-bamboo/pkg/log"
-	"github.com/go-kratos/kratos/contrib/config/consul/v2"
-	nacos "github.com/go-kratos/kratos/contrib/config/nacos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/hashicorp/consul/api"

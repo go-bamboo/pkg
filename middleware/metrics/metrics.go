@@ -8,23 +8,23 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric/global"
-	"go.opentelemetry.io/otel/metric/instrument"
+	"go.opentelemetry.io/otel/metric"
 )
 
 // Option is metrics option.
 type Option func(*options)
 
 // WithRequests with requests counter.
-func WithRequests(c instrument.Int64Counter) Option {
+func WithRequests(c metric.Int64Counter) Option {
 	return func(o *options) {
 		o.requests = c
 	}
 }
 
 // WithSeconds with seconds histogram.
-func WithSeconds(c instrument.Float64Histogram) Option {
+func WithSeconds(c metric.Float64Histogram) Option {
 	return func(o *options) {
 		o.seconds = c
 	}
@@ -32,16 +32,16 @@ func WithSeconds(c instrument.Float64Histogram) Option {
 
 type options struct {
 	// counter: <client/server>_requests_code_total{kind, operation, code, reason}
-	requests instrument.Int64Counter
+	requests metric.Int64Counter
 	// histogram: <client/server>_requests_seconds_bucket{kind, operation}
-	seconds instrument.Float64Histogram
+	seconds metric.Float64Histogram
 }
 
 // Server is middleware server-side metrics.
 func Server(opts ...Option) middleware.Middleware {
-	meter := global.MeterProvider().Meter("middleware.server")
-	requests, _ := meter.Int64Counter("requests", instrument.WithDescription("a requests counter"))
-	seconds, _ := meter.Float64Histogram("seconds", instrument.WithDescription("a seconds histogram"))
+	meter := otel.Meter("middleware.server")
+	requests, _ := meter.Int64Counter("requests", metric.WithDescription("a requests counter"))
+	seconds, _ := meter.Float64Histogram("seconds", metric.WithDescription("a seconds histogram"))
 	op := options{
 		requests: requests,
 		seconds:  seconds,
@@ -73,14 +73,14 @@ func Server(opts ...Option) middleware.Middleware {
 					attribute.Key("code").String(strconv.Itoa(code)),
 					attribute.Key("reason").String(reason),
 				}
-				op.requests.Add(ctx, 1, attrs...)
+				op.requests.Add(ctx, 1, metric.WithAttributes(attrs...))
 			}
 			if op.seconds != nil {
 				attrs := []attribute.KeyValue{
 					attribute.Key("kind").String(kind),
 					attribute.Key("operation").String(operation),
 				}
-				op.seconds.Record(ctx, time.Since(startTime).Seconds(), attrs...)
+				op.seconds.Record(ctx, time.Since(startTime).Seconds(), metric.WithAttributes(attrs...))
 			}
 			return reply, err
 		}
@@ -89,9 +89,9 @@ func Server(opts ...Option) middleware.Middleware {
 
 // Client is middleware client-side metrics.
 func Client(opts ...Option) middleware.Middleware {
-	meter := global.MeterProvider().Meter("middleware.client")
-	requests, _ := meter.Int64Counter("requests", instrument.WithDescription("a requests counter"))
-	seconds, _ := meter.Float64Histogram("seconds", instrument.WithDescription("a seconds histogram"))
+	meter := otel.Meter("middleware.client")
+	requests, _ := meter.Int64Counter("requests", metric.WithDescription("a requests counter"))
+	seconds, _ := meter.Float64Histogram("seconds", metric.WithDescription("a seconds histogram"))
 	op := options{
 		requests: requests,
 		seconds:  seconds,
@@ -123,14 +123,14 @@ func Client(opts ...Option) middleware.Middleware {
 					attribute.Key("code").String(strconv.Itoa(code)),
 					attribute.Key("reason").String(reason),
 				}
-				op.requests.Add(ctx, 1, attrs...)
+				op.requests.Add(ctx, 1, metric.WithAttributes(attrs...))
 			}
 			if op.seconds != nil {
 				attrs := []attribute.KeyValue{
 					attribute.Key("kind").String(kind),
 					attribute.Key("operation").String(operation),
 				}
-				op.seconds.Record(ctx, time.Since(startTime).Seconds(), attrs...)
+				op.seconds.Record(ctx, time.Since(startTime).Seconds(), metric.WithAttributes(attrs...))
 			}
 			return reply, err
 		}
