@@ -75,7 +75,6 @@ func NewServer(c *Conf, opts ...Option) *Server {
 	}
 	httpSrv := http.NewServer(serverOpts...)
 	status.RegisterStatusHTTPServer(httpSrv, status.NewStatusService())
-
 	httpSrv.Handle("/debug/fgprof", fgprof.Handler())
 	httpSrv.Handle("/metrics", promhttp.Handler())
 
