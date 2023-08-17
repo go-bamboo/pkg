@@ -19,7 +19,6 @@ import (
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
-	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
@@ -71,9 +70,7 @@ func NewProvider(c *Conf, serviceName string, uuid string) (*Provider, error) {
 		return nil, err
 	}
 	otel.SetTracerProvider(tp)
-	global.SetMeterProvider(sdk)
-	// 设置内部日志
-	//otel.SetLogger()
+	otel.SetMeterProvider(sdk)
 	return &Provider{
 		tracer: tp,
 		meter:  sdk,
