@@ -1,96 +1,54 @@
 package registry
 
 import (
-	"errors"
-	"path/filepath"
-
-	"github.com/go-bamboo/pkg/registry/consul"
+	"fmt"
 	"github.com/go-bamboo/pkg/registry/core"
-	"github.com/go-bamboo/pkg/registry/etcd"
-	kuberegistry "github.com/go-bamboo/pkg/registry/kubernetes"
-	"github.com/go-bamboo/pkg/registry/nacos"
-	kreg "github.com/go-kratos/kratos/v2/registry"
-	"github.com/hashicorp/consul/api"
-	"github.com/nacos-group/nacos-sdk-go/clients"
-	"github.com/nacos-group/nacos-sdk-go/common/constant"
-	"github.com/nacos-group/nacos-sdk-go/vo"
-	etcdv3 "go.etcd.io/etcd/client/v3"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 )
 
-func getClientSet() (*kubernetes.Clientset, error) {
-	restConfig, err := rest.InClusterConfig()
-	home := homedir.HomeDir()
+var globalRegistry = NewRegistry()
 
-	if err != nil {
-		kubeconfig := filepath.Join(home, ".kube", "config")
-		restConfig, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
-			return nil, err
-		}
-	}
-	clientSet, err := kubernetes.NewForConfig(restConfig)
-	if err != nil {
-		return nil, err
-	}
-	return clientSet, nil
+type Factory func(c *Conf) (core.Registrar, core.Discovery, error)
+
+// Registry is the interface for callers to get registered middleware.
+type Registry interface {
+	Register(name string, factory Factory)
+	Create(c *Conf) (core.Registrar, core.Discovery, error)
 }
 
-func New(c *Conf) (core.Registrar, kreg.Discovery) {
-	if c.Etcd != nil && c.Etcd.Enable {
-		cli, err := etcdv3.New(etcdv3.Config{
-			Endpoints: c.Etcd.Endpoints,
-		})
-		if err != nil {
-			panic(err)
-		}
-		r := etcd.New(cli)
-		return r, r
-	} else if c.Consul != nil && c.Consul.Enable {
-		// consul
-		consulConfig := api.DefaultConfig()
-		consulConfig.Address = c.Consul.Address
-		consulClient, err := api.NewClient(consulConfig)
-		if err != nil {
-			panic(err)
-		}
-		r := consul.New(consulClient)
-		return r, r
-	} else if c.Kube != nil && c.Kube.Enable {
-		cli, err := getClientSet()
-		if err != nil {
-			panic(err)
-		}
-		r := kuberegistry.NewRegistry(cli)
-		return r, r
-	} else if c.Nacos != nil && c.Nacos.Enable {
-		sc := []constant.ServerConfig{}
-		for _, server := range c.Nacos.Servers {
-			sc = append(sc, *constant.NewServerConfig(server.IpAddr, server.Port))
-		}
-		cc := constant.ClientConfig{
-			NamespaceId:         c.Nacos.Namespace,
-			TimeoutMs:           5000,
-			NotLoadCacheAtStart: true,
-			LogDir:              c.Nacos.LogDir,
-			CacheDir:            c.Nacos.CacheDir,
-			LogLevel:            "info",
-		}
-		client, err := clients.NewNamingClient(
-			vo.NacosClientParam{
-				ServerConfigs: sc,
-				ClientConfig:  &cc,
-			},
-		)
-		if err != nil {
-			panic(err)
-		}
-		r := nacos.New(client)
-		return r, r
-	} else {
-		panic(errors.New("not support"))
+type discoveryRegistry struct {
+	discovery map[string]Factory
+}
+
+// NewRegistry returns a new middleware registry.
+func NewRegistry() Registry {
+	return &discoveryRegistry{
+		discovery: map[string]Factory{},
 	}
+}
+
+func (d *discoveryRegistry) Register(name string, factory Factory) {
+	d.discovery[name] = factory
+}
+
+func (d *discoveryRegistry) Create(c *Conf) (core.Registrar, core.Discovery, error) {
+	factory, ok := d.discovery[c.ProviderType.String()]
+	if !ok {
+		return nil, nil, fmt.Errorf("discovery %s has not been registered", c.ProviderType.String())
+	}
+
+	r, dd, err := factory(c)
+	if err != nil {
+		return nil, nil, fmt.Errorf("create discovery error: %s", err)
+	}
+	return r, dd, nil
+}
+
+// Register registers one discovery.
+func Register(name string, factory Factory) {
+	globalRegistry.Register(name, factory)
+}
+
+// Create instantiates a discovery based on `discoveryDSN`.
+func Create(c *Conf) (core.Registrar, core.Discovery, error) {
+	return globalRegistry.Create(c)
 }

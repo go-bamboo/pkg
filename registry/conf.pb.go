@@ -21,264 +21,59 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Etcd struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
+type ProviderType int32
 
-	Enable      bool                 `protobuf:"varint,1,opt,name=enable,proto3" json:"enable,omitempty"`
-	Endpoints   []string             `protobuf:"bytes,2,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
-	DialTimeout *durationpb.Duration `protobuf:"bytes,3,opt,name=dialTimeout,proto3" json:"dialTimeout,omitempty"`
-}
+const (
+	ProviderType_Unkown ProviderType = 0
+	ProviderType_Etcd   ProviderType = 1
+	ProviderType_Consul ProviderType = 2
+	ProviderType_Kube   ProviderType = 3
+	ProviderType_Nacos  ProviderType = 4
+)
 
-func (x *Etcd) Reset() {
-	*x = Etcd{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_conf_proto_msgTypes[0]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
+// Enum value maps for ProviderType.
+var (
+	ProviderType_name = map[int32]string{
+		0: "Unkown",
+		1: "Etcd",
+		2: "Consul",
+		3: "Kube",
+		4: "Nacos",
 	}
-}
-
-func (x *Etcd) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Etcd) ProtoMessage() {}
-
-func (x *Etcd) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_conf_proto_msgTypes[0]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+	ProviderType_value = map[string]int32{
+		"Unkown": 0,
+		"Etcd":   1,
+		"Consul": 2,
+		"Kube":   3,
+		"Nacos":  4,
 	}
-	return mi.MessageOf(x)
+)
+
+func (x ProviderType) Enum() *ProviderType {
+	p := new(ProviderType)
+	*p = x
+	return p
 }
 
-// Deprecated: Use Etcd.ProtoReflect.Descriptor instead.
-func (*Etcd) Descriptor() ([]byte, []int) {
+func (x ProviderType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ProviderType) Descriptor() protoreflect.EnumDescriptor {
+	return file_registry_conf_proto_enumTypes[0].Descriptor()
+}
+
+func (ProviderType) Type() protoreflect.EnumType {
+	return &file_registry_conf_proto_enumTypes[0]
+}
+
+func (x ProviderType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ProviderType.Descriptor instead.
+func (ProviderType) EnumDescriptor() ([]byte, []int) {
 	return file_registry_conf_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Etcd) GetEnable() bool {
-	if x != nil {
-		return x.Enable
-	}
-	return false
-}
-
-func (x *Etcd) GetEndpoints() []string {
-	if x != nil {
-		return x.Endpoints
-	}
-	return nil
-}
-
-func (x *Etcd) GetDialTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.DialTimeout
-	}
-	return nil
-}
-
-type Consul struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Enable            bool                 `protobuf:"varint,1,opt,name=enable,proto3" json:"enable,omitempty"`
-	Address           string               `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	DialTimeout       *durationpb.Duration `protobuf:"bytes,3,opt,name=dialTimeout,proto3" json:"dialTimeout,omitempty"`
-	EnableHealthCheck bool                 `protobuf:"varint,4,opt,name=enableHealthCheck,proto3" json:"enableHealthCheck,omitempty"`
-}
-
-func (x *Consul) Reset() {
-	*x = Consul{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_conf_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Consul) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Consul) ProtoMessage() {}
-
-func (x *Consul) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_conf_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Consul.ProtoReflect.Descriptor instead.
-func (*Consul) Descriptor() ([]byte, []int) {
-	return file_registry_conf_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Consul) GetEnable() bool {
-	if x != nil {
-		return x.Enable
-	}
-	return false
-}
-
-func (x *Consul) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *Consul) GetDialTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.DialTimeout
-	}
-	return nil
-}
-
-func (x *Consul) GetEnableHealthCheck() bool {
-	if x != nil {
-		return x.EnableHealthCheck
-	}
-	return false
-}
-
-type Kube struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Enable bool `protobuf:"varint,1,opt,name=enable,proto3" json:"enable,omitempty"`
-}
-
-func (x *Kube) Reset() {
-	*x = Kube{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_conf_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Kube) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Kube) ProtoMessage() {}
-
-func (x *Kube) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_conf_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Kube.ProtoReflect.Descriptor instead.
-func (*Kube) Descriptor() ([]byte, []int) {
-	return file_registry_conf_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *Kube) GetEnable() bool {
-	if x != nil {
-		return x.Enable
-	}
-	return false
-}
-
-type Nacos struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Enable    bool                 `protobuf:"varint,1,opt,name=enable,proto3" json:"enable,omitempty"`
-	Servers   []*Nacos_NacosServer `protobuf:"bytes,2,rep,name=servers,proto3" json:"servers,omitempty"`
-	Namespace string               `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	LogDir    string               `protobuf:"bytes,4,opt,name=logDir,proto3" json:"logDir,omitempty"`
-	CacheDir  string               `protobuf:"bytes,5,opt,name=cacheDir,proto3" json:"cacheDir,omitempty"`
-}
-
-func (x *Nacos) Reset() {
-	*x = Nacos{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_conf_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Nacos) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Nacos) ProtoMessage() {}
-
-func (x *Nacos) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_conf_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Nacos.ProtoReflect.Descriptor instead.
-func (*Nacos) Descriptor() ([]byte, []int) {
-	return file_registry_conf_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *Nacos) GetEnable() bool {
-	if x != nil {
-		return x.Enable
-	}
-	return false
-}
-
-func (x *Nacos) GetServers() []*Nacos_NacosServer {
-	if x != nil {
-		return x.Servers
-	}
-	return nil
-}
-
-func (x *Nacos) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *Nacos) GetLogDir() string {
-	if x != nil {
-		return x.LogDir
-	}
-	return ""
-}
-
-func (x *Nacos) GetCacheDir() string {
-	if x != nil {
-		return x.CacheDir
-	}
-	return ""
 }
 
 type Conf struct {
@@ -286,16 +81,19 @@ type Conf struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Etcd   *Etcd   `protobuf:"bytes,1,opt,name=etcd,proto3" json:"etcd,omitempty"`
-	Consul *Consul `protobuf:"bytes,2,opt,name=consul,proto3" json:"consul,omitempty"`
-	Kube   *Kube   `protobuf:"bytes,3,opt,name=kube,proto3" json:"kube,omitempty"`
-	Nacos  *Nacos  `protobuf:"bytes,4,opt,name=nacos,proto3" json:"nacos,omitempty"`
+	ProviderType      ProviderType         `protobuf:"varint,1,opt,name=providerType,proto3,enum=registry.ProviderType" json:"providerType,omitempty"`
+	Endpoints         []string             `protobuf:"bytes,2,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
+	DialTimeout       *durationpb.Duration `protobuf:"bytes,3,opt,name=dialTimeout,proto3" json:"dialTimeout,omitempty"`
+	EnableHealthCheck bool                 `protobuf:"varint,4,opt,name=enableHealthCheck,proto3" json:"enableHealthCheck,omitempty"`
+	Namespace         string               `protobuf:"bytes,5,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	LogDir            string               `protobuf:"bytes,6,opt,name=logDir,proto3" json:"logDir,omitempty"`
+	CacheDir          string               `protobuf:"bytes,7,opt,name=cacheDir,proto3" json:"cacheDir,omitempty"`
 }
 
 func (x *Conf) Reset() {
 	*x = Conf{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_conf_proto_msgTypes[4]
+		mi := &file_registry_conf_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -308,7 +106,7 @@ func (x *Conf) String() string {
 func (*Conf) ProtoMessage() {}
 
 func (x *Conf) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_conf_proto_msgTypes[4]
+	mi := &file_registry_conf_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -321,90 +119,56 @@ func (x *Conf) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Conf.ProtoReflect.Descriptor instead.
 func (*Conf) Descriptor() ([]byte, []int) {
-	return file_registry_conf_proto_rawDescGZIP(), []int{4}
+	return file_registry_conf_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Conf) GetEtcd() *Etcd {
+func (x *Conf) GetProviderType() ProviderType {
 	if x != nil {
-		return x.Etcd
+		return x.ProviderType
+	}
+	return ProviderType_Unkown
+}
+
+func (x *Conf) GetEndpoints() []string {
+	if x != nil {
+		return x.Endpoints
 	}
 	return nil
 }
 
-func (x *Conf) GetConsul() *Consul {
+func (x *Conf) GetDialTimeout() *durationpb.Duration {
 	if x != nil {
-		return x.Consul
+		return x.DialTimeout
 	}
 	return nil
 }
 
-func (x *Conf) GetKube() *Kube {
+func (x *Conf) GetEnableHealthCheck() bool {
 	if x != nil {
-		return x.Kube
+		return x.EnableHealthCheck
 	}
-	return nil
+	return false
 }
 
-func (x *Conf) GetNacos() *Nacos {
+func (x *Conf) GetNamespace() string {
 	if x != nil {
-		return x.Nacos
-	}
-	return nil
-}
-
-type Nacos_NacosServer struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	IpAddr string `protobuf:"bytes,1,opt,name=ipAddr,proto3" json:"ipAddr,omitempty"`
-	Port   uint64 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`
-}
-
-func (x *Nacos_NacosServer) Reset() {
-	*x = Nacos_NacosServer{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_conf_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Nacos_NacosServer) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Nacos_NacosServer) ProtoMessage() {}
-
-func (x *Nacos_NacosServer) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_conf_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Nacos_NacosServer.ProtoReflect.Descriptor instead.
-func (*Nacos_NacosServer) Descriptor() ([]byte, []int) {
-	return file_registry_conf_proto_rawDescGZIP(), []int{3, 0}
-}
-
-func (x *Nacos_NacosServer) GetIpAddr() string {
-	if x != nil {
-		return x.IpAddr
+		return x.Namespace
 	}
 	return ""
 }
 
-func (x *Nacos_NacosServer) GetPort() uint64 {
+func (x *Conf) GetLogDir() string {
 	if x != nil {
-		return x.Port
+		return x.LogDir
 	}
-	return 0
+	return ""
+}
+
+func (x *Conf) GetCacheDir() string {
+	if x != nil {
+		return x.CacheDir
+	}
+	return ""
 }
 
 var File_registry_conf_proto protoreflect.FileDescriptor
@@ -414,54 +178,32 @@ var file_registry_conf_proto_rawDesc = []byte{
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x08, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x1a,
 	0x1e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
 	0x2f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22,
-	0x79, 0x0a, 0x04, 0x45, 0x74, 0x63, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x12,
-	0x1c, 0x0a, 0x09, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x09, 0x52, 0x09, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x73, 0x12, 0x3b, 0x0a,
-	0x0b, 0x64, 0x69, 0x61, 0x6c, 0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x19, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x44, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x64,
-	0x69, 0x61, 0x6c, 0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x22, 0xa5, 0x01, 0x0a, 0x06, 0x43,
-	0x6f, 0x6e, 0x73, 0x75, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x18, 0x0a,
-	0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
-	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x3b, 0x0a, 0x0b, 0x64, 0x69, 0x61, 0x6c, 0x54,
-	0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x67,
-	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x44,
-	0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x64, 0x69, 0x61, 0x6c, 0x54, 0x69, 0x6d,
-	0x65, 0x6f, 0x75, 0x74, 0x12, 0x2c, 0x0a, 0x11, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x48, 0x65,
-	0x61, 0x6c, 0x74, 0x68, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52,
-	0x11, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x43, 0x68, 0x65,
-	0x63, 0x6b, 0x22, 0x1e, 0x0a, 0x04, 0x4b, 0x75, 0x62, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x6e,
-	0x61, 0x62, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x6e, 0x61, 0x62,
-	0x6c, 0x65, 0x22, 0xe3, 0x01, 0x0a, 0x05, 0x4e, 0x61, 0x63, 0x6f, 0x73, 0x12, 0x16, 0x0a, 0x06,
-	0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x6e,
-	0x61, 0x62, 0x6c, 0x65, 0x12, 0x35, 0x0a, 0x07, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x18,
-	0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
-	0x2e, 0x4e, 0x61, 0x63, 0x6f, 0x73, 0x2e, 0x4e, 0x61, 0x63, 0x6f, 0x73, 0x53, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x52, 0x07, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x12, 0x1c, 0x0a, 0x09, 0x6e,
-	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
-	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x6c, 0x6f, 0x67,
-	0x44, 0x69, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6c, 0x6f, 0x67, 0x44, 0x69,
-	0x72, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x61, 0x63, 0x68, 0x65, 0x44, 0x69, 0x72, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x61, 0x63, 0x68, 0x65, 0x44, 0x69, 0x72, 0x1a, 0x39, 0x0a,
-	0x0b, 0x4e, 0x61, 0x63, 0x6f, 0x73, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06,
-	0x69, 0x70, 0x41, 0x64, 0x64, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x69, 0x70,
-	0x41, 0x64, 0x64, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x22, 0x9f, 0x01, 0x0a, 0x04, 0x43, 0x6f, 0x6e,
-	0x66, 0x12, 0x22, 0x0a, 0x04, 0x65, 0x74, 0x63, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x0e, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x45, 0x74, 0x63, 0x64, 0x52,
-	0x04, 0x65, 0x74, 0x63, 0x64, 0x12, 0x28, 0x0a, 0x06, 0x63, 0x6f, 0x6e, 0x73, 0x75, 0x6c, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
-	0x2e, 0x43, 0x6f, 0x6e, 0x73, 0x75, 0x6c, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x73, 0x75, 0x6c, 0x12,
-	0x22, 0x0a, 0x04, 0x6b, 0x75, 0x62, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e,
-	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x4b, 0x75, 0x62, 0x65, 0x52, 0x04, 0x6b,
-	0x75, 0x62, 0x65, 0x12, 0x25, 0x0a, 0x05, 0x6e, 0x61, 0x63, 0x6f, 0x73, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x4e, 0x61,
-	0x63, 0x6f, 0x73, 0x52, 0x05, 0x6e, 0x61, 0x63, 0x6f, 0x73, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x67, 0x6f, 0x2d, 0x62, 0x61, 0x6d, 0x62,
-	0x6f, 0x6f, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x3b,
-	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x9d, 0x02, 0x0a, 0x04, 0x43, 0x6f, 0x6e, 0x66, 0x12, 0x3a, 0x0a, 0x0c, 0x70, 0x72, 0x6f, 0x76,
+	0x69, 0x64, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x16,
+	0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x64,
+	0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52, 0x0c, 0x70, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65, 0x72,
+	0x54, 0x79, 0x70, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74,
+	0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e,
+	0x74, 0x73, 0x12, 0x3b, 0x0a, 0x0b, 0x64, 0x69, 0x61, 0x6c, 0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75,
+	0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x44, 0x75, 0x72, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x52, 0x0b, 0x64, 0x69, 0x61, 0x6c, 0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x12,
+	0x2c, 0x0a, 0x11, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x43,
+	0x68, 0x65, 0x63, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x11, 0x65, 0x6e, 0x61, 0x62,
+	0x6c, 0x65, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x12, 0x1c, 0x0a,
+	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x6c,
+	0x6f, 0x67, 0x44, 0x69, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6c, 0x6f, 0x67,
+	0x44, 0x69, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x61, 0x63, 0x68, 0x65, 0x44, 0x69, 0x72, 0x18,
+	0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x61, 0x63, 0x68, 0x65, 0x44, 0x69, 0x72, 0x2a,
+	0x45, 0x0a, 0x0c, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12,
+	0x0a, 0x0a, 0x06, 0x55, 0x6e, 0x6b, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x45,
+	0x74, 0x63, 0x64, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x43, 0x6f, 0x6e, 0x73, 0x75, 0x6c, 0x10,
+	0x02, 0x12, 0x08, 0x0a, 0x04, 0x4b, 0x75, 0x62, 0x65, 0x10, 0x03, 0x12, 0x09, 0x0a, 0x05, 0x4e,
+	0x61, 0x63, 0x6f, 0x73, 0x10, 0x04, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x67, 0x6f, 0x2d, 0x62, 0x61, 0x6d, 0x62, 0x6f, 0x6f, 0x2f, 0x70,
+	0x6b, 0x67, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x3b, 0x72, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x72, 0x79, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -476,29 +218,21 @@ func file_registry_conf_proto_rawDescGZIP() []byte {
 	return file_registry_conf_proto_rawDescData
 }
 
-var file_registry_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_registry_conf_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_registry_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_registry_conf_proto_goTypes = []interface{}{
-	(*Etcd)(nil),                // 0: registry.Etcd
-	(*Consul)(nil),              // 1: registry.Consul
-	(*Kube)(nil),                // 2: registry.Kube
-	(*Nacos)(nil),               // 3: registry.Nacos
-	(*Conf)(nil),                // 4: registry.Conf
-	(*Nacos_NacosServer)(nil),   // 5: registry.Nacos.NacosServer
-	(*durationpb.Duration)(nil), // 6: google.protobuf.Duration
+	(ProviderType)(0),           // 0: registry.ProviderType
+	(*Conf)(nil),                // 1: registry.Conf
+	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
 }
 var file_registry_conf_proto_depIdxs = []int32{
-	6, // 0: registry.Etcd.dialTimeout:type_name -> google.protobuf.Duration
-	6, // 1: registry.Consul.dialTimeout:type_name -> google.protobuf.Duration
-	5, // 2: registry.Nacos.servers:type_name -> registry.Nacos.NacosServer
-	0, // 3: registry.Conf.etcd:type_name -> registry.Etcd
-	1, // 4: registry.Conf.consul:type_name -> registry.Consul
-	2, // 5: registry.Conf.kube:type_name -> registry.Kube
-	3, // 6: registry.Conf.nacos:type_name -> registry.Nacos
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	0, // 0: registry.Conf.providerType:type_name -> registry.ProviderType
+	2, // 1: registry.Conf.dialTimeout:type_name -> google.protobuf.Duration
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_registry_conf_proto_init() }
@@ -508,67 +242,7 @@ func file_registry_conf_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_registry_conf_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Etcd); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_conf_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Consul); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_conf_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Kube); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_conf_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Nacos); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_conf_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Conf); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_conf_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Nacos_NacosServer); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -585,13 +259,14 @@ func file_registry_conf_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_registry_conf_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   6,
+			NumEnums:      1,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_registry_conf_proto_goTypes,
 		DependencyIndexes: file_registry_conf_proto_depIdxs,
+		EnumInfos:         file_registry_conf_proto_enumTypes,
 		MessageInfos:      file_registry_conf_proto_msgTypes,
 	}.Build()
 	File_registry_conf_proto = out.File

@@ -5,38 +5,20 @@ import "google/protobuf/duration.proto";
 
 option go_package = "github.com/go-bamboo/pkg/registry;registry";
 
-message Etcd {
-  bool enable = 1;
-  repeated string endpoints = 2;
-  google.protobuf.Duration dialTimeout = 3;
-}
-
-message Consul {
-  bool enable = 1;
-  string address = 2;
-  google.protobuf.Duration dialTimeout = 3;
-  bool enableHealthCheck = 4;
-}
-
-message Kube {
-  bool enable = 1;
-}
-
-message Nacos {
-  message NacosServer {
-    string ipAddr = 1;
-    uint64 port = 2;
-  }
-  bool enable = 1;
-  repeated NacosServer servers = 2;
-  string namespace = 3;
-  string logDir = 4;
-  string cacheDir = 5;
+enum ProviderType {
+  Unkown = 0;
+  Etcd = 1;
+  Consul = 2;
+  Kube = 3;
+  Nacos = 4;
 }
 
 message Conf {
-  Etcd etcd = 1;
-  Consul consul = 2;
-  Kube kube = 3;
-  Nacos nacos = 4;
+  ProviderType providerType = 1;
+  repeated string endpoints = 2;
+  google.protobuf.Duration dialTimeout = 3;
+  bool enableHealthCheck = 4;
+  string namespace = 5;
+  string logDir = 6;
+  string cacheDir = 7;
 }
