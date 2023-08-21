@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
+	_ "github.com/go-bamboo/pkg/log/std"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
