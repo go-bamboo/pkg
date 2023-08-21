@@ -13,7 +13,7 @@ func init() {
 func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {
 	// consul
 	consulConfig := api.DefaultConfig()
-	consulConfig.Address = c.Consul.Address
+	consulConfig.Address = c.Endpoints[0]
 	consulClient, err := api.NewClient(consulConfig)
 	if err != nil {
 		return nil, nil, err

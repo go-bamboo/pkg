@@ -6,6 +6,8 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
+	"net/url"
+	"strconv"
 )
 
 func init() {
@@ -13,16 +15,24 @@ func init() {
 }
 
 func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {
-	sc := []constant.ServerConfig{}
-	for _, server := range c.Nacos.Servers {
-		sc = append(sc, *constant.NewServerConfig(server.IpAddr, server.Port))
+	var sc []constant.ServerConfig
+	for _, server := range c.Endpoints {
+		uri, err := url.Parse(server)
+		if err != nil {
+			return nil, nil, err
+		}
+		port, err := strconv.ParseUint(uri.Port(), 10, 64)
+		if err != nil {
+			return nil, nil, err
+		}
+		sc = append(sc, *constant.NewServerConfig(uri.Host, port))
 	}
 	cc := constant.ClientConfig{
-		NamespaceId:         c.Nacos.Namespace,
+		NamespaceId:         c.Namespace,
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
-		LogDir:              c.Nacos.LogDir,
-		CacheDir:            c.Nacos.CacheDir,
+		LogDir:              c.LogDir,
+		CacheDir:            c.CacheDir,
 		LogLevel:            "info",
 	}
 	client, err := clients.NewNamingClient(

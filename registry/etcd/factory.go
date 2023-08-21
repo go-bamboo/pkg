@@ -12,7 +12,7 @@ func init() {
 
 func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {
 	cli, err := etcdv3.New(etcdv3.Config{
-		Endpoints: c.Etcd.Endpoints,
+		Endpoints: c.Endpoints,
 	})
 	if err != nil {
 		panic(err)
