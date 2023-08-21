@@ -1,13 +1,11 @@
-package file
+package consul
 
 import (
 	"github.com/go-bamboo/pkg/config"
-	"github.com/go-bamboo/pkg/filex"
 	configx "github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/hashicorp/consul/api"
 	"gopkg.in/yaml.v3"
 	"net/url"
-	"path"
 )
 
 func init() {
@@ -15,11 +13,18 @@ func init() {
 }
 
 func Create(uri *url.URL, v interface{}) (configx.Config, error) {
-	cp := filex.GetCurrentPath()
+	consulConfig := api.DefaultConfig()
+	consulConfig.Address = uri.Host
+	consulClient, err := api.NewClient(consulConfig)
+	if err != nil {
+		panic(err)
+	}
+	cs, err := New(consulClient, WithPath(uri.Path))
+	if err != nil {
+		return nil, err
+	}
 	c := configx.New(
-		configx.WithSource(
-			file.NewSource(path.Join(cp, uri.Path)),
-		),
+		configx.WithSource(cs),
 		configx.WithDecoder(func(kv *configx.KeyValue, v map[string]interface{}) error {
 			return yaml.Unmarshal(kv.Value, v)
 		}))
