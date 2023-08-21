@@ -6,8 +6,12 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// DefaultLogger is default logger.
+var DefaultLogger = NewStdCore(zapcore.DebugLevel)
+
 func init() {
 	log.Register("Stdout", Create)
+	log.SetLogger(log.NewLogger(DefaultLogger, 1))
 }
 
 func Create(c *log.Conf) (core.Logger, error) {

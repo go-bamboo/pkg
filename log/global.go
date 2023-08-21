@@ -10,11 +10,6 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// DefaultLogger is default logger.
-var DefaultLogger = NewLogger(MustCreate(&Conf{
-	Level: int32(zapcore.DebugLevel),
-}), 1)
-
 // globalLogger is designed as a global logger in current process.
 var global = &loggerAppliance{}
 
@@ -23,10 +18,6 @@ var global = &loggerAppliance{}
 type loggerAppliance struct {
 	lock sync.Mutex
 	ZapLogger
-}
-
-func init() {
-	global.SetLogger(DefaultLogger)
 }
 
 func (a *loggerAppliance) SetLogger(in *ZapLogger) {
