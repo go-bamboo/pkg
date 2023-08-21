@@ -3,37 +3,25 @@ package log;
 
 option go_package = "github.com/go-bamboo/pkg/log;log";
 
-message StdoutConf {
-  bool enable = 1;
-  int32 level = 2;
-}
-
-message FileConf {
-  bool enable = 1;
-  int32 level = 2;
-  string path = 3;
-  string name = 4;
-}
-
-message FluentConf {
-  bool enable = 1;
-  int32 level = 2;
-  string addr = 3;
-}
-
-message CloudWatchConf {
-  bool enable = 1;
-  int32 level = 2;
-  string key = 3;
-  string secret = 4;
-  string region = 5;
-  string profile = 6;
-  string logGroupName = 7;
+enum CoreType {
+  Unkown = 0;
+  Stdout = 1;
+  File = 2;
+  Fluent = 3;
+  CloudWatch = 4;
+  AliYun = 5;
+  Sys = 6;
+  Hc = 7;
 }
 
 message Conf {
-  StdoutConf console = 1;
-  FileConf file = 2;
-  FluentConf fluent = 3;
-  CloudWatchConf cloudWatch = 4;
+  CoreType type = 1;
+  int32 level = 2;
+  string path = 3;
+  string endpoint = 4;
+  string key = 5;
+  string secret = 6;
+  string region = 7;
+  string profile = 8;
+  string logGroupName = 9;
 }

@@ -1,12 +1,8 @@
 package log
 
 import (
-	"github.com/go-bamboo/pkg/log/cloudwatch"
 	"github.com/go-bamboo/pkg/log/core"
-	"github.com/go-bamboo/pkg/log/file"
-	"github.com/go-bamboo/pkg/log/fluent"
 	"github.com/go-bamboo/pkg/log/multi"
-	"github.com/go-bamboo/pkg/log/std"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -49,57 +45,22 @@ func WithCore(c zapcore.Core, kv ...interface{}) zapcore.Core {
 	return c.With(keysAndValues)
 }
 
-func NewLoggerCore(c *Conf) (core.Logger, error) {
+func Init(c []*Conf) core.Logger {
 	hooks := make([]core.Logger, 0)
-	if c.Console != nil && c.Console.Enable {
-		c := std.NewStdCore(zapcore.Level(c.Console.Level))
-		hooks = append(hooks, c)
-	}
-	if c.File != nil && c.File.Enable {
-		c := file.NewFileCore(
-			file.Level(zapcore.Level(c.File.Level)),
-			file.WithPath(c.File.Path),
-			file.WithName(c.File.Name),
-		)
-		hooks = append(hooks, c)
-	}
-	if c.Fluent != nil && c.Fluent.Enable {
-		c, err := fluent.NewFluentCore(
-			fluent.Level(zapcore.Level(c.Fluent.Level)),
-			fluent.WithAddr(c.Fluent.Addr),
-		)
+	for _, conf := range c {
+		co, err := Create(conf)
 		if err != nil {
-			return nil, err
+			Fatal(err)
 		}
-		hooks = append(hooks, c)
+		hooks = append(hooks, co)
 	}
-	if c.CloudWatch != nil && c.CloudWatch.Enable {
-		c, err := cloudwatch.NewCloudWatchCore(
-			cloudwatch.Level(zapcore.Level(c.CloudWatch.Level)),
-			cloudwatch.WithRegion(c.CloudWatch.Region),
-			cloudwatch.WithAccessKey(c.CloudWatch.Key),
-			cloudwatch.WithAccessSecret(c.CloudWatch.Secret),
-			cloudwatch.WithLogGroupName(c.CloudWatch.LogGroupName),
-		)
-		if err != nil {
-			return nil, err
-		}
-		hooks = append(hooks, c)
-	}
-	logger, err := multi.NewMultiCore(hooks...)
+	co, err := multi.NewMultiCore(hooks...)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return logger, nil
-}
 
-func Init(c *Conf) core.Logger {
-	core, err := NewLoggerCore(c)
-	if err != nil {
-		Fatal(err)
-	}
 	// global
-	logger := NewLogger(core, 1)
+	logger := NewLogger(co, 1)
 	SetLogger(logger)
-	return core
+	return co
 }
