@@ -15,45 +15,44 @@ type Registry interface {
 	Create(c *Conf) (core.Logger, error)
 }
 
-type discoveryRegistry struct {
-	discovery map[string]Factory
+type coreRegistry struct {
+	cores map[string]Factory
 }
 
 // NewRegistry returns a new middleware registry.
 func NewRegistry() Registry {
-	return &discoveryRegistry{
-		discovery: map[string]Factory{},
+	return &coreRegistry{
+		cores: map[string]Factory{},
 	}
 }
 
-func (d *discoveryRegistry) Register(name string, factory Factory) {
-	d.discovery[name] = factory
+func (d *coreRegistry) Register(name string, factory Factory) {
+	d.cores[name] = factory
 }
 
-func (d *discoveryRegistry) Create(c *Conf) (core.Logger, error) {
-	factory, ok := d.discovery[c.Type.String()]
+func (d *coreRegistry) Create(c *Conf) (core.Logger, error) {
+	factory, ok := d.cores[c.Type.String()]
 	if !ok {
-		return nil, fmt.Errorf("discovery %s has not been registered", c.Type.String())
+		return nil, fmt.Errorf("cores %s has not been registered", c.Type.String())
 	}
-
 	impl, err := factory(c)
 	if err != nil {
-		return nil, fmt.Errorf("create discovery error: %s", err)
+		return nil, fmt.Errorf("create cores error: %s", err)
 	}
 	return impl, nil
 }
 
-// Register registers one discovery.
+// Register registers one cores.
 func Register(name string, factory Factory) {
 	globalRegistry.Register(name, factory)
 }
 
-// Create instantiates a discovery based on `discoveryDSN`.
+// Create instantiates a cores based on `discoveryDSN`.
 func Create(c *Conf) (core.Logger, error) {
 	return globalRegistry.Create(c)
 }
 
-// MustCreate instantiates a discovery based on `discoveryDSN`.
+// MustCreate instantiates a cores based on `discoveryDSN`.
 func MustCreate(c *Conf) core.Logger {
 	co, err := globalRegistry.Create(c)
 	if err != nil {
