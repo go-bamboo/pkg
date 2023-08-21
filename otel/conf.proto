@@ -3,37 +3,23 @@ package otel;
 
 option go_package = "github.com/go-bamboo/pkg/otel;otel";
 
-message Jaeger {
-  bool enable = 1;
-  string endpoint = 2;
-  bool metrics = 3;
-  bool traces = 4;
+enum ProviderType {
+  Unkown = 0;
+  Jaeger = 1;
+  Stdout = 2;
+  Otlp = 3;
+  Prometheus = 4;
 }
 
-message Stdout {
-  bool enable = 1;
-  bool traces = 2;
-  string trace_output = 3;
-  bool metrics = 4;
-  string metric_output = 5;
-}
-
-message Otlp {
-  bool enable = 1;
-  string endpoint = 2;
-  bool metrics = 3;
-  bool traces = 4;
-  bool xray = 5;
-}
-
-message Prometheus {
-  bool enable = 1;
-  bool metrics = 2;
+enum Type {
+  Unkown1 = 0;
+  Traces = 1;
+  Metrics = 2;
 }
 
 message Conf {
-  Jaeger jaeger = 1;
-  Stdout stdout = 2;
-  Otlp otlp = 3;
-  Prometheus prom = 4;
+  ProviderType providerType = 1;
+  Type type = 2;
+  string endpoint = 3;
+  bool xray = 5;
 }
