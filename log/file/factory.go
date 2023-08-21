@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	log.Register("file", Create)
+	log.Register("File", Create)
 }
 
 func Create(c *log.Conf) (core.Logger, error) {

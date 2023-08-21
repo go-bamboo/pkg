@@ -7,16 +7,16 @@ import (
 )
 
 func init() {
-	log.Register("aliyun", Create)
+	log.Register("CloudWatch", Create)
 }
 
 func Create(c *log.Conf) (core.Logger, error) {
 	cc, err := NewCloudWatchCore(
-		Level(zapcore.Level(c.CloudWatch.Level)),
-		WithRegion(c.CloudWatch.Region),
-		WithAccessKey(c.CloudWatch.Key),
-		WithAccessSecret(c.CloudWatch.Secret),
-		WithLogGroupName(c.CloudWatch.LogGroupName),
+		Level(zapcore.Level(c.Level)),
+		WithRegion(c.Region),
+		WithAccessKey(c.Key),
+		WithAccessSecret(c.Secret),
+		WithLogGroupName(c.LogGroupName),
 	)
 	if err != nil {
 		return nil, err

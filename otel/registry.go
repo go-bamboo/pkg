@@ -30,7 +30,7 @@ func (d *discoveryRegistry) Register(name string, factory Factory) {
 }
 
 func (d *discoveryRegistry) Create(c *Conf, serviceName string, uuid string) error {
-	key := fmt.Sprintf("%s:%s", c.ProviderType.String(), c.Type.Type())
+	key := fmt.Sprintf("%s:%s", ProviderType_name[int32(c.ProviderType)], Type_name[int32(c.Type)])
 	factory, ok := d.discovery[key]
 	if !ok {
 		return fmt.Errorf("discovery %s has not been registered", key)

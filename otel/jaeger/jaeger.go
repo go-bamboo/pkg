@@ -1,7 +1,6 @@
 package jaeger
 
 import (
-	"fmt"
 	"github.com/go-bamboo/pkg/net/ip"
 	"github.com/go-bamboo/pkg/otel"
 	otelx "go.opentelemetry.io/otel"
@@ -14,7 +13,7 @@ import (
 )
 
 func init() {
-	otel.Register(fmt.Sprintf("%s:%v", otel.ProviderType_Jaeger.String(), otel.Type_Traces.String()), NewTracerProvider)
+	otel.Register("Jaeger:Traces", NewTracerProvider)
 }
 
 func NewTracerProvider(c *otel.Conf, serviceName string, uuid string) (err error) {

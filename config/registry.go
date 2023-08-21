@@ -16,22 +16,22 @@ type Registry interface {
 	Create(dsn *url.URL, v interface{}) (config.Config, error)
 }
 
-type discoveryRegistry struct {
+type configRegistry struct {
 	discovery map[string]Factory
 }
 
 // NewRegistry returns a new middleware registry.
 func NewRegistry() Registry {
-	return &discoveryRegistry{
+	return &configRegistry{
 		discovery: map[string]Factory{},
 	}
 }
 
-func (d *discoveryRegistry) Register(name string, factory Factory) {
+func (d *configRegistry) Register(name string, factory Factory) {
 	d.discovery[name] = factory
 }
 
-func (d *discoveryRegistry) Create(dsn *url.URL, v interface{}) (config.Config, error) {
+func (d *configRegistry) Create(dsn *url.URL, v interface{}) (config.Config, error) {
 
 	factory, ok := d.discovery[dsn.Scheme]
 	if !ok {

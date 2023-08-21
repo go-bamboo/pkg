@@ -1,7 +1,6 @@
 package prometheus
 
 import (
-	"fmt"
 	"github.com/go-bamboo/pkg/otel"
 	prom "github.com/prometheus/client_golang/prometheus"
 	otelx "go.opentelemetry.io/otel"
@@ -12,7 +11,7 @@ import (
 )
 
 func init() {
-	otel.Register(fmt.Sprintf("%s:%v", otel.ProviderType_Prometheus.String(), otel.Type_Metrics.String()), NewMeterProvider)
+	otel.Register("Prometheus:Metrics", NewMeterProvider)
 }
 
 func NewMeterProvider(c *otel.Conf, serviceName string, uuid string) (err error) {

@@ -19,8 +19,8 @@ import (
 )
 
 func init() {
-	otel.Register(fmt.Sprintf("%s:%v", otel.ProviderType_Stdout.String(), otel.Type_Traces.String()), NewTracerProvider)
-	otel.Register(fmt.Sprintf("%s:%v", otel.ProviderType_Stdout.String(), otel.Type_Metrics.String()), NewTracerProvider)
+	otel.Register("Stdout:Traces", NewTracerProvider)
+	otel.Register("Stdout:Metrics", NewTracerProvider)
 }
 
 func NewTracerProvider(c *otel.Conf, serviceName string, uuid string) (err error) {

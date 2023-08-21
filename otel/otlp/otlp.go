@@ -2,7 +2,6 @@ package otlp
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/go-bamboo/pkg/net/ip"
@@ -21,8 +20,8 @@ import (
 )
 
 func init() {
-	otel.Register(fmt.Sprintf("%s:%v", otel.ProviderType_Otlp.String(), otel.Type_Traces.String()), NewTracerProvider)
-	otel.Register(fmt.Sprintf("%s:%v", otel.ProviderType_Otlp.String(), otel.Type_Metrics.String()), NewTracerProvider)
+	otel.Register("Otlp:Traces", NewTracerProvider)
+	otel.Register("Otlp:Metrics", NewTracerProvider)
 }
 
 func NewTracerProvider(c *otel.Conf, serviceName string, uuid string) (err error) {
