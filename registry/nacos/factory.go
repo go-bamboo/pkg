@@ -8,6 +8,7 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 func init() {
@@ -25,7 +26,8 @@ func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		sc = append(sc, *constant.NewServerConfig(uri.Host, port))
+		ips := strings.Split(uri.Host, ":")
+		sc = append(sc, *constant.NewServerConfig(ips[0], port))
 	}
 	cc := constant.ClientConfig{
 		NamespaceId:         c.Namespace,
@@ -42,7 +44,7 @@ func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {
 		},
 	)
 	if err != nil {
-		panic(err)
+		return nil, nil, err
 	}
 	r := New(client)
 	return r, r, nil
