@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	registry.Register("kube", Create)
+	registry.Register("Nacos", Create)
 }
 
 func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {

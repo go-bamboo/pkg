@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	registry.Register("etcd", Create)
+	registry.Register("Etcd", Create)
 }
 
 func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {

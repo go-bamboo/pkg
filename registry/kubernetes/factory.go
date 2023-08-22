@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	registry.Register("kube", Create)
+	registry.Register("Kube", Create)
 }
 
 func getClientSet() (*kubernetes.Clientset, error) {
