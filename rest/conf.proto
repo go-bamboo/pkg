@@ -4,11 +4,13 @@ package rest;
 option go_package = "github.com/go-bamboo/pkg/rest;rest";
 
 import "google/protobuf/duration.proto";
+import "middleware/conf.proto";
 
 message Conf {
   string network = 1;
   string address = 2;
   google.protobuf.Duration timeout = 3;
+  repeated middleware.Conf middlewares = 4;
 }
 
 

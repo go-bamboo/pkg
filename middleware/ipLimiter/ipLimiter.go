@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/meta"
+	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/patrickmn/go-cache"
 	"golang.org/x/time/rate"
 )
@@ -84,4 +84,10 @@ func Server(opts ...Option) middleware.Middleware {
 			return handler(ctx, req)
 		}
 	}
+}
+
+func init() {
+	middleware.Register("ipLimiter", func(conf *middleware.Conf) (middleware.Middleware, error) {
+		return Server(), nil
+	})
 }

@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -135,4 +135,13 @@ func Client(opts ...Option) middleware.Middleware {
 			return reply, err
 		}
 	}
+}
+
+func init() {
+	middleware.Register("metrics-server", func(conf *middleware.Conf) (middleware.Middleware, error) {
+		return Server(), nil
+	})
+	middleware.Register("metrics-client", func(conf *middleware.Conf) (middleware.Middleware, error) {
+		return Server(), nil
+	})
 }

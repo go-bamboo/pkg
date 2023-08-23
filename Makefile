@@ -70,7 +70,8 @@ proto:
            ./store/mongox/conf.proto \
            ./store/gormx/conf.proto \
            ./fs/s3/conf.proto \
-           ./fs/google/conf.proto
+           ./fs/google/conf.proto \
+           ./middleware/conf.proto
 
 .PHONY: swift
 swift:

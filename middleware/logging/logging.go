@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-bamboo/pkg/log"
 	_ "github.com/go-bamboo/pkg/log/std"
+	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 )
 
@@ -105,4 +105,13 @@ func extractArgs(req interface{}) string {
 		return stringer.String()
 	}
 	return fmt.Sprintf("%+v", req)
+}
+
+func init() {
+	middleware.Register("logging-server", func(conf *middleware.Conf) (middleware.Middleware, error) {
+		return Server(), nil
+	})
+	middleware.Register("logging-client", func(conf *middleware.Conf) (middleware.Middleware, error) {
+		return Server(), nil
+	})
 }
