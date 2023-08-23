@@ -2,7 +2,6 @@ package nacos
 
 import (
 	"github.com/go-bamboo/pkg/registry"
-	"github.com/go-bamboo/pkg/registry/core"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
@@ -15,7 +14,7 @@ func init() {
 	registry.Register("Nacos", Create)
 }
 
-func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {
+func Create(c *registry.Conf) (registry.Registrar, registry.Discovery, error) {
 	var sc []constant.ServerConfig
 	for _, server := range c.Endpoints {
 		uri, err := url.Parse(server)

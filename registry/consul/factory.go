@@ -2,7 +2,6 @@ package consul
 
 import (
 	"github.com/go-bamboo/pkg/registry"
-	"github.com/go-bamboo/pkg/registry/core"
 	"github.com/hashicorp/consul/api"
 )
 
@@ -10,7 +9,7 @@ func init() {
 	registry.Register("Consul", Create)
 }
 
-func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {
+func Create(c *registry.Conf) (registry.Registrar, registry.Discovery, error) {
 	// consul
 	consulConfig := api.DefaultConfig()
 	consulConfig.Address = c.Endpoints[0]

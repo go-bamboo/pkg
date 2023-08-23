@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	registry2 "github.com/go-bamboo/pkg/registry"
 	"net"
 	"net/url"
 	"strconv"
 
-	"github.com/go-bamboo/pkg/registry/core"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -18,8 +18,8 @@ import (
 var ErrServiceInstanceNameEmpty = errors.New("kratos/nacos: ServiceInstance.Name can not be empty")
 
 var (
-	_ core.Registrar     = (*Registry)(nil)
-	_ registry.Discovery = (*Registry)(nil)
+	_ registry2.Registrar = (*Registry)(nil)
+	_ registry.Discovery  = (*Registry)(nil)
 )
 
 type options struct {

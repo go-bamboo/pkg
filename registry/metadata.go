@@ -1,4 +1,4 @@
-package core
+package registry
 
 const (
 	MetaID = "id"

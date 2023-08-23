@@ -2,7 +2,6 @@ package kuberegistry
 
 import (
 	"github.com/go-bamboo/pkg/registry"
-	"github.com/go-bamboo/pkg/registry/core"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -32,7 +31,7 @@ func getClientSet() (*kubernetes.Clientset, error) {
 	return clientSet, nil
 }
 
-func Create(c *registry.Conf) (core.Registrar, core.Discovery, error) {
+func Create(c *registry.Conf) (registry.Registrar, registry.Discovery, error) {
 	cli, err := getClientSet()
 	if err != nil {
 		panic(err)
