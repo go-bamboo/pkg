@@ -50,6 +50,5 @@ func NewServer(c *Conf) *Server {
 		opts = append(opts, grpc.Timeout(c.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-
 	return srv
 }

@@ -18,7 +18,6 @@ import (
 	"time"
 
 	pkgstrings "github.com/go-bamboo/pkg/strings"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -73,11 +72,6 @@ func Hmac(data string) string {
 
 func IsStringEmpty(str string) bool {
 	return strings.Trim(str, " ") == ""
-}
-
-func GetUUID() string {
-	u := uuid.New()
-	return strings.ReplaceAll(u.String(), "-", "")
 }
 
 // func PathExists(path string) bool {
