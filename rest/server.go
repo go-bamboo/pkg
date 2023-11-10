@@ -5,7 +5,6 @@ import (
 
 	"github.com/felixge/fgprof"
 	"github.com/go-bamboo/pkg/api/status"
-	"github.com/go-bamboo/pkg/middleware/logging"
 	"github.com/go-bamboo/pkg/middleware/metadata"
 	"github.com/go-bamboo/pkg/middleware/metrics"
 	"github.com/go-bamboo/pkg/middleware/realip"
@@ -48,14 +47,12 @@ func NewServer(c *Conf, opts ...Option) *Server {
 			realip.Server(),
 			tracing.Server(),
 			metrics.Server(),
-			logging.Server(),
 			validate.Validator(),
 		},
 	}
 	for _, o := range opts {
 		o(defaultOpts)
 	}
-	defaultOpts.middlewareChain = append(defaultOpts.middlewareChain, validate.Validator())
 	var serverOpts = []http.ServerOption{
 		http.Filter(defaultOpts.filters...),
 		http.Middleware(
