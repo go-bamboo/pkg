@@ -23,7 +23,7 @@ func Create(uri *url.URL, v interface{}) (configx.Config, error) {
 				Namespaces(namespace+".yaml"),
 				MetaAddr("http://"+uri.Host),
 				SkipLocalCache(),
-				WithLogger(log.DefaultLogger)),
+				WithLogger(log.GetLogger())),
 		),
 		configx.WithDecoder(func(kv *configx.KeyValue, v map[string]interface{}) error {
 			return yaml.Unmarshal(kv.Value, v)
