@@ -33,6 +33,17 @@ services:
     networks:
       apisix:
 
+  nacos:
+    image: nacos/nacos-server:v2.2.2-slim
+    restart: always
+    ports:
+      - 8848:8848
+      - 9848:9848
+    environment:
+      MODE: standalone
+    networks:
+      apisix:
+
 networks:
   apisix:
     driver: bridge
