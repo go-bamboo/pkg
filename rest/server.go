@@ -72,8 +72,8 @@ func NewServer(c *Conf, opts ...Option) *Server {
 	}
 	defaultOpts.middlewareChain = append([]middleware.Middleware{
 		recovery.Recovery(),
-		metadata.Server(),
 		realip.Server(),
+		metadata.Server(),
 		tracing.Server(),
 		metrics.Server(),
 		logging.Server(loggingOpts...),
