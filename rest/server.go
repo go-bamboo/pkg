@@ -5,6 +5,7 @@ import (
 
 	"github.com/felixge/fgprof"
 	"github.com/go-bamboo/pkg/api/status"
+	"github.com/go-bamboo/pkg/middleware/logging"
 	"github.com/go-bamboo/pkg/middleware/metadata"
 	"github.com/go-bamboo/pkg/middleware/metrics"
 	"github.com/go-bamboo/pkg/middleware/realip"
@@ -20,8 +21,11 @@ type (
 	Server  = http.Server
 	Option  func(*options)
 	options struct {
-		middlewareChain []middleware.Middleware
-		filters         []http.FilterFunc
+		middlewareChain            []middleware.Middleware
+		filters                    []http.FilterFunc
+		enc                        http.EncodeResponseFunc
+		ene                        http.EncodeErrorFunc
+		loggingBalckListOperations []string
 	}
 )
 
@@ -38,21 +42,43 @@ func WithFilter(m ...http.FilterFunc) Option {
 	}
 }
 
+// ErrorEncoder with error encoder.
+func ErrorEncoder(en http.EncodeErrorFunc) Option {
+	return func(o *options) {
+		o.ene = en
+	}
+}
+
+func LoggingBalckListOperation(operation string) Option {
+	return func(o *options) {
+		o.loggingBalckListOperations = append(o.loggingBalckListOperations, operation)
+	}
+}
+
 // NewServer new a HTTP server.
 func NewServer(c *Conf, opts ...Option) *Server {
 	defaultOpts := &options{
-		middlewareChain: []middleware.Middleware{
-			recovery.Recovery(),
-			metadata.Server(),
-			realip.Server(),
-			tracing.Server(),
-			metrics.Server(),
-			validate.Validator(),
-		},
+		middlewareChain: []middleware.Middleware{},
+		filters:         make([]http.FilterFunc, 0),
+		enc:             http.DefaultResponseEncoder,
+		ene:             http.DefaultErrorEncoder,
 	}
 	for _, o := range opts {
 		o(defaultOpts)
 	}
+	var loggingOpts []logging.Option
+	for _, operation := range defaultOpts.loggingBalckListOperations {
+		loggingOpts = append(loggingOpts, logging.WithBlackList(operation))
+	}
+	defaultOpts.middlewareChain = append([]middleware.Middleware{
+		recovery.Recovery(),
+		metadata.Server(),
+		realip.Server(),
+		tracing.Server(),
+		metrics.Server(),
+		logging.Server(loggingOpts...),
+		validate.Validator(),
+	}, defaultOpts.middlewareChain...)
 	var serverOpts = []http.ServerOption{
 		http.Filter(defaultOpts.filters...),
 		http.Middleware(
@@ -60,6 +86,8 @@ func NewServer(c *Conf, opts ...Option) *Server {
 				defaultOpts.middlewareChain...,
 			),
 		),
+		http.ResponseEncoder(defaultOpts.enc),
+		http.ErrorEncoder(defaultOpts.ene),
 	}
 	if c.Network != "" {
 		serverOpts = append(serverOpts, http.Network(c.Network))
@@ -74,6 +102,5 @@ func NewServer(c *Conf, opts ...Option) *Server {
 	status.RegisterStatusHTTPServer(httpSrv, status.NewStatusService())
 	httpSrv.Handle("/debug/fgprof", fgprof.Handler())
 	httpSrv.Handle("/metrics", promhttp.Handler())
-
 	return httpSrv
 }

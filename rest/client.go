@@ -9,6 +9,7 @@ import (
 	"github.com/go-bamboo/pkg/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
@@ -21,6 +22,7 @@ func NewClient(endpoint string) (*Client, error) {
 		tracing.Client(),
 		metrics.Client(),
 		logging.Client(),
+		validate.Validator(),
 	}
 	c, err := http.NewClient(context.TODO(), http.WithEndpoint(endpoint), http.WithMiddleware(middlewareChain...))
 	if err != nil {

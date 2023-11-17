@@ -3,8 +3,8 @@ package tracing
 import (
 	"context"
 
-	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -83,13 +83,4 @@ func SpanID() log.Valuer {
 		}
 		return ""
 	}
-}
-
-func init() {
-	middleware.Register("tracing-server", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Server(), nil
-	})
-	middleware.Register("tracing-client", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Client(), nil
-	})
 }

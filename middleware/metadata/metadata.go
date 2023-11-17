@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/go-bamboo/pkg/meta"
-	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/metadata"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 )
 
@@ -116,13 +116,4 @@ func Client(opts ...Option) middleware.Middleware {
 			return handler(ctx, req)
 		}
 	}
-}
-
-func init() {
-	middleware.Register("metadata-server", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Server(), nil
-	})
-	middleware.Register("metadata-client", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Server(), nil
-	})
 }

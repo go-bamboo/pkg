@@ -7,13 +7,30 @@ import (
 
 	"github.com/go-bamboo/pkg/log"
 	_ "github.com/go-bamboo/pkg/log/std"
-	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 )
 
+// Option is otel option.
+type Option func(*options)
+
+type options struct {
+	operations map[string]struct{}
+}
+
+func WithBlackList(operation string) Option {
+	return func(o *options) {
+		o.operations[operation] = struct{}{}
+	}
+}
+
 // Server is an server logging middleware.
-func Server() middleware.Middleware {
+func Server(opts ...Option) middleware.Middleware {
+	o := &options{}
+	for _, opt := range opts {
+		opt(o)
+	}
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			var (
@@ -28,6 +45,10 @@ func Server() middleware.Middleware {
 				operation = info.Operation()
 			}
 			reply, err = handler(ctx, req)
+			_, ok := o.operations[operation]
+			if ok {
+				return
+			}
 			if se := errors.FromError(err); se != nil {
 				code = se.Code
 				reason = se.Reason
@@ -56,7 +77,11 @@ func Server() middleware.Middleware {
 }
 
 // Client is an client logging middleware.
-func Client() middleware.Middleware {
+func Client(opts ...Option) middleware.Middleware {
+	o := &options{}
+	for _, opt := range opts {
+		opt(o)
+	}
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			var (
@@ -71,6 +96,10 @@ func Client() middleware.Middleware {
 				operation = info.Operation()
 			}
 			reply, err = handler(ctx, req)
+			_, ok := o.operations[operation]
+			if ok {
+				return
+			}
 			if se := errors.FromError(err); se != nil {
 				code = se.Code
 				reason = se.Reason
@@ -105,13 +134,4 @@ func extractArgs(req interface{}) string {
 		return stringer.String()
 	}
 	return fmt.Sprintf("%+v", req)
-}
-
-func init() {
-	middleware.Register("logging-server", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Server(), nil
-	})
-	middleware.Register("logging-client", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Server(), nil
-	})
 }

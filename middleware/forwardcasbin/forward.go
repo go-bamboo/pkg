@@ -7,8 +7,8 @@ import (
 
 	syspb "github.com/go-bamboo/pkg/api/sys"
 	"github.com/go-bamboo/pkg/meta"
-	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 )
 
@@ -53,10 +53,4 @@ func Server(opts ...Option) middleware.Middleware {
 			return handler(ctx, req)
 		}
 	}
-}
-
-func init() {
-	middleware.Register("forwardcasbin", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Server(), nil
-	})
 }

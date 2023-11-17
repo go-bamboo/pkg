@@ -9,8 +9,8 @@ import (
 	ssopb "github.com/go-bamboo/pkg/api/sys"
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/meta"
-	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
 )
@@ -73,10 +73,4 @@ func extractHttpToken(info *http.Transport) string {
 		log.Error(cookieErr)
 	}
 	return token
-}
-
-func init() {
-	middleware.Register("forwardauth", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Server(), nil
-	})
 }

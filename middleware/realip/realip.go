@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/go-bamboo/pkg/meta"
-	"github.com/go-bamboo/pkg/middleware"
 	"github.com/go-kratos/kratos/v2/metadata"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/tomasen/realip"
@@ -31,10 +31,4 @@ func Server() middleware.Middleware {
 			return handler(ctx, req)
 		}
 	}
-}
-
-func init() {
-	middleware.Register("realip", func(conf *middleware.Conf) (middleware.Middleware, error) {
-		return Server(), nil
-	})
 }
