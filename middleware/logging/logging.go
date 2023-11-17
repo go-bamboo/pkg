@@ -27,7 +27,9 @@ func WithBlackList(operation string) Option {
 
 // Server is an server logging middleware.
 func Server(opts ...Option) middleware.Middleware {
-	o := &options{}
+	o := &options{
+		operations: map[string]struct{}{},
+	}
 	for _, opt := range opts {
 		opt(o)
 	}
@@ -78,7 +80,9 @@ func Server(opts ...Option) middleware.Middleware {
 
 // Client is an client logging middleware.
 func Client(opts ...Option) middleware.Middleware {
-	o := &options{}
+	o := &options{
+		operations: map[string]struct{}{},
+	}
 	for _, opt := range opts {
 		opt(o)
 	}
