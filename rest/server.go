@@ -70,15 +70,17 @@ func NewServer(c *Conf, opts ...Option) *Server {
 	for _, operation := range defaultOpts.loggingBalckListOperations {
 		loggingOpts = append(loggingOpts, logging.WithBlackList(operation))
 	}
-	defaultOpts.middlewareChain = append([]middleware.Middleware{
-		recovery.Recovery(),
-		realip.Server(),
-		metadata.Server(),
-		tracing.Server(),
-		metrics.Server(),
-		logging.Server(loggingOpts...),
-		validate.Validator(),
-	}, defaultOpts.middlewareChain...)
+	if len(defaultOpts.middlewareChain) <= 0 {
+		defaultOpts.middlewareChain = append([]middleware.Middleware{
+			recovery.Recovery(),
+			realip.Server(),
+			metadata.Server(),
+			tracing.Server(),
+			metrics.Server(),
+			logging.Server(loggingOpts...),
+			validate.Validator(),
+		})
+	}
 	var serverOpts = []http.ServerOption{
 		http.Filter(defaultOpts.filters...),
 		http.Middleware(
