@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/middleware/logging"
-	"github.com/go-bamboo/pkg/middleware/metadata"
 	"github.com/go-bamboo/pkg/middleware/metrics"
 	"github.com/go-bamboo/pkg/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/metadata"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -23,7 +23,7 @@ func NewServer(c *Conf) *Server {
 		grpc.Middleware(
 			middleware.Chain(
 				recovery.Recovery(),
-				metadata.Server(),
+				metadata.Server(metadata.WithPropagatedPrefix("x-md-", "X-Forwarded")),
 				tracing.Server(),
 				metrics.Server(),
 				logging.Server(),

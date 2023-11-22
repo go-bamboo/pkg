@@ -1,4 +1,4 @@
-package realip
+package ua
 
 import (
 	"context"
@@ -7,8 +7,6 @@ import (
 	"github.com/go-kratos/kratos/v2/metadata"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
-	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/tomasen/realip"
 )
 
 // Server is middleware server-side metadata.
@@ -19,12 +17,10 @@ func Server() middleware.Middleware {
 			if !ok {
 				panic("metadata not found")
 			}
-			if ip := md.Get(meta.KeyRealIP); len(ip) <= 0 {
+			if ua := md.Get(meta.KeyUA); len(ua) <= 0 {
 				if tr, ok := transport.FromServerContext(ctx); ok && tr.Kind() == transport.KindHTTP {
-					if req, ok := http.RequestFromServerContext(ctx); ok {
-						ip := realip.FromRequest(req)
-						md.Set(meta.KeyRealIP, ip)
-					}
+					header := tr.RequestHeader()
+					md.Set(meta.KeyUA, header.Get("User-Agent"))
 				}
 			}
 			return handler(ctx, req)

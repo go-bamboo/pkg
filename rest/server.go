@@ -6,11 +6,11 @@ import (
 	"github.com/felixge/fgprof"
 	"github.com/go-bamboo/pkg/api/status"
 	"github.com/go-bamboo/pkg/middleware/logging"
-	"github.com/go-bamboo/pkg/middleware/metadata"
 	"github.com/go-bamboo/pkg/middleware/metrics"
 	"github.com/go-bamboo/pkg/middleware/realip"
 	"github.com/go-bamboo/pkg/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/metadata"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -73,7 +73,7 @@ func NewServer(c *Conf, opts ...Option) *Server {
 	if len(defaultOpts.middlewareChain) <= 0 {
 		defaultOpts.middlewareChain = append([]middleware.Middleware{
 			recovery.Recovery(),
-			metadata.Server(),
+			metadata.Server(metadata.WithPropagatedPrefix("x-md-", "X-Forwarded")),
 			realip.Server(), // 依赖metadata
 			tracing.Server(),
 			metrics.Server(),
