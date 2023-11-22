@@ -73,8 +73,8 @@ func NewServer(c *Conf, opts ...Option) *Server {
 	if len(defaultOpts.middlewareChain) <= 0 {
 		defaultOpts.middlewareChain = append([]middleware.Middleware{
 			recovery.Recovery(),
-			realip.Server(),
 			metadata.Server(),
+			realip.Server(), // 依赖metadata
 			tracing.Server(),
 			metrics.Server(),
 			logging.Server(loggingOpts...),
