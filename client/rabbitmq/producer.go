@@ -63,16 +63,17 @@ func MustNewSender(c *ProducerConf) queue.Sender {
 }
 
 func (q *RabbitMqSender) Name() string {
-	return ""
+	return "Sender"
 }
 
 func (q *RabbitMqSender) Send(ctx context.Context, header map[string]interface{}, exchange string, routeKey string, msg []byte) error {
 	if !q.isConnected.Load() {
-		return ErrorDisconnect("")
+		return ErrorDisconnect("%v", q.c.Rabbit)
 	}
 	if !q.isChannelOpen.Load() {
-		return ErrorChannelClosed("")
+		return ErrorChannelClosed("%v", q.c.Rabbit)
 	}
+	body := Client(ctx, msg)
 	err := q.channel.Publish(
 		exchange,
 		routeKey,
@@ -81,7 +82,7 @@ func (q *RabbitMqSender) Send(ctx context.Context, header map[string]interface{}
 		amqp.Publishing{
 			Headers:      header,
 			ContentType:  q.ContentType,
-			Body:         msg,
+			Body:         body,
 			DeliveryMode: amqp.Persistent,
 		},
 	)

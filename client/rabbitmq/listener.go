@@ -160,12 +160,15 @@ func (s *RabbitListener) handleMsg(ctx context.Context, topic string, msg *amqp.
 
 // consume 包裹一层，用来处理handler里面panic的error
 func (s *RabbitListener) consume(ctx context.Context, topic string, msg *amqp.Delivery) error {
-	c, cf := context.WithTimeout(context.TODO(), time.Second*10)
+	c, cf, d, err := Server(msg.Body)
+	if err != nil {
+		return err
+	}
 	// 当遇到panic的error时候，现在处理是直接ack
 	defer rescue.Recover(func() {
 		cf()
 	})
-	return s.handler.Consume(c, topic, []byte(msg.RoutingKey), msg.Body)
+	return s.handler.Consume(c, topic, []byte(msg.RoutingKey), d)
 }
 
 func (s *RabbitListener) connect() error {
