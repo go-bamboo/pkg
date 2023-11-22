@@ -27,7 +27,7 @@ const (
 	grpcBackoffMaxDelay       = time.Second * 3
 )
 
-func MustNew(ctx context.Context, r registry.Discovery, appID string) (*ggrpc.ClientConn, error) {
+func NewClient(ctx context.Context, r registry.Discovery, appID string) (*ggrpc.ClientConn, error) {
 	m := grpc.WithMiddleware(
 		middleware.Chain(
 			recovery.Recovery(),
