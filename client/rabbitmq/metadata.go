@@ -16,7 +16,7 @@ func Server(msg []byte) (context.Context, context.CancelFunc, []byte, error) {
 		return nil, nil, nil, err
 	}
 	// metadata
-	var md metadata.Metadata
+	var md metadata.Metadata = metadata.Metadata{}
 	if len(d.Md) > 0 {
 		for k, v := range d.Md {
 			vals := strings.Split(v, ",")
