@@ -66,12 +66,13 @@ func NewServer(c *Conf, opts ...Option) *Server {
 	for _, o := range opts {
 		o(defaultOpts)
 	}
+	// fix: depend on logging options
 	var loggingOpts []logging.Option
 	for _, operation := range defaultOpts.loggingBalckListOperations {
 		loggingOpts = append(loggingOpts, logging.WithBlackList(operation))
 	}
 	if len(defaultOpts.middlewareChain) <= 0 {
-		defaultOpts.middlewareChain = append([]middleware.Middleware{
+		defaultOpts.middlewareChain = []middleware.Middleware{
 			recovery.Recovery(),
 			metadata.Server(metadata.WithPropagatedPrefix("x-md-", "X-Forwarded")),
 			realip.Server(), // 依赖metadata
@@ -79,7 +80,7 @@ func NewServer(c *Conf, opts ...Option) *Server {
 			metrics.Server(),
 			logging.Server(loggingOpts...),
 			validate.Validator(),
-		})
+		}
 	}
 	var serverOpts = []http.ServerOption{
 		http.Filter(defaultOpts.filters...),
