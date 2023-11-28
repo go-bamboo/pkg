@@ -15,21 +15,11 @@ import (
 // Option is otel option.
 type Option func(*options)
 
-type options struct {
-	operations map[string]struct{}
-}
-
-func WithBlackList(operation string) Option {
-	return func(o *options) {
-		o.operations[operation] = struct{}{}
-	}
-}
+type options struct{}
 
 // Server is an server logging middleware.
 func Server(opts ...Option) middleware.Middleware {
-	o := &options{
-		operations: map[string]struct{}{},
-	}
+	o := &options{}
 	for _, opt := range opts {
 		opt(o)
 	}
@@ -47,10 +37,6 @@ func Server(opts ...Option) middleware.Middleware {
 				operation = info.Operation()
 			}
 			reply, err = handler(ctx, req)
-			_, ok := o.operations[operation]
-			if ok {
-				return
-			}
 			if se := errors.FromError(err); se != nil {
 				code = se.Code
 				reason = se.Reason
@@ -80,9 +66,7 @@ func Server(opts ...Option) middleware.Middleware {
 
 // Client is an client logging middleware.
 func Client(opts ...Option) middleware.Middleware {
-	o := &options{
-		operations: map[string]struct{}{},
-	}
+	o := &options{}
 	for _, opt := range opts {
 		opt(o)
 	}
@@ -100,10 +84,6 @@ func Client(opts ...Option) middleware.Middleware {
 				operation = info.Operation()
 			}
 			reply, err = handler(ctx, req)
-			_, ok := o.operations[operation]
-			if ok {
-				return
-			}
 			if se := errors.FromError(err); se != nil {
 				code = se.Code
 				reason = se.Reason

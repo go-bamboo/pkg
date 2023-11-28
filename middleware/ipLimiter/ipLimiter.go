@@ -13,8 +13,9 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func ErrMaxLimit(format string, a ...interface{}) error {
-	return errors.Unauthorized("ErrMaxLimit", fmt.Sprintf(format, a...))
+// ErrorMaxLimit 超过最大限制
+func ErrorMaxLimit(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, "ErrMaxLimit", fmt.Sprintf(format, args...))
 }
 
 // Option is otel option.
@@ -64,7 +65,7 @@ func Server(opts ...Option) middleware.Middleware {
 				if o.enableBlackList {
 					blocked, ok := o.blacklist.Get(realIP)
 					if ok && blocked.(bool) {
-						return nil, ErrMaxLimit("%v", realIP)
+						return nil, ErrorMaxLimit("%v", realIP)
 					}
 				}
 				var limiter *rate.Limiter
@@ -77,7 +78,7 @@ func Server(opts ...Option) middleware.Middleware {
 				if ok {
 					if !limiter.Allow() {
 						o.blacklist.SetDefault(realIP, true)
-						return nil, ErrMaxLimit("%v", realIP)
+						return nil, ErrorMaxLimit("%v", realIP)
 					}
 				}
 			}

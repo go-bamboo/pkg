@@ -21,11 +21,10 @@ type (
 	Server  = http.Server
 	Option  func(*options)
 	options struct {
-		middlewareChain            []middleware.Middleware
-		filters                    []http.FilterFunc
-		enc                        http.EncodeResponseFunc
-		ene                        http.EncodeErrorFunc
-		loggingBalckListOperations []string
+		middlewareChain []middleware.Middleware
+		filters         []http.FilterFunc
+		enc             http.EncodeResponseFunc
+		ene             http.EncodeErrorFunc
 	}
 )
 
@@ -49,38 +48,24 @@ func ErrorEncoder(en http.EncodeErrorFunc) Option {
 	}
 }
 
-func LoggingBalckListOperation(operation string) Option {
-	return func(o *options) {
-		o.loggingBalckListOperations = append(o.loggingBalckListOperations, operation)
-	}
-}
-
 // NewServer new a HTTP server.
 func NewServer(c *Conf, opts ...Option) *Server {
 	defaultOpts := &options{
-		middlewareChain: []middleware.Middleware{},
-		filters:         make([]http.FilterFunc, 0),
-		enc:             http.DefaultResponseEncoder,
-		ene:             http.DefaultErrorEncoder,
-	}
-	for _, o := range opts {
-		o(defaultOpts)
-	}
-	// fix: depend on logging options
-	var loggingOpts []logging.Option
-	for _, operation := range defaultOpts.loggingBalckListOperations {
-		loggingOpts = append(loggingOpts, logging.WithBlackList(operation))
-	}
-	if len(defaultOpts.middlewareChain) <= 0 {
-		defaultOpts.middlewareChain = []middleware.Middleware{
+		middlewareChain: []middleware.Middleware{
 			recovery.Recovery(),
 			metadata.Server(metadata.WithPropagatedPrefix("x-md-", "X-Forwarded")),
 			realip.Server(), // 依赖metadata
 			tracing.Server(),
 			metrics.Server(),
-			logging.Server(loggingOpts...),
+			logging.Server(),
 			validate.Validator(),
-		}
+		},
+		filters: make([]http.FilterFunc, 0),
+		enc:     http.DefaultResponseEncoder,
+		ene:     http.DefaultErrorEncoder,
+	}
+	for _, o := range opts {
+		o(defaultOpts)
 	}
 	var serverOpts = []http.ServerOption{
 		http.Filter(defaultOpts.filters...),
