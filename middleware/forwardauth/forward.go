@@ -27,7 +27,7 @@ func IsTokenNull(err error) bool {
 func Server() middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
-			if info, ok := transport.FromServerContext(ctx); ok && info.Operation() == ssopb.OperationSysAuth {
+			if info, ok := transport.FromServerContext(ctx); ok {
 				token := extractToken(info)
 				if len(token) == 0 {
 					err = TokenNull("token is null")
