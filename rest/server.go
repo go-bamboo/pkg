@@ -31,7 +31,7 @@ type (
 // WithMiddleware with sys client
 func WithMiddleware(m ...middleware.Middleware) Option {
 	return func(o *options) {
-		o.middlewareChain = append(o.middlewareChain, m...)
+		o.middlewareChain = m
 	}
 }
 
