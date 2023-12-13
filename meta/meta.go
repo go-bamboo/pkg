@@ -2,6 +2,8 @@ package meta
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	"github.com/go-bamboo/pkg/jsonx"
 	"github.com/go-kratos/kratos/v2/metadata"
@@ -14,6 +16,7 @@ const (
 	KeyUA     = "x-md-global-ua"
 	KeyRealIP = "x-md-global-real-ip"
 	KeyLocale = "x-md-global-locale"
+	KeyOpID   = "x-md-global-op-id"
 )
 
 func GetDataPermissions(ctx context.Context) (permission *DataPermission, err error) {
@@ -88,4 +91,27 @@ func GetLocale(ctx context.Context) (ip string, err error) {
 		return
 	}
 	return v, nil
+}
+
+func GetOpID(ctx context.Context) (id int64, err error) {
+	md, ok := metadata.FromServerContext(ctx)
+	if !ok {
+		return 0, ErrorMdNotFound("不存在md")
+	}
+	v := md.Get(KeyOpID)
+	if len(v) <= 0 {
+		err = ErrorRemoteAddrNotFound("locale")
+		return
+	}
+	id, _ = strconv.ParseInt(v, 10, 64)
+	return id, nil
+}
+
+func SetOpID(ctx context.Context, id int64) (err error) {
+	md, ok := metadata.FromServerContext(ctx)
+	if !ok {
+		return ErrorMdNotFound("不存在md")
+	}
+	md.Set(KeyOpID, fmt.Sprint(id))
+	return nil
 }
