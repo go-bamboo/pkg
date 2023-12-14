@@ -3,25 +3,25 @@
 [![Test Status](https://github.com/go-bamboo/pkg/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/go-bamboo/pkg/actions)
 <a href="https://github.com/go-bamboo/pkg/blob/main/LICENSE"><img src="https://img.shields.io/github/license/go-bamboo/pkg" alt="License"></a>
 
-# Pkg
+# go-bamboo: Governance-oriented Microservice Framework
 
-## 功能
+![logo](doc/logo.png)
 
-### error
+## Introduction
 
-kratos
+go-bamboo is a governance-oriented microservice framework, which is being used for years at my work.
 
-### config
+## Requirements
 
-kratos
+- Go version >= 1.19
+- Docker
 
-### registry
+## Quick Start
 
-kratos
+1. Create example project from [layout](https://github.com/go-bamboo/layout)
+1. Download go mod dependencies
+1. Just code yourself :-)
 
-### log
-zap
+## Bugs and Feedback
 
-### trace metrics
-
-otle
+For bug report, questions and discussions please submit an issue.
