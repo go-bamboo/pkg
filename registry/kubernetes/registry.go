@@ -5,14 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	registry2 "github.com/go-bamboo/pkg/registry"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-bamboo/pkg/registry"
 	jsoniter "github.com/json-iterator/go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,8 +24,8 @@ import (
 )
 
 var (
-	_ registry2.Registrar = (*Registry)(nil)
-	_ registry.Discovery  = (*Registry)(nil)
+	_ registry.Registrar = (*Registry)(nil)
+	_ registry.Discovery = (*Registry)(nil)
 )
 
 // Defines the key name of specific fields
