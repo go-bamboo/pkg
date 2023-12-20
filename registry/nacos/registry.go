@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	registry2 "github.com/go-bamboo/pkg/registry"
 	"net"
 	"net/url"
 	"strconv"
@@ -15,11 +14,11 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 
-var ErrServiceInstanceNameEmpty = errors.New("kratos/nacos: ServiceInstance.Name can not be empty")
+var ErrServiceInstanceNameEmpty = errors.New("nacos: ServiceInstance.Name can not be empty")
 
 var (
-	_ registry2.Registrar = (*Registry)(nil)
-	_ registry.Discovery  = (*Registry)(nil)
+	_ registry.Registrar = (*Registry)(nil)
+	_ registry.Discovery = (*Registry)(nil)
 )
 
 type options struct {
