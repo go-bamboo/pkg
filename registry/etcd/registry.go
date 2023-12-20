@@ -3,17 +3,16 @@ package etcd
 import (
 	"context"
 	"fmt"
-	registry2 "github.com/go-bamboo/pkg/registry"
 	"math/rand"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-bamboo/pkg/registry"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var (
-	_ registry2.Registrar = (*Registry)(nil)
-	_ registry.Discovery  = (*Registry)(nil)
+	_ registry.Registrar = (*Registry)(nil)
+	_ registry.Discovery = (*Registry)(nil)
 )
 
 // Option is etcd registry option.
