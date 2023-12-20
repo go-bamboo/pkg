@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-bamboo/pkg/registry"
 	. "github.com/go-bamboo/pkg/registry/consul"
-	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/hashicorp/consul/api"
 )
 

@@ -3,18 +3,17 @@ package consul
 import (
 	"context"
 	"fmt"
-	registry2 "github.com/go-bamboo/pkg/registry"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-bamboo/pkg/registry"
 	"github.com/hashicorp/consul/api"
 )
 
 var (
-	_ registry2.Registrar = (*Registry)(nil)
-	_ registry.Discovery  = (*Registry)(nil)
+	_ registry.Registrar = (*Registry)(nil)
+	_ registry.Discovery = (*Registry)(nil)
 )
 
 // Option is consul registry option.

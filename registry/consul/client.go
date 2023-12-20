@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
-	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-bamboo/pkg/registry"
 	"github.com/hashicorp/consul/api"
 )
 

@@ -15,3 +15,5 @@ type Registrar interface {
 type Discovery = kreg.Discovery
 
 type ServiceInstance = kreg.ServiceInstance
+
+type Watcher = kreg.Watcher

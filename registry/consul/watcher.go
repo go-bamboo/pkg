@@ -3,7 +3,7 @@ package consul
 import (
 	"context"
 
-	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-bamboo/pkg/registry"
 )
 
 type watcher struct {
