@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-kratos/kratos/v2/config"
+	"github.com/go-bamboo/pkg/config"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 

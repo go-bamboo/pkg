@@ -2,7 +2,6 @@ package nacos
 
 import (
 	"github.com/go-bamboo/pkg/config"
-	configx "github.com/go-kratos/kratos/v2/config"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
@@ -14,7 +13,7 @@ func init() {
 	config.Register("file", Create)
 }
 
-func Create(uri *url.URL, v interface{}) (configx.Config, error) {
+func Create(uri *url.URL, v interface{}) (config.Config, error) {
 	q := uri.Query()
 	namespace := q.Get("namespace")
 	group := q.Get("group")
@@ -41,9 +40,9 @@ func Create(uri *url.URL, v interface{}) (configx.Config, error) {
 		panic(err)
 	}
 	source := NewConfigSource(client, WithGroup(group), WithDataID(dataId+".yaml"))
-	c := configx.New(
-		configx.WithSource(source),
-		configx.WithDecoder(func(kv *configx.KeyValue, v map[string]interface{}) error {
+	c := config.New(
+		config.WithSource(source),
+		config.WithDecoder(func(kv *config.KeyValue, v map[string]interface{}) error {
 			return yaml.Unmarshal(kv.Value, v)
 		}))
 	if err := c.Load(); err != nil {

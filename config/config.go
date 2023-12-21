@@ -19,6 +19,14 @@ func init() {
 }
 
 type Value = config.Value
+type Source = config.Source
+type KeyValue = config.KeyValue
+type Watcher = config.Watcher
+type Config = config.Config
+
+var New = config.New
+var WithSource = config.WithSource
+var WithDecoder = config.WithDecoder
 
 func Load(conf string, v interface{}) config.Config {
 	uri, err := url.Parse(conf)

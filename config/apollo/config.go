@@ -3,8 +3,8 @@ package apollo
 import (
 	"context"
 
+	"github.com/go-bamboo/pkg/config"
 	"github.com/go-bamboo/pkg/log"
-	"github.com/go-kratos/kratos/v2/config"
 	"github.com/philchia/agollo/v4"
 )
 
