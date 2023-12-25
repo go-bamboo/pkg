@@ -34,7 +34,7 @@ func DriverDigitFunc() (id, b64s string, err error) {
 	return cap.Generate()
 }
 
-// Verify captcha's answer directly
+// Verify captcha answer directly
 func Verify(id, answer string, clear bool) bool {
 	return store.Verify(id, answer, clear)
 }
