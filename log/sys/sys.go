@@ -21,14 +21,14 @@ func NewSysCore(level zapcore.Level, tag string) (core.Logger, error) {
 	// encoder
 	encoderConfig := zap.NewDevelopmentEncoderConfig()
 	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	core := zapcore.NewCore(
+	c := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(encoderConfig), // 编码器配置
 		zapcore.AddSync(w),
 		zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 			return lvl >= level
 		}), // 日志级别
 	)
-	return &sysCore{core}, nil
+	return &sysCore{c}, nil
 }
 
 func (c *sysCore) Close() {

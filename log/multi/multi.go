@@ -16,10 +16,10 @@ func NewMultiCore(opts ...core.Logger) (core.Logger, error) {
 	for _, opt := range opts {
 		hooks = append(hooks, opt)
 	}
-	core := zapcore.NewTee(hooks...)
+	c := zapcore.NewTee(hooks...)
 	zl := &multiCore{
 		hooks: opts,
-		core:  core,
+		core:  c,
 	}
 	return zl, nil
 }

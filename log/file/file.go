@@ -76,11 +76,11 @@ func NewFileCore(opts ...Option) core.Logger {
 		cores = append(cores, c)
 		hooks = append(hooks, hook)
 	}
-	core := zapcore.NewTee(cores...)
+	c := zapcore.NewTee(cores...)
 	return &fileCore{
 		opts:  _options,
 		hooks: hooks,
-		core:  core,
+		core:  c,
 	}
 }
 
