@@ -20,7 +20,7 @@ import (
 
 func init() {
 	otel.Register("Stdout:Traces", NewTracerProvider)
-	otel.Register("Stdout:Metrics", NewTracerProvider)
+	otel.Register("Stdout:Metrics", NewMeterProvider)
 }
 
 func NewTracerProvider(c *otel.Conf, serviceName string, uuid string) (err error) {
