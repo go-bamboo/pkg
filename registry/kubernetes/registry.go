@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-bamboo/pkg/jsonx"
 	"github.com/go-bamboo/pkg/registry"
-	jsoniter "github.com/json-iterator/go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -128,7 +128,7 @@ func (s *Registry) Register(ctx context.Context, service *registry.ServiceInstan
 		return err
 	}
 
-	patchBytes, err := jsoniter.Marshal(map[string]interface{}{
+	patchBytes, err := jsonx.Marshal(map[string]interface{}{
 		"metadata": metav1.ObjectMeta{
 			Labels: map[string]string{
 				LabelsKeyServiceID:      service.ID,
@@ -321,11 +321,11 @@ func (iter *Iterator) Stop() error {
 // //////////// Helper Func ////////////
 
 func marshal(in interface{}) (string, error) {
-	return jsoniter.MarshalToString(in)
+	return jsonx.MarshalToString(in)
 }
 
 func unmarshal(data string, in interface{}) error {
-	return jsoniter.UnmarshalFromString(data, in)
+	return jsonx.UnmarshalFromString(data, in)
 }
 
 func isEmptyObjectString(s string) bool {
