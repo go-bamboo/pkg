@@ -14,12 +14,6 @@ import (
 )
 
 type (
-	ConsumeHandle func(ctx context.Context, topic string, key, message []byte) error
-
-	ConsumeHandler interface {
-		Consume(ctx context.Context, topic string, key, message []byte) error
-	}
-
 	RabbitListener struct {
 		c               *ListenerConf
 		isConnected     atomic.Bool
@@ -28,7 +22,7 @@ type (
 		channel         *amqp.Channel
 		connCloseErr    chan *amqp.Error
 		channelCloseErr chan *amqp.Error
-		handler         ConsumeHandler
+		handler         queue.ConsumeHandler
 
 		ctx context.Context
 		cf  context.CancelFunc
@@ -36,7 +30,7 @@ type (
 	}
 )
 
-func MustNewListener(c *ListenerConf, handler ConsumeHandler) queue.MessageQueue {
+func MustNewListener(c *ListenerConf, handler queue.ConsumeHandler) queue.MessageQueue {
 	listener, err := NewListener(c, handler)
 	if err != nil {
 		log.Fatal(err)
@@ -44,7 +38,7 @@ func MustNewListener(c *ListenerConf, handler ConsumeHandler) queue.MessageQueue
 	return listener
 }
 
-func NewListener(c *ListenerConf, handler ConsumeHandler) (consumer queue.MessageQueue, err error) {
+func NewListener(c *ListenerConf, handler queue.ConsumeHandler) (consumer queue.MessageQueue, err error) {
 	ctx, cf := context.WithCancel(context.Background())
 	listener := &RabbitListener{
 		c:               c,
