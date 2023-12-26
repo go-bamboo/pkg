@@ -33,12 +33,12 @@ func (d *discoveryRegistry) Create(c *Conf, serviceName string, uuid string) err
 	key := fmt.Sprintf("%s:%s", ProviderType_name[int32(c.ProviderType)], Type_name[int32(c.Type)])
 	factory, ok := d.discovery[key]
 	if !ok {
-		return fmt.Errorf("discovery %s has not been registered", key)
+		return fmt.Errorf("provider %s has not been registered", key)
 	}
 
 	err := factory(c, serviceName, uuid)
 	if err != nil {
-		return fmt.Errorf("create discovery error: %s", err)
+		return fmt.Errorf("create provider error: %s", err)
 	}
 	return nil
 }
