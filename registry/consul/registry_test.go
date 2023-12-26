@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/go-bamboo/pkg/log/std"
 	"github.com/go-bamboo/pkg/registry"
 	. "github.com/go-bamboo/pkg/registry/consul"
 	"github.com/hashicorp/consul/api"
