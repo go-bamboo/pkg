@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/metadata"
-
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/otel/propagation"
 )
