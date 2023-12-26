@@ -1,4 +1,4 @@
-package captcha
+package captcha_test
 
 //func TestDriverAudioFunc(t *testing.T) {
 //	id, b64s, err := DriverAudioFunc()

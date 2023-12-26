@@ -7,13 +7,13 @@ import (
 
 var store = base64Captcha.DefaultMemStore
 
-func DriverAudioFunc() (id, b64s string, err error) {
+func DriverAudioFunc() (id, b64s string, answer string, err error) {
 	driver := base64Captcha.DefaultDriverAudio
 	cap := base64Captcha.NewCaptcha(driver, store)
 	return cap.Generate()
 }
 
-func DriverStringFunc() (id, b64s string, err error) {
+func DriverStringFunc() (id, b64s string, answer string, err error) {
 	height := 46
 	width := 140
 	noiseCount := 2
@@ -28,7 +28,7 @@ func DriverStringFunc() (id, b64s string, err error) {
 	return cap.Generate()
 }
 
-func DriverDigitFunc() (id, b64s string, err error) {
+func DriverDigitFunc() (id, b64s string, answer string, err error) {
 	driver := base64Captcha.DefaultDriverDigit
 	cap := base64Captcha.NewCaptcha(driver, store)
 	return cap.Generate()
