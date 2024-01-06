@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"github.com/go-kratos/kratos/v2/transport"
 )
 
 type (
@@ -13,8 +14,8 @@ type (
 
 	// A MessageQueue interface represents a message queue.
 	MessageQueue interface {
+		transport.Server
 		Name() string
-		Start(context.Context) error
-		Stop(context.Context) error
+		//Consume(topic string, handler ConsumeHandler)
 	}
 )
