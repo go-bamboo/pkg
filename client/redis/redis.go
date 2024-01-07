@@ -14,6 +14,7 @@ type (
 	Z         = redis.Z
 	ZAddArgs  = redis.ZAddArgs
 	ZRangeBy  = redis.ZRangeBy
+	XAddArgs  = redis.XAddArgs
 )
 
 func NewScript(src string) *Script {
