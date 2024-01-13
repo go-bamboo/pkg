@@ -11,7 +11,6 @@ message RabbitConf {
   string host = 3;
   int32 port = 4;
   string vHost = 5;
-  string address = 6;
 }
 
 message ConsumerConf {

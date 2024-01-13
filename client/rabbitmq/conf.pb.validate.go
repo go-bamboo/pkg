@@ -67,8 +67,6 @@ func (m *RabbitConf) validate(all bool) error {
 
 	// no validation rules for VHost
 
-	// no validation rules for Address
-
 	if len(errors) > 0 {
 		return RabbitConfMultiError(errors)
 	}

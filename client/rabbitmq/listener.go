@@ -62,6 +62,10 @@ func (s *RabbitListener) Name() string {
 	return "rabbitListener"
 }
 
+func (s *RabbitListener) Consume(topic string, handler queue.ConsumeHandler) {
+
+}
+
 func (s *RabbitListener) Start(context.Context) error {
 	s.wg.Add(1)
 	go s.reconnect()
@@ -166,7 +170,7 @@ func (s *RabbitListener) consume(ctx context.Context, topic string, msg *amqp.De
 }
 
 func (s *RabbitListener) connect() error {
-	conn, err := amqp.Dial(s.c.Rabbit.Address)
+	conn, err := amqp.Dial(s.c.Rabbit.URL())
 	if err != nil {
 		return err
 	}
