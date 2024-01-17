@@ -116,10 +116,8 @@ func newKafkaQueue(config *Conf, handler queue.ConsumeHandler) (k *rocketQueue, 
 }
 
 func (c *rocketQueue) Start(context.Context) error {
-	log.Infof("start cunsumer topic:%v", c.c.Topics)
-	for _, topic := range c.c.Topics {
-		c.consumGroupTopic(topic.Topic, topic.Expression)
-	}
+	log.Infof("start cunsumer topic:%v", c.c.Topic)
+	c.consumGroupTopic(c.c.Topic, c.c.Expression)
 	if err := c.sub.Start(); err != nil {
 		log.Error(err)
 		return err

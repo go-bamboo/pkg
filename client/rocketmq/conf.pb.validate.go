@@ -35,126 +35,6 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on Topic with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Topic) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Topic with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in TopicMultiError, or nil if none found.
-func (m *Topic) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Topic) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetTopic()) < 1 {
-		err := TopicValidationError{
-			field:  "Topic",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetExpression()) < 1 {
-		err := TopicValidationError{
-			field:  "Expression",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return TopicMultiError(errors)
-	}
-
-	return nil
-}
-
-// TopicMultiError is an error wrapping multiple validation errors returned by
-// Topic.ValidateAll() if the designated constraints aren't met.
-type TopicMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m TopicMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m TopicMultiError) AllErrors() []error { return m }
-
-// TopicValidationError is the validation error returned by Topic.Validate if
-// the designated constraints aren't met.
-type TopicValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e TopicValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e TopicValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e TopicValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e TopicValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e TopicValidationError) ErrorName() string { return "TopicValidationError" }
-
-// Error satisfies the builtin error interface
-func (e TopicValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sTopic.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = TopicValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = TopicValidationError{}
-
 // Validate checks the field values on Conf with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
 // encountered is returned, or nil if there are no violations.
@@ -195,43 +75,33 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for GroupId
 
-	for idx, item := range m.GetTopics() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ConfValidationError{
-						field:  fmt.Sprintf("Topics[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, ConfValidationError{
-						field:  fmt.Sprintf("Topics[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return ConfValidationError{
-					field:  fmt.Sprintf("Topics[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
+	if utf8.RuneCountInString(m.GetTopic()) < 1 {
+		err := ConfValidationError{
+			field:  "Topic",
+			reason: "value length must be at least 1 runes",
 		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
+	if utf8.RuneCountInString(m.GetExpression()) < 1 {
+		err := ConfValidationError{
+			field:  "Expression",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	// no validation rules for Broadcast
 
 	// no validation rules for Namespace
+
+	// no validation rules for Conns
 
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
