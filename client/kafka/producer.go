@@ -5,13 +5,19 @@ import (
 
 	"github.com/go-bamboo/pkg/log"
 	otelext "github.com/go-bamboo/pkg/otel"
-	"github.com/go-bamboo/pkg/queue"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
+
+// A Pusher interface wraps the method Push.
+type Pusher interface {
+	Name() string
+	Push(ctx context.Context, topic string, key, value []byte) error
+	Close() error
+}
 
 // Producer 生产者
 type Producer struct {
@@ -21,7 +27,7 @@ type Producer struct {
 	propagator propagation.TextMapPropagator
 }
 
-func MustNewProducer(c *Conf) queue.Pusher {
+func MustNewProducer(c *Conf) Pusher {
 	pub, err := NewProducer(c)
 	if err != nil {
 		log.Fatal(err)

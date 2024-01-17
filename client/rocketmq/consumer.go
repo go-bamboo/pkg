@@ -20,9 +20,14 @@ import (
 )
 
 type (
+	ConsumeHandle func(ctx context.Context, topic string, key, message []byte) error
+
+	ConsumeHandler interface {
+		Consume(ctx context.Context, topic string, key, message []byte) error
+	}
 	rocketQueue struct {
 		c       *Conf
-		handler queue.ConsumeHandler
+		handler ConsumeHandler
 
 		sub        v2.PushConsumer
 		tracer     trace.Tracer
@@ -39,7 +44,7 @@ type (
 	}
 )
 
-func MustNewQueue(c *Conf, handler queue.ConsumeHandler) queue.MessageQueue {
+func MustNewQueue(c *Conf, handler ConsumeHandler) queue.MessageQueue {
 	q, err := NewQueue(c, handler)
 	if err != nil {
 		log.Fatal(err)
@@ -47,7 +52,7 @@ func MustNewQueue(c *Conf, handler queue.ConsumeHandler) queue.MessageQueue {
 	return q
 }
 
-func NewQueue(c *Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
+func NewQueue(c *Conf, handler ConsumeHandler) (queue.MessageQueue, error) {
 	q := rocketQueues{}
 	cc, err := newKafkaQueue(c, handler)
 	if err != nil {
@@ -76,7 +81,7 @@ func (q rocketQueues) Stop(ctx context.Context) error {
 	return nil
 }
 
-func newKafkaQueue(config *Conf, handler queue.ConsumeHandler) (k *rocketQueue, err error) {
+func newKafkaQueue(config *Conf, handler ConsumeHandler) (k *rocketQueue, err error) {
 	model := consumer.Clustering
 	if config.Broadcast {
 		model = consumer.BroadCasting

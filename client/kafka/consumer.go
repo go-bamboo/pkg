@@ -23,9 +23,14 @@ import (
 )
 
 type (
+	ConsumeHandle func(ctx context.Context, topic string, key, message []byte) error
+
+	ConsumeHandler interface {
+		Consume(ctx context.Context, topic string, key, message []byte) error
+	}
 	Consumer struct {
 		c       *Conf
-		handler queue.ConsumeHandler
+		handler ConsumeHandler
 
 		sub        *kafka.Reader
 		tracer     trace.Tracer
@@ -41,7 +46,7 @@ type (
 	}
 )
 
-func MustNewQueue(c *Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
+func MustNewQueue(c *Conf, handler ConsumeHandler) (queue.MessageQueue, error) {
 	q, err := NewQueue(c, handler)
 	if err != nil {
 		log.Fatal(err)
@@ -49,7 +54,7 @@ func MustNewQueue(c *Conf, handler queue.ConsumeHandler) (queue.MessageQueue, er
 	return q, nil
 }
 
-func NewQueue(c *Conf, handler queue.ConsumeHandler) (*Consumers, error) {
+func NewQueue(c *Conf, handler ConsumeHandler) (*Consumers, error) {
 	q := Consumers{}
 
 	cc, err := NewConsumer(c, handler)
@@ -78,7 +83,7 @@ func (q Consumers) Stop(ctx context.Context) error {
 	return nil
 }
 
-func NewConsumer(c *Conf, handler queue.ConsumeHandler) (*Consumer, error) {
+func NewConsumer(c *Conf, handler ConsumeHandler) (*Consumer, error) {
 	// Load client cert
 	//cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	//if err != nil {
