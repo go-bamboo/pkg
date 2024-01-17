@@ -1,6 +1,7 @@
 package rocketmq
 
 import (
+	"github.com/apache/rocketmq-client-go/v2/rlog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -12,7 +13,7 @@ type RocketLogger struct {
 	level   string
 }
 
-func NewLogger(core zapcore.Core) *RocketLogger {
+func NewLogger(core zapcore.Core) rlog.Logger {
 
 	rlog := &RocketLogger{}
 
