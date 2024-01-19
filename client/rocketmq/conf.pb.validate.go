@@ -56,17 +56,6 @@ func (m *Conf) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetAddr()) < 1 {
-		err := ConfValidationError{
-			field:  "Addr",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	// no validation rules for AccessKey
 
 	// no validation rules for SecretKey

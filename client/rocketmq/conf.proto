@@ -7,7 +7,7 @@ import "google/protobuf/duration.proto";
 import "validate/validate.proto";
 
 message Conf {
-  string addr = 1 [(validate.rules).string = {min_len: 1}];
+  repeated string addrs = 1;
   string access_key = 2;
   string secret_key = 3;
   string channel = 4;

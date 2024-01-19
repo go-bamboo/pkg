@@ -86,7 +86,7 @@ func newKafkaQueue(config *Conf, handler ConsumeHandler) (k *rocketQueue, err er
 	if config.Broadcast {
 		model = consumer.BroadCasting
 	}
-	namesrvAdd, err := primitive.NewNamesrvAddr(config.Addr)
+	namesrvAdd, err := primitive.NewNamesrvAddr(config.Addrs...)
 	if err != nil {
 		log.Error(err)
 		return nil, err

@@ -43,7 +43,7 @@ func MustNewPusher(c *Conf) Pusher {
 func NewPusher(config *Conf) (Pusher, error) {
 	pd, err := v2.NewProducer(
 		producer.WithGroupName(config.GroupId),
-		producer.WithNameServer([]string{config.Addr}),
+		producer.WithNameServer(config.Addrs),
 		producer.WithRetry(3),
 		producer.WithCredentials(primitive.Credentials{
 			AccessKey: config.AccessKey,

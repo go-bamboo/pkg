@@ -14,7 +14,6 @@ type RocketLogger struct {
 }
 
 func NewLogger(core zapcore.Core) rlog.Logger {
-
 	rlog := &RocketLogger{}
 
 	// 开启开发模式，堆栈跟踪
