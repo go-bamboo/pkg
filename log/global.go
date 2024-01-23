@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/go-kratos/kratos/v2/errors"
-	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -26,8 +25,8 @@ func (a *loggerAppliance) SetLogger(in *ZapLogger) {
 	a.ZapLogger = *in
 }
 
-func (a *loggerAppliance) GetLogger() *zap.SugaredLogger {
-	return a.slogger
+func (a *loggerAppliance) GetLogger() *ZapLogger {
+	return &a.ZapLogger
 }
 
 // SetLogger should be called before any other log call.
@@ -38,11 +37,11 @@ func SetLogger(logger *ZapLogger) {
 
 // GetLogger returns global logger appliance as logger in current process.
 func GetLogger() *ZapLogger {
-	return &global.ZapLogger
+	return global.GetLogger()
 }
 
 func GetCore() zapcore.Core {
-	return global.ZapLogger.logger.Core()
+	return global.GetLogger().logger.Core()
 }
 
 // Log Print log by level and keyvals.
