@@ -11,7 +11,7 @@ type Admin struct {
 }
 
 func MustNewAdmin(c *RabbitConf) *Admin {
-	conn, err := amqp.Dial(c.Address)
+	conn, err := amqp.Dial(c.URL())
 	if err != nil {
 		log.Fatalf("failed to connect rabbitmq, error: %v", err)
 	}

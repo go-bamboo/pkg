@@ -54,12 +54,14 @@ func MustNewQueue(c *Conf, handler ConsumeHandler) queue.MessageQueue {
 
 func NewQueue(c *Conf, handler ConsumeHandler) (queue.MessageQueue, error) {
 	q := rocketQueues{}
-	cc, err := newKafkaQueue(c, handler)
-	if err != nil {
-		log.Error(err)
-		return nil, err
+	for i := 0; i < int(c.Conns); i++ {
+		cc, err := newKafkaQueue(c, handler)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+		q.queues = append(q.queues, cc)
 	}
-	q.queues = append(q.queues, cc)
 	return &q, nil
 }
 
@@ -68,15 +70,15 @@ func (q rocketQueues) Name() string {
 }
 
 func (q rocketQueues) Start(ctx context.Context) error {
-	for _, queue := range q.queues {
-		queue.Start(ctx)
+	for _, qq := range q.queues {
+		qq.Start(ctx)
 	}
 	return nil
 }
 
 func (q rocketQueues) Stop(ctx context.Context) error {
-	for _, queue := range q.queues {
-		queue.Stop(ctx)
+	for _, qq := range q.queues {
+		qq.Stop(ctx)
 	}
 	return nil
 }

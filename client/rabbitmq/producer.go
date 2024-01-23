@@ -7,13 +7,18 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
-	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/streadway/amqp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
+
+type Sender interface {
+	Name() string
+	Send(ctx context.Context, header map[string]interface{}, exchange string, routeKey string, msg []byte) error
+	Close() error
+}
 
 type (
 	RabbitMqSender struct {
@@ -36,7 +41,7 @@ type (
 	}
 )
 
-func MustNewSender(c *ProducerConf) queue.Sender {
+func MustNewSender(c *ProducerConf) Sender {
 	ctx, cf := context.WithCancel(context.TODO())
 	sender := &RabbitMqSender{
 		c:               c,
@@ -112,7 +117,7 @@ func (q *RabbitMqSender) Close() error {
 }
 
 func (q *RabbitMqSender) connect() error {
-	conn, err := amqp.Dial(q.c.Rabbit.Address)
+	conn, err := amqp.Dial(q.c.Rabbit.URL())
 	if err != nil {
 		return err
 	}
