@@ -131,15 +131,6 @@ func (s *RabbitListener) consume(ctx context.Context, topic string, msg *amqp.De
 	return s.handler.Consume(c, topic, []byte(msg.RoutingKey), d)
 }
 
-func (s *RabbitListener) open(c *ConsumerConf) error {
-
-	channel.NotifyClose(s.channelCloseErr)
-	s.channel = channel
-	s.isChannelOpen.Store(true)
-	log.Infof("[rabbitmq][listener] channel open")
-	return nil
-}
-
 func (s *RabbitListener) reconnect(c *ConsumerConf) {
 	defer rescue.Recover(func() {
 		s.wg.Done()
@@ -160,7 +151,7 @@ handleReconnect:
 	}
 	channel.NotifyClose(channelCloseErr)
 	s.wg.Add(1)
-	go s.run(context.TODO(), channel)
+	go s.run(context.TODO(), channel, c)
 	for {
 		select {
 		case <-s.ctx.Done():
