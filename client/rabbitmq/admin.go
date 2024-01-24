@@ -25,36 +25,34 @@ func MustNewAdmin(c *RabbitConf) *Admin {
 	}
 }
 
-func (q *Admin) DeclareExchange(conf *AdminExchangeConf, args amqp.Table) error {
-	return q.channel.ExchangeDeclare(
-		conf.Name,
-		conf.Kind,
-		conf.Durable,
-		conf.AutoDelete,
-		conf.Internal,
-		conf.NoWait,
+func (q *Admin) Bind(queueName string, routekey string, exchange, kind string, args amqp.Table) error {
+	if err := q.channel.ExchangeDeclare(
+		exchange,
+		kind,
+		true,  // 持久化
+		false, // 自动删除
+		false, // 非系统内部使用
+		false, //
 		args,
-	)
-}
-
-func (q *Admin) DeclareQueue(conf *AdminQueueConf, args amqp.Table) error {
-	_, err := q.channel.QueueDeclare(
-		conf.Name,
-		conf.Durable,
-		conf.AutoDelete,
-		conf.Exclusive,
-		conf.NoWait,
-		args,
-	)
-	return err
-}
-
-func (q *Admin) Bind(queueName string, routekey string, exchange string, notWait bool, args amqp.Table) error {
-	return q.channel.QueueBind(
+	); err != nil {
+		return err
+	}
+	queue, err := q.channel.QueueDeclare(
 		queueName,
+		true,
+		false,
+		false,
+		false,
+		args,
+	)
+	if err != nil {
+		return err
+	}
+	return q.channel.QueueBind(
+		queue.Name,
 		routekey,
 		exchange,
-		notWait,
+		false,
 		args,
 	)
 }

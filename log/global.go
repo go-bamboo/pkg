@@ -44,11 +44,6 @@ func GetCore() zapcore.Core {
 	return global.GetLogger().logger.Core()
 }
 
-// Log Print log by level and keyvals.
-//func Log(level Level, keyvals ...interface{}) {
-//	global.slogger.l(level, keyvals...)
-//}
-
 func With(kv ...interface{}) *ZapLogger {
 	core := global.ZapLogger.logger.Core()
 	core = WithCore(core, kv...)

@@ -141,9 +141,13 @@ func (c *rocketQueue) Stop(context.Context) error {
 	return nil
 }
 
-func (c *rocketQueue) consumGroupTopic(topic, expression string) {
+func (c *rocketQueue) consumGroupTopic(topic, expression string) error {
 	selector := consumer.MessageSelector{Type: consumer.TAG, Expression: expression}
-	c.sub.Subscribe(topic, selector, c.handleMsg)
+	err := c.sub.Subscribe(topic, selector, c.handleMsg)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *rocketQueue) handleMsg(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
