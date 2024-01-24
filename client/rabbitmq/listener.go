@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"context"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
@@ -20,18 +19,11 @@ type (
 		Consume(ctx context.Context, topic string, key, message []byte) error
 	}
 	RabbitListener struct {
-		c               *ListenerConf
-		isConnected     atomic.Bool
-		isChannelOpen   atomic.Bool
-		conn            *amqp.Connection
-		channel         *amqp.Channel
-		connCloseErr    chan *amqp.Error
-		channelCloseErr chan *amqp.Error
-		handler         ConsumeHandler
-
-		ctx context.Context
-		cf  context.CancelFunc
-		wg  sync.WaitGroup
+		c       *ListenerConf
+		handler ConsumeHandler
+		ctx     context.Context
+		cf      context.CancelFunc
+		wg      sync.WaitGroup
 	}
 )
 
@@ -46,19 +38,10 @@ func MustNewListener(c *ListenerConf, handler ConsumeHandler) queue.MessageQueue
 func NewListener(c *ListenerConf, handler ConsumeHandler) (consumer queue.MessageQueue, err error) {
 	ctx, cf := context.WithCancel(context.Background())
 	listener := &RabbitListener{
-		c:               c,
-		connCloseErr:    make(chan *amqp.Error),
-		channelCloseErr: make(chan *amqp.Error),
-		handler:         handler,
-
-		ctx: ctx,
-		cf:  cf,
-	}
-	if err := listener.connect(); err != nil {
-		return nil, err
-	}
-	if err := listener.open(); err != nil {
-		return nil, err
+		c:       c,
+		handler: handler,
+		ctx:     ctx,
+		cf:      cf,
 	}
 	return listener, nil
 }
@@ -67,17 +50,11 @@ func (s *RabbitListener) Name() string {
 	return "rabbitListener"
 }
 
-func (s *RabbitListener) Consume(topic string, handler ConsumeHandler) {
-
-}
-
 func (s *RabbitListener) Start(context.Context) error {
-	s.wg.Add(1)
-	go s.reconnect()
 	for i := 0; i < len(s.c.Queues); i++ {
 		q := s.c.Queues[i]
 		s.wg.Add(1)
-		go s.run(s.ctx, q)
+		go s.reconnect(q)
 	}
 	log.Infof("[rabbitmq][listener] start consume %d queue.", len(s.c.Queues))
 	return nil
@@ -85,22 +62,12 @@ func (s *RabbitListener) Start(context.Context) error {
 
 func (s *RabbitListener) Stop(context.Context) error {
 	s.cf() // 停掉reconnect
-	if s.isChannelOpen.Load() {
-		if err := s.channel.Close(); err != nil {
-			log.Error(err)
-		}
-	}
-	if s.isConnected.Load() {
-		if err := s.conn.Close(); err != nil {
-			log.Error(err)
-		}
-	}
 	s.wg.Wait()
 	log.Infof("[rabbitmq][listener] consumer stopping.")
 	return nil
 }
 
-func (s *RabbitListener) run(ctx context.Context, q *ConsumerConf) {
+func (s *RabbitListener) run(ctx context.Context, channel *amqp.Channel, q *ConsumerConf) {
 	defer rescue.Recover(func() {
 		s.wg.Done()
 	})
@@ -110,20 +77,10 @@ func (s *RabbitListener) run(ctx context.Context, q *ConsumerConf) {
 			log.Infof("[rabbitmq][listener] 结束消费队列[%s], exit.", q.Name)
 			return
 		default:
-			if !s.isConnected.Load() {
-				log.Warn("[rabbitmq][listener] disconnect")
-				time.Sleep(30 * time.Second)
-				continue
-			}
-			if !s.isChannelOpen.Load() {
-				log.Warnf("[rabbitmq][listener] channel not open")
-				time.Sleep(30 * time.Second)
-				continue
-			}
 			// 获取消费通道
-			s.channel.Qos(1, 0, true) // 确保rabbitmq会一个一个发消息
 			log.Infof("[rabbitmq][listener] channel consume queue[%s]", q.Name)
-			msgs, err := s.channel.Consume(
+			channel.Qos(1, 0, true) // 确保rabbitmq会一个一个发消息
+			msgs, err := channel.Consume(
 				q.Name,     // queue
 				q.Consumer, // consumer
 				false,      // auto-ack
@@ -174,29 +131,8 @@ func (s *RabbitListener) consume(ctx context.Context, topic string, msg *amqp.De
 	return s.handler.Consume(c, topic, []byte(msg.RoutingKey), d)
 }
 
-func (s *RabbitListener) connect() error {
-	conn, err := amqp.Dial(s.c.Rabbit.URL())
-	if err != nil {
-		return err
-	}
-	conn.NotifyClose(s.connCloseErr)
-	s.conn = conn
-	s.isConnected.Store(true)
-	log.Infof("[rabbitmq][listener] connected")
-	return nil
-}
+func (s *RabbitListener) open(c *ConsumerConf) error {
 
-func (s *RabbitListener) open() error {
-	if !s.isConnected.Load() {
-		return ErrorDisconnect("")
-	}
-	if s.isChannelOpen.Load() {
-		return nil
-	}
-	channel, err := s.conn.Channel()
-	if err != nil {
-		return err
-	}
 	channel.NotifyClose(s.channelCloseErr)
 	s.channel = channel
 	s.isChannelOpen.Store(true)
@@ -204,43 +140,48 @@ func (s *RabbitListener) open() error {
 	return nil
 }
 
-func (s *RabbitListener) reconnect() {
+func (s *RabbitListener) reconnect(c *ConsumerConf) {
 	defer rescue.Recover(func() {
 		s.wg.Done()
 	})
+handleReconnect:
+	var connCloseErr chan *amqp.Error = make(chan *amqp.Error)
+	var channelCloseErr chan *amqp.Error = make(chan *amqp.Error)
+	conn, err := amqp.Dial(s.c.Rabbit.URL())
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	conn.NotifyClose(connCloseErr)
+	channel, err := conn.Channel()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	channel.NotifyClose(channelCloseErr)
+	s.wg.Add(1)
+	go s.run(context.TODO(), channel)
 	for {
 		select {
 		case <-s.ctx.Done():
 			log.Infof("[rabbitmq][listener] listener reconnect close")
 			return
-		case err := <-s.channelCloseErr:
+		case err := <-channelCloseErr:
 			if err != nil && errors.Is(err, amqp.ErrClosed) {
 				log.Errorf("[rabbitmq][listener] channel close notify: %v", err)
-				s.isChannelOpen.Store(false)
 			} else if err != nil {
 				log.Error(err)
 			}
-		case err := <-s.connCloseErr:
+			time.Sleep(1 * time.Second)
+			goto handleReconnect
+		case err := <-connCloseErr:
 			if err != nil && errors.Is(err, amqp.ErrClosed) {
 				log.Errorf("[rabbitmq][listener] conn close notify: %v", err)
-				s.isConnected.Store(false)
-				s.isChannelOpen.Store(false)
 			} else if err != nil {
 				log.Error(err)
 			}
+			time.Sleep(1 * time.Second)
+			goto handleReconnect
 		}
-		if !s.isConnected.Load() {
-			log.Infof("[rabbitmq][listener] Attempting to connect")
-			if err := s.connect(); err != nil {
-				log.Error(err)
-			}
-		}
-		if s.isConnected.Load() && !s.isChannelOpen.Load() {
-			log.Infof("[rabbitmq][listener] Attempting to open channel")
-			if err := s.open(); err != nil {
-				log.Error(err)
-			}
-		}
-		time.Sleep(time.Minute)
 	}
 }
