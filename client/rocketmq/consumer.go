@@ -26,17 +26,12 @@ type (
 		Consume(ctx context.Context, topic string, key, message []byte) error
 	}
 	rocketQueue struct {
-		c       *Conf
-		handler ConsumeHandler
-
+		c          *Conf
+		handler    ConsumeHandler
 		sub        v2.PushConsumer
 		tracer     trace.Tracer
 		propagator propagation.TextMapPropagator
 		subCounter metrics.Counter // 发送次数
-
-		//wg  sync.WaitGroup
-		//ctx context.Context
-		//cf  context.CancelFunc
 	}
 
 	rocketQueues struct {
@@ -107,24 +102,21 @@ func newKafkaQueue(config *Conf, handler ConsumeHandler) (k *rocketQueue, err er
 	if err != nil {
 		return nil, errors.FromError(err)
 	}
-	//ctx, cf := context.WithCancel(context.Background())
 	k = &rocketQueue{
-		c:       config,
-		handler: handler,
-
+		c:          config,
+		handler:    handler,
 		sub:        cs,
 		tracer:     otel.Tracer("rocketmq"),
 		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
-
-		//ctx: ctx,
-		//cf:  cf,
 	}
 	return
 }
 
 func (c *rocketQueue) Start(context.Context) error {
-	log.Infof("start cunsumer topic:%v", c.c.Topic)
-	c.consumGroupTopic(c.c.Topic, c.c.Expression)
+	log.Infof("start consumer topic:%v", c.c.Topic)
+	if err := c.consumeGroupTopic(c.c.Topic, c.c.Expression); err != nil {
+		return err
+	}
 	if err := c.sub.Start(); err != nil {
 		log.Error(err)
 		return err
@@ -141,7 +133,7 @@ func (c *rocketQueue) Stop(context.Context) error {
 	return nil
 }
 
-func (c *rocketQueue) consumGroupTopic(topic, expression string) error {
+func (c *rocketQueue) consumeGroupTopic(topic, expression string) error {
 	selector := consumer.MessageSelector{Type: consumer.TAG, Expression: expression}
 	err := c.sub.Subscribe(topic, selector, c.handleMsg)
 	if err != nil {
