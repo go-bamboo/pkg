@@ -5,9 +5,17 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/go-bamboo/pkg/log/std"
 	"github.com/go-kratos/kratos/v2/errors"
 	"go.uber.org/zap/zapcore"
 )
+
+// DefaultLogger is default logger.
+var DefaultLogger = std.NewStdCore(zapcore.DebugLevel)
+
+func init() {
+	SetLogger(NewLogger(DefaultLogger, 1))
+}
 
 // globalLogger is designed as a global logger in current process.
 var global = &loggerAppliance{}

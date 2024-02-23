@@ -60,7 +60,7 @@ proto:
            ./otel/conf.proto \
            ./meta/meta.proto \
            ./registry/conf.proto \
-           ./log/conf.proto \
+           ./log/core/conf.proto \
            ./rpc/conf.proto \
            ./client/redis/conf.proto \
            ./client/rabbitmq/conf.proto \

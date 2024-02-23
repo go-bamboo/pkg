@@ -1,16 +1,15 @@
 package cloudwatch
 
 import (
-	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/log/core"
 	"go.uber.org/zap/zapcore"
 )
 
 func init() {
-	log.Register("CloudWatch", Create)
+	core.Register("CloudWatch", Create)
 }
 
-func Create(c *log.Conf) (core.Logger, error) {
+func Create(c *core.Conf) (core.Logger, error) {
 	cc, err := NewCloudWatchCore(
 		Level(zapcore.Level(c.Level)),
 		WithRegion(c.Region),

@@ -45,10 +45,10 @@ func WithCore(c zapcore.Core, kv ...interface{}) zapcore.Core {
 	return c.With(keysAndValues)
 }
 
-func Init(c []*Conf) core.Logger {
+func Init(c []*core.Conf) core.Logger {
 	hooks := make([]core.Logger, 0)
 	for _, conf := range c {
-		co, err := Create(conf)
+		co, err := core.Create(conf)
 		if err != nil {
 			Fatal(err)
 		}

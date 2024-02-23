@@ -1,16 +1,15 @@
 package file
 
 import (
-	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/log/core"
 	"go.uber.org/zap/zapcore"
 )
 
 func init() {
-	log.Register("File", Create)
+	core.Register("File", Create)
 }
 
-func Create(c *log.Conf) (core.Logger, error) {
+func Create(c *core.Conf) (core.Logger, error) {
 	return NewFileCore(
 		Level(zapcore.Level(c.Level)),
 		WithPath(c.Path),

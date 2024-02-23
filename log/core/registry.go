@@ -1,18 +1,17 @@
-package log
+package core
 
 import (
 	"fmt"
-	"github.com/go-bamboo/pkg/log/core"
 )
 
 var globalRegistry = NewRegistry()
 
-type Factory func(c *Conf) (core.Logger, error)
+type Factory func(c *Conf) (Logger, error)
 
 // Registry is the interface for callers to get registered middleware.
 type Registry interface {
 	Register(name string, factory Factory)
-	Create(c *Conf) (core.Logger, error)
+	Create(c *Conf) (Logger, error)
 }
 
 type coreRegistry struct {
@@ -30,7 +29,7 @@ func (d *coreRegistry) Register(name string, factory Factory) {
 	d.cores[name] = factory
 }
 
-func (d *coreRegistry) Create(c *Conf) (core.Logger, error) {
+func (d *coreRegistry) Create(c *Conf) (Logger, error) {
 	factory, ok := d.cores[c.Type.String()]
 	if !ok {
 		return nil, fmt.Errorf("cores %s has not been registered", c.Type.String())
@@ -48,12 +47,12 @@ func Register(name string, factory Factory) {
 }
 
 // Create instantiates a cores based on `discoveryDSN`.
-func Create(c *Conf) (core.Logger, error) {
+func Create(c *Conf) (Logger, error) {
 	return globalRegistry.Create(c)
 }
 
 // MustCreate instantiates a cores based on `discoveryDSN`.
-func MustCreate(c *Conf) core.Logger {
+func MustCreate(c *Conf) Logger {
 	co, err := globalRegistry.Create(c)
 	if err != nil {
 		panic(err)

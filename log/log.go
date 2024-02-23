@@ -10,6 +10,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+var _ log.Logger = (*ZapLogger)(nil)
+
 type ZapLogger struct {
 	// zap logger
 	logger  *zap.Logger

@@ -1,7 +1,7 @@
 syntax = "proto3";
-package log;
+package log.core;
 
-option go_package = "github.com/go-bamboo/pkg/log;log";
+option go_package = "github.com/go-bamboo/pkg/log/core;core";
 
 enum CoreType {
   Unkown = 0;

@@ -1,19 +1,14 @@
 package std
 
 import (
-	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/log/core"
 	"go.uber.org/zap/zapcore"
 )
 
-// DefaultLogger is default logger.
-var DefaultLogger = NewStdCore(zapcore.DebugLevel)
-
 func init() {
-	log.Register("Stdout", Create)
-	log.SetLogger(log.NewLogger(DefaultLogger, 1))
+	core.Register("Stdout", Create)
 }
 
-func Create(c *log.Conf) (core.Logger, error) {
+func Create(c *core.Conf) (core.Logger, error) {
 	return NewStdCore(zapcore.Level(c.Level)), nil
 }
