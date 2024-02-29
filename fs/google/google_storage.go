@@ -35,7 +35,7 @@ func (c *Client) Close() {
 }
 
 // SaveWebSiteImage 转存网络上的视频或图片
-func (c *Client) SaveWebSiteImage(url string) (string, error) {
+func (c *Client) SaveWebSiteImage(ctx context.Context, url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -84,17 +84,18 @@ func (c *Client) SaveWebSiteImage(url string) (string, error) {
 	// 用URL的hash作为文件名
 	fileName := fmt.Sprintf("%x", md5.Sum([]byte(url))) + fileNameSuffix
 	data, err := ioutil.ReadAll(resp.Body)
-	return c.UploadImage(data, fileName), nil
+	if err != nil {
+		return "", err
+	}
+	return c.UploadImage(ctx, fileName, data)
 }
 
 // UploadImage 保存图片到google storage上
-func (c *Client) UploadImage(file []byte, fileName string) string {
-	ctx := context.Background()
-
+func (c *Client) UploadImage(ctx context.Context, fileName string, data []byte) (string, error) {
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		fmt.Printf("storage.NewClient: %v", err)
-		return ""
+		log.Errorf("storage.NewClient: %v", err)
+		return "", err
 	}
 	defer client.Close()
 
@@ -102,10 +103,10 @@ func (c *Client) UploadImage(file []byte, fileName string) string {
 	defer cancel()
 
 	wc := client.Bucket(c.c.Bucket).Object(fileName).NewWriter(ctx)
-	_, err = wc.Write(file)
+	_, err = wc.Write(data)
 	if err := wc.Close(); err != nil {
-		fmt.Printf("Writer.Close: %v", err)
-		return ""
+		log.Errorf("Writer.Close: %v", err)
+		return "", err
 	}
-	return fmt.Sprintf("/%s/%s", c.c.Bucket, fileName)
+	return fmt.Sprintf("/%s/%s", c.c.Bucket, fileName), nil
 }
