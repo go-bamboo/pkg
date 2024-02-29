@@ -10,24 +10,24 @@ const (
 // SafeMap provides a map alternative to avoid memory leak.
 // This implementation is not needed until issue below fixed.
 // https://github.com/golang/go/issues/20135
-type SafeMap struct {
+type SafeMap[K comparable, V any] struct {
 	lock        sync.RWMutex
 	deletionOld int
 	deletionNew int
-	dirtyOld    map[interface{}]interface{}
-	dirtyNew    map[interface{}]interface{}
+	dirtyOld    map[K]V
+	dirtyNew    map[K]V
 }
 
 // NewSafeMap returns a SafeMap.
-func NewSafeMap() *SafeMap {
-	return &SafeMap{
-		dirtyOld: make(map[interface{}]interface{}),
-		dirtyNew: make(map[interface{}]interface{}),
+func NewSafeMap[K comparable, V any]() *SafeMap[K, V] {
+	return &SafeMap[K, V]{
+		dirtyOld: make(map[K]V),
+		dirtyNew: make(map[K]V),
 	}
 }
 
 // Del deletes the value with the given key from m.
-func (m *SafeMap) Del(key interface{}) {
+func (m *SafeMap[K, V]) Del(key K) {
 	m.lock.Lock()
 	if _, ok := m.dirtyOld[key]; ok {
 		delete(m.dirtyOld, key)
@@ -42,21 +42,21 @@ func (m *SafeMap) Del(key interface{}) {
 		}
 		m.dirtyOld = m.dirtyNew
 		m.deletionOld = m.deletionNew
-		m.dirtyNew = make(map[interface{}]interface{})
+		m.dirtyNew = make(map[K]V)
 		m.deletionNew = 0
 	}
 	if m.deletionNew >= maxDeletion && len(m.dirtyNew) < copyThreshold {
 		for k, v := range m.dirtyNew {
 			m.dirtyOld[k] = v
 		}
-		m.dirtyNew = make(map[interface{}]interface{})
+		m.dirtyNew = make(map[K]V)
 		m.deletionNew = 0
 	}
 	m.lock.Unlock()
 }
 
 // Get gets the value with the given key from m.
-func (m *SafeMap) Get(key interface{}) (interface{}, bool) {
+func (m *SafeMap[K, V]) Get(key K) (V, bool) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
@@ -69,7 +69,7 @@ func (m *SafeMap) Get(key interface{}) (interface{}, bool) {
 }
 
 // Set sets the value into m with the given key.
-func (m *SafeMap) Set(key, value interface{}) {
+func (m *SafeMap[K, V]) Set(key K, value V) {
 	m.lock.Lock()
 	if m.deletionOld <= maxDeletion {
 		if _, ok := m.dirtyNew[key]; ok {
@@ -88,7 +88,7 @@ func (m *SafeMap) Set(key, value interface{}) {
 }
 
 // Size returns the size of m.
-func (m *SafeMap) Size() int {
+func (m *SafeMap[K, V]) Size() int {
 	m.lock.RLock()
 	size := len(m.dirtyOld) + len(m.dirtyNew)
 	m.lock.RUnlock()
