@@ -9,12 +9,13 @@ import (
 const KeepTTL = redis.KeepTTL
 
 type (
-	Pipeliner = redis.Pipeliner
-	Script    = redis.Script
-	Z         = redis.Z
-	ZAddArgs  = redis.ZAddArgs
-	ZRangeBy  = redis.ZRangeBy
-	XAddArgs  = redis.XAddArgs
+	Pipeliner      = redis.Pipeliner
+	Script         = redis.Script
+	Z              = redis.Z
+	ZAddArgs       = redis.ZAddArgs
+	ZRangeBy       = redis.ZRangeBy
+	XAddArgs       = redis.XAddArgs
+	XReadGroupArgs = redis.XReadGroupArgs
 )
 
 func NewScript(src string) *Script {
