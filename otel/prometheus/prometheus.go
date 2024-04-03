@@ -2,7 +2,6 @@ package prometheus
 
 import (
 	"github.com/go-bamboo/pkg/otel"
-	prom "github.com/prometheus/client_golang/prometheus"
 	otelx "go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
@@ -15,19 +14,18 @@ func init() {
 }
 
 func NewMeterProvider(c *otel.Conf, serviceName string, uuid string) (err error) {
-	var reader metric.Reader
-	registry := prom.NewRegistry()
-	reader, err = prometheus.New(prometheus.WithRegisterer(registry))
+	exporter, err := prometheus.New()
 	if err != nil {
 		return err
 	}
 	// Register the exporter with an SDK via a periodic reader.
-	sdk := metric.NewMeterProvider(
+	provider := metric.NewMeterProvider(
 		metric.WithResource(resource.NewSchemaless(
 			semconv.ServiceNameKey.String(serviceName),
+			semconv.ServiceInstanceIDKey.String(uuid),
 		)),
-		metric.WithReader(reader),
+		metric.WithReader(exporter),
 	)
-	otelx.SetMeterProvider(sdk)
+	otelx.SetMeterProvider(provider)
 	return nil
 }
