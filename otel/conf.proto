@@ -9,6 +9,7 @@ enum ProviderType {
   Stdout = 2;
   Otlp = 3;
   Prometheus = 4;
+  Zipkin = 5;
 }
 
 enum Type {
@@ -22,4 +23,6 @@ message Conf {
   Type type = 2;
   string endpoint = 3;
   bool xray = 5;
+  string grpcToken = 6;
+  string environment = 7;
 }

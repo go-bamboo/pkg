@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/go-bamboo/pkg/net/ip"
-	"github.com/go-bamboo/pkg/otel"
-	otelx "go.opentelemetry.io/otel"
+	otelx "github.com/go-bamboo/pkg/otel"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -19,19 +19,12 @@ import (
 )
 
 func init() {
-	otel.Register("Stdout:Traces", NewTracerProvider)
-	otel.Register("Stdout:Metrics", NewMeterProvider)
+	otelx.Register("Stdout:Traces", NewTracerProvider)
+	otelx.Register("Stdout:Metrics", NewMeterProvider)
 }
 
-func NewTracerProvider(c *otel.Conf, serviceName string, uuid string) (err error) {
-	res := tracesdk.WithResource(resource.NewSchemaless(
-		semconv.ServiceNameKey.String(serviceName),
-		semconv.ServiceInstanceIDKey.String(uuid),
-		semconv.ProcessPIDKey.Int(os.Getpid()),
-		attribute.String("environment", "development"),
-		attribute.String("ip", ip.InternalIP()),
-	))
-	sampler := tracesdk.WithSampler(tracesdk.AlwaysSample())
+func NewTracerProvider(c *otelx.Conf, serviceName string, uuid string, version string) (err error) {
+	// exp
 	var w io.Writer = os.Stdout
 	if len(c.Endpoint) > 0 {
 		if c.Endpoint == "no" {
@@ -52,6 +45,23 @@ func NewTracerProvider(c *otel.Conf, serviceName string, uuid string) (err error
 	if err != nil {
 		return fmt.Errorf("creating stdout exporter: %w", err)
 	}
+	// res
+	hostName, _ := os.Hostname()
+	environment := c.Environment
+	if len(environment) <= 0 {
+		environment = "development"
+	}
+	res := tracesdk.WithResource(resource.NewSchemaless(
+		semconv.ServiceNameKey.String(serviceName),
+		semconv.ServiceInstanceIDKey.String(uuid),
+		semconv.ServiceVersionKey.String(version),
+		semconv.ProcessPIDKey.Int(os.Getpid()),
+		semconv.DeploymentEnvironmentKey.String(environment),
+		semconv.HostNameKey.String(hostName),
+		attribute.String("ip", ip.InternalIP()),
+	))
+	// sampler
+	sampler := tracesdk.WithSampler(tracesdk.AlwaysSample())
 	tp := tracesdk.NewTracerProvider(
 		sampler,
 		// Record information about this application in an Resource.
@@ -59,11 +69,12 @@ func NewTracerProvider(c *otel.Conf, serviceName string, uuid string) (err error
 		// Always be sure to batch in production.
 		tracesdk.WithSpanProcessor(tracesdk.NewBatchSpanProcessor(exp)),
 	)
-	otelx.SetTracerProvider(tp)
+	otel.SetTracerProvider(tp)
 	return nil
 }
 
-func NewMeterProvider(c *otel.Conf, serviceName string, uuid string) (err error) {
+func NewMeterProvider(c *otelx.Conf, serviceName string, uuid string, version string) (err error) {
+	// exp
 	var reader metric.Reader
 	var w io.Writer = os.Stdout
 	if len(c.Endpoint) > 0 {
@@ -85,13 +96,25 @@ func NewMeterProvider(c *otel.Conf, serviceName string, uuid string) (err error)
 		return err
 	}
 	reader = metric.NewPeriodicReader(exp)
-
+	// res
+	hostName, _ := os.Hostname()
+	environment := c.Environment
+	if len(environment) <= 0 {
+		environment = "development"
+	}
+	res := metric.WithResource(resource.NewSchemaless(
+		semconv.ServiceNameKey.String(serviceName),
+		semconv.ServiceInstanceIDKey.String(uuid),
+		semconv.ServiceVersionKey.String(version),
+		semconv.ProcessPIDKey.Int(os.Getpid()),
+		semconv.DeploymentEnvironmentKey.String(environment),
+		semconv.HostNameKey.String(hostName),
+		attribute.String("ip", ip.InternalIP()),
+	))
 	sdk := metric.NewMeterProvider(
-		metric.WithResource(resource.NewSchemaless(
-			semconv.ServiceNameKey.String(serviceName),
-		)),
+		res,
 		metric.WithReader(reader),
 	)
-	otelx.SetMeterProvider(sdk)
+	otel.SetMeterProvider(sdk)
 	return nil
 }

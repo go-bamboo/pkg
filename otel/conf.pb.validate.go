@@ -64,6 +64,10 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for Xray
 
+	// no validation rules for GrpcToken
+
+	// no validation rules for Environment
+
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
 	}
