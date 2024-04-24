@@ -35,6 +35,223 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on AuthRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AuthRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AuthRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AuthRequestMultiError, or
+// nil if none found.
+func (m *AuthRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AuthRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetAccessToken()) < 1 {
+		err := AuthRequestValidationError{
+			field:  "AccessToken",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return AuthRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// AuthRequestMultiError is an error wrapping multiple validation errors
+// returned by AuthRequest.ValidateAll() if the designated constraints aren't met.
+type AuthRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AuthRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AuthRequestMultiError) AllErrors() []error { return m }
+
+// AuthRequestValidationError is the validation error returned by
+// AuthRequest.Validate if the designated constraints aren't met.
+type AuthRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AuthRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AuthRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AuthRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AuthRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AuthRequestValidationError) ErrorName() string { return "AuthRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AuthRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAuthRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AuthRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AuthRequestValidationError{}
+
+// Validate checks the field values on AuthResp with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AuthResp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AuthResp with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AuthRespMultiError, or nil
+// if none found.
+func (m *AuthResp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AuthResp) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DataScope
+
+	// no validation rules for UserId
+
+	// no validation rules for RoleId
+
+	// no validation rules for RoleKey
+
+	if len(errors) > 0 {
+		return AuthRespMultiError(errors)
+	}
+
+	return nil
+}
+
+// AuthRespMultiError is an error wrapping multiple validation errors returned
+// by AuthResp.ValidateAll() if the designated constraints aren't met.
+type AuthRespMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AuthRespMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AuthRespMultiError) AllErrors() []error { return m }
+
+// AuthRespValidationError is the validation error returned by
+// AuthResp.Validate if the designated constraints aren't met.
+type AuthRespValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AuthRespValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AuthRespValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AuthRespValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AuthRespValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AuthRespValidationError) ErrorName() string { return "AuthRespValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AuthRespValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAuthResp.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AuthRespValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AuthRespValidationError{}
+
 // Validate checks the field values on CheckResourceRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -262,223 +479,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CheckResourceReplyValidationError{}
-
-// Validate checks the field values on AuthRequest with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *AuthRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on AuthRequest with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in AuthRequestMultiError, or
-// nil if none found.
-func (m *AuthRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *AuthRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetAccessToken()) < 1 {
-		err := AuthRequestValidationError{
-			field:  "AccessToken",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return AuthRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// AuthRequestMultiError is an error wrapping multiple validation errors
-// returned by AuthRequest.ValidateAll() if the designated constraints aren't met.
-type AuthRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m AuthRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m AuthRequestMultiError) AllErrors() []error { return m }
-
-// AuthRequestValidationError is the validation error returned by
-// AuthRequest.Validate if the designated constraints aren't met.
-type AuthRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e AuthRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e AuthRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e AuthRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e AuthRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e AuthRequestValidationError) ErrorName() string { return "AuthRequestValidationError" }
-
-// Error satisfies the builtin error interface
-func (e AuthRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sAuthRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = AuthRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = AuthRequestValidationError{}
-
-// Validate checks the field values on AuthResp with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *AuthResp) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on AuthResp with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in AuthRespMultiError, or nil
-// if none found.
-func (m *AuthResp) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *AuthResp) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for DataScope
-
-	// no validation rules for UserId
-
-	// no validation rules for RoleId
-
-	// no validation rules for RoleKey
-
-	if len(errors) > 0 {
-		return AuthRespMultiError(errors)
-	}
-
-	return nil
-}
-
-// AuthRespMultiError is an error wrapping multiple validation errors returned
-// by AuthResp.ValidateAll() if the designated constraints aren't met.
-type AuthRespMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m AuthRespMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m AuthRespMultiError) AllErrors() []error { return m }
-
-// AuthRespValidationError is the validation error returned by
-// AuthResp.Validate if the designated constraints aren't met.
-type AuthRespValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e AuthRespValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e AuthRespValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e AuthRespValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e AuthRespValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e AuthRespValidationError) ErrorName() string { return "AuthRespValidationError" }
-
-// Error satisfies the builtin error interface
-func (e AuthRespValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sAuthResp.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = AuthRespValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = AuthRespValidationError{}
 
 // Validate checks the field values on CheckRoleLevelRequest with the rules
 // defined in the proto definition for this message. If any rules are
