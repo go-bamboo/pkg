@@ -25,16 +25,15 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Status'
     /x/internal/sys/auth:
-        post:
+        get:
             tags:
                 - Sys
             operationId: Sys_Auth
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AuthRequest'
-                required: true
+            parameters:
+                - name: AccessToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -49,16 +48,19 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Status'
     /x/internal/sys/checkcasbin:
-        post:
+        get:
             tags:
                 - Sys
             operationId: Sys_CheckResource
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CheckResourceRequest'
-                required: true
+            parameters:
+                - name: path
+                  in: query
+                  schema:
+                    type: string
+                - name: method
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -74,11 +76,6 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        AuthRequest:
-            type: object
-            properties:
-                AccessToken:
-                    type: string
         AuthResp:
             type: object
             properties:
@@ -97,13 +94,6 @@ components:
             properties:
                 ok:
                     type: boolean
-        CheckResourceRequest:
-            type: object
-            properties:
-                path:
-                    type: string
-                method:
-                    type: string
         GoogleProtobufAny:
             type: object
             properties:

@@ -29,16 +29,13 @@ type SysHTTPServer interface {
 
 func RegisterSysHTTPServer(s *http.Server, srv SysHTTPServer) {
 	r := s.Route("/")
-	r.POST("/x/internal/sys/auth", _Sys_Auth0_HTTP_Handler(srv))
-	r.POST("/x/internal/sys/checkcasbin", _Sys_CheckResource0_HTTP_Handler(srv))
+	r.GET("/x/internal/sys/auth", _Sys_Auth0_HTTP_Handler(srv))
+	r.GET("/x/internal/sys/checkcasbin", _Sys_CheckResource0_HTTP_Handler(srv))
 }
 
 func _Sys_Auth0_HTTP_Handler(srv SysHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in AuthRequest
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -58,9 +55,6 @@ func _Sys_Auth0_HTTP_Handler(srv SysHTTPServer) func(ctx http.Context) error {
 func _Sys_CheckResource0_HTTP_Handler(srv SysHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in CheckResourceRequest
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -93,10 +87,10 @@ func NewSysHTTPClient(client *http.Client) SysHTTPClient {
 func (c *SysHTTPClientImpl) Auth(ctx context.Context, in *AuthRequest, opts ...http.CallOption) (*AuthResp, error) {
 	var out AuthResp
 	pattern := "/x/internal/sys/auth"
-	path := binding.EncodeURL(pattern, in, false)
+	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSysAuth))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,10 +100,10 @@ func (c *SysHTTPClientImpl) Auth(ctx context.Context, in *AuthRequest, opts ...h
 func (c *SysHTTPClientImpl) CheckResource(ctx context.Context, in *CheckResourceRequest, opts ...http.CallOption) (*CheckResourceReply, error) {
 	var out CheckResourceReply
 	pattern := "/x/internal/sys/checkcasbin"
-	path := binding.EncodeURL(pattern, in, false)
+	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSysCheckResource))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

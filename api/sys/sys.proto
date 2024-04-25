@@ -56,8 +56,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 service Sys {
   rpc Auth (AuthRequest) returns (AuthResp) {
     option (google.api.http) = {
-      post: "/x/internal/sys/auth"
-      body: "*"
+      get: "/x/internal/sys/auth"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "授权";
@@ -65,8 +64,7 @@ service Sys {
   };
   rpc CheckResource (CheckResourceRequest) returns (CheckResourceReply) {
     option (google.api.http) = {
-      post: "/x/internal/sys/checkcasbin"
-      body: "*"
+      get: "/x/internal/sys/checkcasbin"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "授权";
