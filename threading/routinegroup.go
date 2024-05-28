@@ -54,7 +54,31 @@ func NewRoutineGroup0[Arg0 any]() *RoutineGroup0[Arg0] {
 // Run runs the given fn in RoutineGroup.
 // Don't reference the variables from outside,
 // because outside variables can be changed by other goroutines
-func (g *RoutineGroup0[Arg0]) Run(fn func(arg0 Arg0), arg0 Arg0) {
+func (g *RoutineGroup0[Arg0]) Run(fn func()) {
+	g.waitGroup.Add(1)
+
+	go func() {
+		defer g.waitGroup.Done()
+		fn()
+	}()
+}
+
+// RunSafe runs the given fn in RoutineGroup, and avoid panics.
+// Don't reference the variables from outside,
+// because outside variables can be changed by other goroutines
+func (g *RoutineGroup0[Arg0]) RunSafe(fn func()) {
+	g.waitGroup.Add(1)
+
+	GoSafe(func() {
+		defer g.waitGroup.Done()
+		fn()
+	})
+}
+
+// Run0 runs the given fn in RoutineGroup.
+// Don't reference the variables from outside,
+// because outside variables can be changed by other goroutines
+func (g *RoutineGroup0[Arg0]) Run0(fn func(arg0 Arg0), arg0 Arg0) {
 	g.waitGroup.Add(1)
 
 	go func() {
@@ -63,10 +87,10 @@ func (g *RoutineGroup0[Arg0]) Run(fn func(arg0 Arg0), arg0 Arg0) {
 	}()
 }
 
-// RunSafe runs the given fn in RoutineGroup, and avoid panics.
+// RunSafe0 runs the given fn in RoutineGroup, and avoid panics.
 // Don't reference the variables from outside,
 // because outside variables can be changed by other goroutines
-func (g *RoutineGroup0[Arg0]) RunSafe(fn func(arg0 Arg0), arg0 Arg0) {
+func (g *RoutineGroup0[Arg0]) RunSafe0(fn func(arg0 Arg0), arg0 Arg0) {
 	g.waitGroup.Add(1)
 
 	GoSafe0[Arg0](func(arg0 Arg0) {
@@ -93,7 +117,31 @@ func NewRoutineGroup1[Arg0 any, Arg1 any]() *RoutineGroup1[Arg0, Arg1] {
 // Run runs the given fn in RoutineGroup.
 // Don't reference the variables from outside,
 // because outside variables can be changed by other goroutines
-func (g *RoutineGroup1[Arg0, Arg1]) Run(fn func(arg0 Arg0, arg1 Arg1), arg0 Arg0, arg1 Arg1) {
+func (g *RoutineGroup1[Arg0, Arg1]) Run(fn func()) {
+	g.waitGroup.Add(1)
+
+	go func() {
+		defer g.waitGroup.Done()
+		fn()
+	}()
+}
+
+// RunSafe runs the given fn in RoutineGroup, and avoid panics.
+// Don't reference the variables from outside,
+// because outside variables can be changed by other goroutines
+func (g *RoutineGroup1[Arg0, Arg1]) RunSafe(fn func()) {
+	g.waitGroup.Add(1)
+
+	GoSafe(func() {
+		defer g.waitGroup.Done()
+		fn()
+	})
+}
+
+// Run1 runs the given fn in RoutineGroup.
+// Don't reference the variables from outside,
+// because outside variables can be changed by other goroutines
+func (g *RoutineGroup1[Arg0, Arg1]) Run1(fn func(arg0 Arg0, arg1 Arg1), arg0 Arg0, arg1 Arg1) {
 	g.waitGroup.Add(1)
 
 	go func() {
@@ -102,10 +150,10 @@ func (g *RoutineGroup1[Arg0, Arg1]) Run(fn func(arg0 Arg0, arg1 Arg1), arg0 Arg0
 	}()
 }
 
-// RunSafe runs the given fn in RoutineGroup, and avoid panics.
+// RunSafe1 runs the given fn in RoutineGroup, and avoid panics.
 // Don't reference the variables from outside,
 // because outside variables can be changed by other goroutines
-func (g *RoutineGroup1[Arg0, Arg1]) RunSafe(fn func(arg0 Arg0, arg1 Arg1), arg0 Arg0, arg1 Arg1) {
+func (g *RoutineGroup1[Arg0, Arg1]) RunSafe1(fn func(arg0 Arg0, arg1 Arg1), arg0 Arg0, arg1 Arg1) {
 	g.waitGroup.Add(1)
 
 	GoSafe0[Arg0](func(arg0 Arg0) {
