@@ -14,6 +14,14 @@ func GoSafe(fn func()) {
 	go RunSafe(fn)
 }
 
+func GoSafe0[Arg0 any](fn func(arg0 Arg0), arg0 Arg0) {
+	go RunSafe0(fn, arg0)
+}
+
+func GoSafe1[Arg0 any, Arg1 any](fn func(arg0 Arg0, arg1 Arg1), arg0 Arg0, arg1 Arg1) {
+	go RunSafe1(fn, arg0, arg1)
+}
+
 // GoSafeCtx runs the given fn using another goroutine, recovers if fn panics with ctx.
 func GoSafeCtx(ctx context.Context, fn func()) {
 	go RunSafeCtx(ctx, fn)
@@ -36,6 +44,18 @@ func RunSafe(fn func()) {
 	defer rescue.Recover()
 
 	fn()
+}
+
+func RunSafe0[Arg0 any](fn func(arg0 Arg0), arg0 Arg0) {
+	defer rescue.Recover()
+
+	fn(arg0)
+}
+
+func RunSafe1[Arg0 any, Arg1 any](fn func(arg0 Arg0, arg1 Arg1), arg0 Arg0, arg1 Arg1) {
+	defer rescue.Recover()
+
+	fn(arg0, arg1)
 }
 
 // RunSafeCtx runs the given fn, recovers if fn panics with ctx.
