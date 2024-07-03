@@ -21,4 +21,5 @@ message Conf {
   int32 db = 9;
   Tls tls = 10;
   bool debug = 11;
+  int32 poolSize = 12;
 }

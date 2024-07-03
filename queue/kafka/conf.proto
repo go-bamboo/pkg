@@ -1,7 +1,7 @@
 syntax = "proto3";
-package client.kafka;
+package queue.kafka;
 
-option go_package = "github.com/go-bamboo/pkg/client/kafka;kafka";
+option go_package = "github.com/go-bamboo/pkg/queue/kafka;kafka";
 
 import "google/protobuf/duration.proto";
 

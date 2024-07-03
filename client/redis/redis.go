@@ -44,6 +44,9 @@ func New(c *Conf) *Client {
 	if len(c.Password) > 0 {
 		opts.Password = c.Password
 	}
+	if c.PoolSize > 0 {
+		opts.PoolSize = int(c.PoolSize)
+	}
 	if c.Tls != nil && c.Tls.InsecureSkipVerify {
 		opts.TLSConfig = &tls.Config{InsecureSkipVerify: c.Tls.InsecureSkipVerify}
 	}

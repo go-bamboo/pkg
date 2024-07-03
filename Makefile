@@ -63,9 +63,9 @@ proto:
            ./log/core/conf.proto \
            ./rpc/conf.proto \
            ./client/redis/conf.proto \
-           ./client/rabbitmq/conf.proto \
-           ./client/kafka/conf.proto \
-           ./client/rocketmq/conf.proto \
+           ./queue/rabbitmq/conf.proto \
+           ./queue/kafka/conf.proto \
+           ./queue/rocketmq/conf.proto \
            ./rest/conf.proto \
            ./store/mongox/conf.proto \
            ./store/gormx/conf.proto \

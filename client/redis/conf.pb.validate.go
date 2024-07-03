@@ -309,6 +309,8 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for Debug
 
+	// no validation rules for PoolSize
+
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
 	}
