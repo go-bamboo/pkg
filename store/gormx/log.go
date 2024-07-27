@@ -43,7 +43,7 @@ func NewLogger(config *LoggerConf, core zapcore.Core) logger.Interface {
 		Colorful:                  true,
 		IgnoreRecordNotFoundError: true,
 		ParameterizedQueries:      true,
-		LogLevel:                  2,
+		LogLevel:                  int32(logger.Warn),
 	}
 	if config != nil {
 		if defaultConf.Colorful != config.Colorful {
@@ -115,9 +115,9 @@ func (l *Logger) LogMode(level logger.LogLevel) logger.Interface {
 func (l *Logger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.level >= logger.Info {
 		if l.c.Colorful {
-			l.slogger.Infof(Green+msg+Reset+Green, data...)
+			l.slogger.Debugf(Green+msg+Reset+Green, data...)
 		} else {
-			l.slogger.Infof(msg, data...)
+			l.slogger.Debugf(msg, data...)
 		}
 	}
 }
@@ -172,9 +172,9 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 	case l.level == logger.Info:
 		sql, rows := fc()
 		if rows == -1 {
-			l.slogger.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+			l.slogger.Debugf(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 		} else {
-			l.slogger.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, rows, sql)
+			l.slogger.Debugf(l.traceStr, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
 	}
 }
