@@ -1,11 +1,5 @@
 package metrics
 
-import (
-	"context"
-	"github.com/go-kratos/kratos/v2/metrics"
-	"go.opentelemetry.io/otel/attribute"
-)
-
 type (
 	mockCounter struct {
 		lvs   []string
@@ -17,21 +11,21 @@ type (
 	}
 )
 
-func (m *mockCounter) synchronous() {
-
-}
-
-func (m *mockCounter) Add(ctx context.Context, incr int64, attrs ...attribute.KeyValue) {
-
-}
-
-func (m *mockObserver) With(lvs ...string) metrics.Observer {
-	return m
-}
-
-func (m *mockObserver) Observe(delta float64) {
-	m.value += delta
-}
+//func (m *mockCounter) synchronous() {
+//
+//}
+//
+//func (m *mockCounter) Add(ctx context.Context, incr int64, attrs ...attribute.KeyValue) {
+//
+//}
+//
+//func (m *mockObserver) With(lvs ...string) metric.Observer {
+//	return m
+//}
+//
+//func (m *mockObserver) Observe(delta float64) {
+//	m.value += delta
+//}
 
 //func TestWithRequests(t *testing.T) {
 //	mock := mockCounter{

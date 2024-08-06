@@ -12,9 +12,9 @@ import (
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/metrics"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -31,7 +31,7 @@ type (
 		sub        v2.PushConsumer
 		tracer     trace.Tracer
 		propagator propagation.TextMapPropagator
-		subCounter metrics.Counter // 发送次数
+		subCounter metric.Int64Counter // 发送次数
 	}
 
 	rocketQueues struct {
