@@ -1,6 +1,9 @@
 package kratos
 
-import "github.com/go-kratos/kratos/v2"
+import (
+	"github.com/go-kratos/kratos/v2"
+	_ "go.uber.org/automaxprocs"
+)
 
 type App = kratos.App
 
