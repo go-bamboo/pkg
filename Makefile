@@ -68,7 +68,7 @@ proto:
            ./queue/rocketmq/conf.proto \
            ./rest/conf.proto \
            ./store/mongox/conf.proto \
-           ./store/gormx/conf.proto \
+           ./store/gormx/conf/conf.proto \
            ./fs/s3/conf.proto \
            ./fs/google/conf.proto
 

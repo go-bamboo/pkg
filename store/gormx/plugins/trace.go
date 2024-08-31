@@ -1,4 +1,4 @@
-package gormx
+package plugins
 
 import (
 	"fmt"
@@ -17,6 +17,8 @@ const (
 	tracingAfterName  = "opentracing:after"
 	gormPluginName    = "opentracingPlugin"
 )
+
+var _ gorm.Plugin = (*GormTracer)(nil)
 
 type GormTracer struct {
 	tracer     trace.Tracer
@@ -88,5 +90,3 @@ func (p *GormTracer) after(db *gorm.DB) {
 	span.End()
 	return
 }
-
-var _ gorm.Plugin = &GormTracer{}

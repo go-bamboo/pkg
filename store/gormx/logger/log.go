@@ -1,14 +1,16 @@
-package gormx
+package logger
 
 import (
 	"context"
 	"fmt"
-	"gorm.io/gorm"
 	"time"
 
+	"github.com/go-bamboo/pkg/store/gormx/conf"
+	"github.com/go-bamboo/pkg/store/gormx/ecode"
 	"github.com/go-kratos/kratos/v2/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
@@ -29,7 +31,7 @@ const (
 )
 
 type Logger struct {
-	c                                   *LoggerConf
+	c                                   *conf.LoggerConf
 	infoStr, warnStr, errStr            string
 	traceStr, traceErrStr, traceWarnStr string
 
@@ -38,8 +40,8 @@ type Logger struct {
 	slogger *zap.SugaredLogger
 }
 
-func NewLogger(config *LoggerConf, core zapcore.Core) logger.Interface {
-	defaultConf := LoggerConf{
+func NewLogger(config *conf.LoggerConf, core zapcore.Core) logger.Interface {
+	defaultConf := conf.LoggerConf{
 		Colorful:                  true,
 		IgnoreRecordNotFoundError: true,
 		ParameterizedQueries:      true,
@@ -151,7 +153,7 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 	}
 	elapsed := time.Since(begin)
 	switch {
-	case err != nil && l.level >= logger.Error && (!IsGormErrRecordNotFound(err) || !l.c.IgnoreRecordNotFoundError):
+	case err != nil && l.level >= logger.Error && (!ecode.IsGormErrRecordNotFound(err) || !l.c.IgnoreRecordNotFoundError):
 		if errors.Is(err, gorm.ErrRecordNotFound) && l.c.IgnoreRecordNotFoundError {
 			return
 		}

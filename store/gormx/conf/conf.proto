@@ -1,9 +1,9 @@
 syntax = "proto3";
-package store.gormx;
+package store.gormx.conf;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "github.com/go-bamboo/pkg/store/gormx;gormx";
+option go_package = "github.com/go-bamboo/pkg/store/gormx/conf;conf";
 
 // dbMySQL Gorm Drivers mysql || postgres || sqlite || sqlserver
 enum DBType {
