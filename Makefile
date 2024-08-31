@@ -62,13 +62,13 @@ proto:
            ./registry/conf.proto \
            ./log/core/conf.proto \
            ./rpc/conf.proto \
-           ./client/redis/conf.proto \
            ./queue/rabbitmq/conf.proto \
            ./queue/kafka/conf.proto \
            ./queue/rocketmq/conf.proto \
            ./rest/conf.proto \
            ./store/mongox/conf.proto \
            ./store/gormx/conf/conf.proto \
+           ./store/redis/conf.proto \
            ./fs/s3/conf.proto \
            ./fs/google/conf.proto
 

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/cache"
-	"github.com/go-bamboo/pkg/client/redis"
+	"github.com/go-bamboo/pkg/store/redis"
 	redc "github.com/go-redis/cache/v8"
 )
 
