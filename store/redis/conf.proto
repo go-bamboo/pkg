@@ -1,9 +1,9 @@
 syntax = "proto3";
-package client.redis;
+package store.redis;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "github.com/go-bamboo/pkg/client/redis;redis";
+option go_package = "github.com/go-bamboo/pkg/store/redis;redis";
 
 message Tls {
    bool insecureSkipVerify = 1;
