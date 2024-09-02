@@ -1,10 +1,7 @@
 package rest
 
 import (
-	_ "net/http/pprof"
-
 	"github.com/felixge/fgprof"
-	"github.com/go-bamboo/pkg/api/status"
 	"github.com/go-bamboo/pkg/middleware/logging"
 	"github.com/go-bamboo/pkg/middleware/metrics"
 	"github.com/go-bamboo/pkg/middleware/realip"
@@ -14,6 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/go-kratos/kratos/v2/transport/http/pprof"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -87,8 +85,8 @@ func NewServer(c *Conf, opts ...Option) *Server {
 		serverOpts = append(serverOpts, http.Timeout(c.Timeout.AsDuration()))
 	}
 	httpSrv := http.NewServer(serverOpts...)
-	status.RegisterStatusHTTPServer(httpSrv, status.NewStatusService())
 	httpSrv.Handle("/debug/fgprof", fgprof.Handler())
 	httpSrv.Handle("/metrics", promhttp.Handler())
+	httpSrv.Handle("/", pprof.NewHandler())
 	return httpSrv
 }
