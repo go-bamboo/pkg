@@ -24,7 +24,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0
 	github.com/hashicorp/consul/api v1.20.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/mssola/user_agent v0.5.3
 	github.com/nacos-group/nacos-sdk-go v1.1.2
@@ -160,6 +159,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/microsoft/go-mssqldb v0.17.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.6.6 // indirect
