@@ -6,7 +6,7 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 )
 
-// NewMetadataf NewMetadataf(code fmt.Sprintf(format, a...))
+// NewMetadataf(code fmt.Sprintf(format, a...))
 func NewMetadataf(code int, reason string, md map[string]string, format string, a ...interface{}) error {
 	se := errors.New(code, reason, fmt.Sprintf(format, a...))
 	se = se.WithMetadata(md)

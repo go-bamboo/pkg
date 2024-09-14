@@ -6,11 +6,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/go-bamboo/pkg/log"
 )
 
 func IsExist(path string) bool {
@@ -78,7 +79,7 @@ func FileZip(dst, src string, notContPath string) (err error) {
 	defer func() {
 		// 检测一下是否成功关闭
 		if err := zw.Close(); err != nil {
-			log.Fatalln(err)
+			log.Fatal(err)
 		}
 	}()
 	return filepath.Walk(src, func(path string, fi os.FileInfo, errBack error) (err error) {
