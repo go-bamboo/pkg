@@ -1,8 +1,11 @@
 package jsonx
 
 import (
+	"encoding/json"
 	"io"
 )
+
+type RawMessage = json.RawMessage
 
 // Codec defines the interface Transport uses to marshal and unmarshals messages.  Note
 // that implementations of this interface must be thread safe; a Codec's
