@@ -65,6 +65,14 @@ func (codec) UnmarshalFromReader(reader io.Reader, v interface{}) error {
 	return nil
 }
 
+func (codec) Get(str, path string) (string, error) {
+	panic("not implemented")
+}
+
+func (codec) GetBytes(json []byte, path string) ([]byte, error) {
+	panic("not implemented")
+}
+
 func (codec) Name() string {
 	return "std"
 }

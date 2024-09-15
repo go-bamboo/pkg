@@ -18,6 +18,10 @@ type Codec interface {
 	UnmarshalFromString(str string, v interface{}) error
 	// UnmarshalFromReader parses the wire format into v.
 	UnmarshalFromReader(reader io.Reader, v interface{}) error
+	// Get parses the wire format into v.
+	Get(str, path string) (string, error)
+	// GetBytes parses the wire format into v.
+	GetBytes(json []byte, path string) ([]byte, error)
 	// Name returns the name of the Codec implementation. The returned string
 	// will be used as part of content type in transmission.  The result must be
 	// static; the result cannot change between calls.
@@ -66,4 +70,12 @@ func UnmarshalFromString(str string, v interface{}) error {
 // UnmarshalFromReader unmarshals v from reader.
 func UnmarshalFromReader(reader io.Reader, v interface{}) error {
 	return registeredCodec.UnmarshalFromReader(reader, v)
+}
+
+func Get(json, path string) (string, error) {
+	return registeredCodec.Get(json, path)
+}
+
+func GetBytes(json []byte, path string) ([]byte, error) {
+	return registeredCodec.GetBytes(json, path)
 }

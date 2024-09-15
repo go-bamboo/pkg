@@ -37,6 +37,22 @@ func (codec) UnmarshalFromReader(reader io.Reader, v interface{}) error {
 	return sonic.ConfigDefault.NewDecoder(reader).Decode(v)
 }
 
+func (codec) Get(str, path string) (string, error) {
+	n, err := sonic.GetFromString(str, path)
+	if err != nil {
+		return "", err
+	}
+	return n.Raw()
+}
+
+func (codec) GetBytes(json []byte, path string) ([]byte, error) {
+	n, err := sonic.Get(json, path)
+	if err != nil {
+		return nil, err
+	}
+	return n.MarshalJSON()
+}
+
 func (codec) Name() string {
 	return "sonic"
 }
