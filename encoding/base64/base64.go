@@ -1,15 +1,27 @@
 package base64
 
 import (
-	"encoding/base64"
-	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/encoding"
 )
 
-func DecodeString(s string) ([]byte, error) {
-	storeKey, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		err = errors.FromError(err)
-		return nil, err
-	}
-	return storeKey, err
+// Name is the name registered for the base64 codec.
+const Name = "base64"
+
+func init() {
+	encoding.RegisterCodec(codec{})
+}
+
+// codec is a Codec implementation with yaml.
+type codec struct{}
+
+func (codec) Marshal(v interface{}) ([]byte, error) {
+	return []byte(""), nil
+}
+
+func (codec) Unmarshal(data []byte, v interface{}) error {
+	return nil
+}
+
+func (codec) Name() string {
+	return Name
 }

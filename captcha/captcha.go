@@ -9,8 +9,8 @@ var store = base64Captcha.DefaultMemStore
 
 func DriverAudioFunc() (id, b64s string, answer string, err error) {
 	driver := base64Captcha.DefaultDriverAudio
-	cap := base64Captcha.NewCaptcha(driver, store)
-	return cap.Generate()
+	captcha := base64Captcha.NewCaptcha(driver, store)
+	return captcha.Generate()
 }
 
 func DriverStringFunc() (id, b64s string, answer string, err error) {
@@ -24,14 +24,14 @@ func DriverStringFunc() (id, b64s string, answer string, err error) {
 	var fontsStorage base64Captcha.FontsStorage = base64Captcha.DefaultEmbeddedFonts
 	var fonts []string = []string{"wqy-microhei.ttc"}
 	driver := base64Captcha.NewDriverString(height, width, noiseCount, showLineOptions, length, source, bgColor, fontsStorage, fonts)
-	cap := base64Captcha.NewCaptcha(driver.ConvertFonts(), store)
-	return cap.Generate()
+	captcha := base64Captcha.NewCaptcha(driver.ConvertFonts(), store)
+	return captcha.Generate()
 }
 
 func DriverDigitFunc() (id, b64s string, answer string, err error) {
 	driver := base64Captcha.DefaultDriverDigit
-	cap := base64Captcha.NewCaptcha(driver, store)
-	return cap.Generate()
+	captcha := base64Captcha.NewCaptcha(driver, store)
+	return captcha.Generate()
 }
 
 // Verify captcha answer directly

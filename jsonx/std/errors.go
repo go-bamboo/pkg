@@ -1,4 +1,4 @@
-package jsonx
+package std
 
 import (
 	"encoding/json"
