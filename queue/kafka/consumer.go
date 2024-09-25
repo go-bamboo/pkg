@@ -22,68 +22,28 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type (
-	ConsumeHandle func(ctx context.Context, topic string, key, message []byte) error
+type Consumer struct {
+	c       *queue.Conf
+	handler queue.ConsumeHandler
 
-	ConsumeHandler interface {
-		Consume(ctx context.Context, topic string, key, message []byte) error
-	}
-	Consumer struct {
-		c       *Conf
-		handler ConsumeHandler
+	sub        *kafka.Reader
+	tracer     trace.Tracer
+	propagator propagation.TextMapPropagator
 
-		sub        *kafka.Reader
-		tracer     trace.Tracer
-		propagator propagation.TextMapPropagator
+	wg  sync.WaitGroup
+	ctx context.Context
+	cf  context.CancelFunc
+}
 
-		wg  sync.WaitGroup
-		ctx context.Context
-		cf  context.CancelFunc
-	}
-
-	Consumers struct {
-		queues []*Consumer
-	}
-)
-
-func MustNewQueue(c *Conf, handler ConsumeHandler) (queue.MessageQueue, error) {
-	q, err := NewQueue(c, handler)
+func MustNewQueue(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
+	q, err := NewConsumer(c, handler)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return q, nil
 }
 
-func NewQueue(c *Conf, handler ConsumeHandler) (*Consumers, error) {
-	q := Consumers{}
-
-	cc, err := NewConsumer(c, handler)
-	if err != nil {
-		return nil, err
-	}
-	q.queues = append(q.queues, cc)
-	return &q, nil
-}
-
-func (q Consumers) Name() string {
-	return "kafka"
-}
-
-func (q Consumers) Start(ctx context.Context) error {
-	for _, queue := range q.queues {
-		queue.Start(ctx)
-	}
-	return nil
-}
-
-func (q Consumers) Stop(ctx context.Context) error {
-	for _, queue := range q.queues {
-		queue.Stop(ctx)
-	}
-	return nil
-}
-
-func NewConsumer(c *Conf, handler ConsumeHandler) (*Consumer, error) {
+func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (*Consumer, error) {
 	// Load client cert
 	//cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	//if err != nil {
@@ -131,18 +91,8 @@ func NewConsumer(c *Conf, handler ConsumeHandler) (*Consumer, error) {
 	return tracingSub, nil
 }
 
-func (c *Consumer) poll(ctx context.Context, timeoutMs int) (cctx context.Context, span trace.Span, msg kafka.Message, err error) {
-	msg, err = c.sub.ReadMessage(ctx)
-	if err != nil {
-		return
-	}
-	cctx, span = c.tracer.Start(ctx, "sub:"+msg.Topic, trace.WithSpanKind(trace.SpanKindConsumer))
-	c.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
-	span.SetAttributes(
-		attribute.String("kafka.topic", msg.Topic),
-		attribute.String("kafka.key", string(msg.Key)),
-	)
-	return
+func (c *Consumer) Name() string {
+	return "kafka"
 }
 
 func (c *Consumer) Start(context.Context) error {
@@ -158,6 +108,20 @@ func (c *Consumer) Stop(context.Context) error {
 	c.sub.Close()
 	log.Info("stop kafka consumer. topic[%s]", c.c.Topic)
 	return nil
+}
+
+func (c *Consumer) poll(ctx context.Context, timeoutMs int) (cctx context.Context, span trace.Span, msg kafka.Message, err error) {
+	msg, err = c.sub.ReadMessage(ctx)
+	if err != nil {
+		return
+	}
+	cctx, span = c.tracer.Start(ctx, "sub:"+msg.Topic, trace.WithSpanKind(trace.SpanKindConsumer))
+	c.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
+	span.SetAttributes(
+		attribute.String("kafka.topic", msg.Topic),
+		attribute.String("kafka.key", string(msg.Key)),
+	)
+	return
 }
 
 func (c *Consumer) consumGroupTopic(ctx context.Context) {

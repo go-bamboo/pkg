@@ -9,19 +9,13 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/go-bamboo/pkg/log"
 	otelext "github.com/go-bamboo/pkg/otel"
+	"github.com/go-bamboo/pkg/queue"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
-
-// A Pusher interface wraps the method Push.
-type Pusher interface {
-	Name() string
-	Push(ctx context.Context, topic string, key, value []byte) error
-	Close() error
-}
 
 // rocketProducer 生产者
 type rocketProducer struct {
@@ -32,7 +26,7 @@ type rocketProducer struct {
 	// topic      string
 }
 
-func MustNewPusher(c *Conf) Pusher {
+func MustNewPusher(c *queue.Conf) queue.Pusher {
 	pub, err := NewPusher(c)
 	if err != nil {
 		log.Fatal(err)
@@ -40,14 +34,14 @@ func MustNewPusher(c *Conf) Pusher {
 	return pub
 }
 
-func NewPusher(config *Conf) (Pusher, error) {
+func NewPusher(config *queue.Conf) (queue.Pusher, error) {
 	pd, err := v2.NewProducer(
-		producer.WithGroupName(config.GroupId),
-		producer.WithNameServer(config.Addrs),
+		producer.WithNameServer(config.Brokers),
+		producer.WithGroupName(config.Group),
 		producer.WithRetry(3),
 		producer.WithCredentials(primitive.Credentials{
-			AccessKey: config.AccessKey,
-			SecretKey: config.SecretKey,
+			//AccessKey: config.AccessKey,
+			//SecretKey: config.SecretKey,
 		}),
 		producer.WithNamespace(config.Namespace),
 	)
@@ -92,6 +86,5 @@ func (p *rocketProducer) Push(ctx context.Context, topic string, key, value []by
 }
 
 func (p *rocketProducer) Close() error {
-	p.producer.Shutdown()
-	return nil
+	return p.producer.Shutdown()
 }

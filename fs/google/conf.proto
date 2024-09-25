@@ -3,7 +3,6 @@ package fs.google;
 
 option go_package = "github.com/go-bamboo/pkg/fs/google;google";
 
-import "google/protobuf/duration.proto";
 import "errors/errors.proto";
 
 message Conf {

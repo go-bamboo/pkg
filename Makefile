@@ -62,9 +62,7 @@ proto:
            ./registry/conf.proto \
            ./log/core/conf.proto \
            ./rpc/conf.proto \
-           ./queue/rabbitmq/conf.proto \
-           ./queue/kafka/conf.proto \
-           ./queue/rocketmq/conf.proto \
+           ./queue/conf.proto \
            ./rest/conf.proto \
            ./store/mongox/conf.proto \
            ./store/gormx/conf/conf.proto \

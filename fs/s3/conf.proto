@@ -3,7 +3,6 @@ package fs.s3;
 
 option go_package = "github.com/go-bamboo/pkg/fs/s3;s3";
 
-import "google/protobuf/duration.proto";
 import "errors/errors.proto";
 
 message Conf {

@@ -1,7 +1,7 @@
 syntax = "proto3";
-package queue.kafka;
+package queue;
 
-option go_package = "github.com/go-bamboo/pkg/queue/kafka;kafka";
+option go_package = "github.com/go-bamboo/pkg/queue;queue";
 
 import "google/protobuf/duration.proto";
 
@@ -27,12 +27,15 @@ message Net {
 message Conf {
   repeated string brokers = 1;
   Net net = 2;
-  string group = 3;
-  string topic = 4;
-  string offset = 5;
-  google.protobuf.Duration read_timeout = 6;
-  google.protobuf.Duration write_timeout = 7;
-  int32 acks = 8;
+  bool broadcast = 3;
+  string namespace = 4;
+  string topic = 5;
+  string expression = 6;
+  string group = 7;
+  string offset = 8;
+  google.protobuf.Duration read_timeout = 9;
+  google.protobuf.Duration write_timeout = 10;
+  int32 acks = 11;
 }
 
 

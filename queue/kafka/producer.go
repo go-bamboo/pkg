@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"github.com/go-bamboo/pkg/queue"
 
 	"github.com/go-bamboo/pkg/log"
 	otelext "github.com/go-bamboo/pkg/otel"
@@ -12,13 +13,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// A Pusher interface wraps the method Push.
-type Pusher interface {
-	Name() string
-	Push(ctx context.Context, topic string, key, value []byte) error
-	Close() error
-}
-
 // Producer 生产者
 type Producer struct {
 	pub        *kafka.Writer
@@ -27,7 +21,7 @@ type Producer struct {
 	propagator propagation.TextMapPropagator
 }
 
-func MustNewProducer(c *Conf) Pusher {
+func MustNewProducer(c *queue.Conf) queue.Pusher {
 	pub, err := NewProducer(c)
 	if err != nil {
 		log.Fatal(err)
@@ -35,7 +29,7 @@ func MustNewProducer(c *Conf) Pusher {
 	return pub
 }
 
-func NewProducer(c *Conf) (*Producer, error) {
+func NewProducer(c *queue.Conf) (*Producer, error) {
 	pub := kafka.Writer{
 		Addr: kafka.TCP("localhost:9092", "localhost:9093", "localhost:9094"),
 	}
