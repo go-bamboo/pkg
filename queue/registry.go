@@ -6,49 +6,61 @@ import (
 
 var globalRegistry = NewRegistry()
 
-type Factory func(c *Conf, serviceName string, uuid string, version string) (MessageQueue, error)
+type ConsumerFactory func(c *Conf, handler ConsumeHandler) (MessageQueue, error)
+type PusherFactory func(c *Conf) (Pusher, error)
 
 // Registry is the interface for callers to get registered middleware.
 type Registry interface {
-	Register(name string, factory Factory)
-	Create(c *Conf, serviceName string, uuid string, version string) error
+	RegisterConsumer(name string, factory ConsumerFactory)
+	CreateConsumer(name string, c *Conf, handler ConsumeHandler) (MessageQueue, error)
+	RegisterPusher(name string, factory PusherFactory)
+	CreatePusher(name string, c *Conf) (Pusher, error)
 }
 
 type discoveryRegistry struct {
-	discovery map[string]Factory
+	c map[string]ConsumerFactory
+	p map[string]PusherFactory
 }
 
 // NewRegistry returns a new middleware registry.
 func NewRegistry() Registry {
 	return &discoveryRegistry{
-		discovery: map[string]Factory{},
+		c: map[string]ConsumerFactory{},
+		p: map[string]PusherFactory{},
 	}
 }
 
-func (d *discoveryRegistry) Register(name string, factory Factory) {
-	d.discovery[name] = factory
+func (d *discoveryRegistry) RegisterConsumer(name string, factory ConsumerFactory) {
+	d.c[name] = factory
 }
 
-func (d *discoveryRegistry) Create(c *Conf) (MessageQueue, error) {
-	key := fmt.Sprintf("%s:%s", ProviderType_name[int32(c.ProviderType)], Type_name[int32(c.Type)])
-	factory, ok := d.discovery[key]
+func (d *discoveryRegistry) CreateConsumer(name string, c *Conf, handler ConsumeHandler) (MessageQueue, error) {
+	factory, ok := d.c[name]
 	if !ok {
-		return fmt.Errorf("provider %s has not been registered", key)
+		return nil, fmt.Errorf("provider %s has not been registered", name)
 	}
 
-	err := factory(c, serviceName, uuid, version)
+	consumer, err := factory(c, handler)
 	if err != nil {
-		return fmt.Errorf("create provider error: %s", err)
+		return nil, fmt.Errorf("create provider error: %s", err)
 	}
-	return nil
+	return consumer, nil
 }
 
-// Register registers one discovery.
-func Register(name string, factory Factory) {
-	globalRegistry.Register(name, factory)
+func (d *discoveryRegistry) RegisterPusher(name string, factory PusherFactory) {
+	d.p[name] = factory
 }
 
-// Create instantiates a discovery based on `discoveryDSN`.
-func Create(c *Conf, serviceName string, uuid string, version string) (MessageQueue, error) {
-	return globalRegistry.Create(c, serviceName, uuid, version)
+func (d *discoveryRegistry) CreatePusher(name string, c *Conf) (Pusher, error) {
+	return nil, nil
+}
+
+// RegisterConsumer registers one discovery.
+func RegisterConsumer(name string, factory ConsumerFactory) {
+	globalRegistry.RegisterConsumer(name, factory)
+}
+
+// CreateConsumer instantiates a discovery based on `discoveryDSN`.
+func CreateConsumer(name string, c *Conf, handler ConsumeHandler) (MessageQueue, error) {
+	return globalRegistry.CreateConsumer(name, c, handler)
 }

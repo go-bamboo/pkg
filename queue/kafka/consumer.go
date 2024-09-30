@@ -22,6 +22,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+func init() {
+	queue.RegisterConsumer("kafka", NewConsumer)
+}
+
 type Consumer struct {
 	c       *queue.Conf
 	handler queue.ConsumeHandler
@@ -43,7 +47,7 @@ func MustNewQueue(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQue
 	return q, nil
 }
 
-func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (*Consumer, error) {
+func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
 	// Load client cert
 	//cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	//if err != nil {

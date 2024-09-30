@@ -19,6 +19,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+func init() {
+	queue.RegisterConsumer("redis", NewQueue)
+}
+
 type rocketQueue struct {
 	c          *queue.Conf
 	handler    queue.ConsumeHandler
