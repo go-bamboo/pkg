@@ -7,18 +7,13 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
 	"github.com/go-kratos/kratos/v2/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
-
-type Sender interface {
-	Name() string
-	Send(ctx context.Context, header map[string]interface{}, exchange string, routeKey string, msg []byte) error
-	Close() error
-}
 
 type (
 	RabbitMqSender struct {
@@ -41,7 +36,7 @@ type (
 	}
 )
 
-func MustNewSender(c *ProducerConf) Sender {
+func MustNewSender(c *ProducerConf) queue.Pusher {
 	ctx, cf := context.WithCancel(context.TODO())
 	sender := &RabbitMqSender{
 		c:               c,
@@ -68,20 +63,49 @@ func MustNewSender(c *ProducerConf) Sender {
 }
 
 func (q *RabbitMqSender) Name() string {
-	return "Sender"
+	return "rabbitmq"
 }
 
-func (q *RabbitMqSender) Send(ctx context.Context, header map[string]interface{}, exchange string, routeKey string, msg []byte) error {
+func (q *RabbitMqSender) Push(ctx context.Context, exchange string, routeKey []byte, msg []byte) error {
 	if !q.isConnected.Load() {
 		return ErrorDisconnect("%v", q.c.Rabbit)
 	}
 	if !q.isChannelOpen.Load() {
 		return ErrorChannelClosed("%v", q.c.Rabbit)
 	}
+	header := map[string]interface{}{}
 	body := Client(ctx, msg)
 	err := q.channel.Publish(
 		exchange,
-		routeKey,
+		string(routeKey),
+		false,
+		false,
+		amqp.Publishing{
+			Headers:      header,
+			ContentType:  q.ContentType,
+			Body:         body,
+			DeliveryMode: amqp.Persistent,
+		},
+	)
+	if err != nil {
+		return wrapError(err)
+	}
+	log.Debugw("[rabbitmq][sender] push msg", "exchange", exchange, "routeKey", routeKey, "header", header)
+	return nil
+}
+
+func (q *RabbitMqSender) PushWithPartition(ctx context.Context, exchange string, routeKey []byte, msg []byte, partition int32) error {
+	if !q.isConnected.Load() {
+		return ErrorDisconnect("%v", q.c.Rabbit)
+	}
+	if !q.isChannelOpen.Load() {
+		return ErrorChannelClosed("%v", q.c.Rabbit)
+	}
+	header := map[string]interface{}{}
+	body := Client(ctx, msg)
+	err := q.channel.Publish(
+		exchange,
+		string(routeKey),
 		false,
 		false,
 		amqp.Publishing{

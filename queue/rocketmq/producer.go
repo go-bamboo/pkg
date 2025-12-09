@@ -85,6 +85,27 @@ func (p *rocketProducer) Push(ctx context.Context, topic string, key, value []by
 	return nil
 }
 
+func (p *rocketProducer) PushWithPartition(ctx context.Context, topic string, key, value []byte, partition int32) error {
+	msg := primitive.NewMessage(topic, value)
+	msg.WithTag("")
+	msg.WithKeys([]string{string(key)})
+
+	operation := "pub:" + topic
+	ctx, span := p.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindProducer))
+	p.propagator.Inject(ctx, &MessageTextMapCarrier{msg: msg})
+	span.SetAttributes(
+		attribute.String("kafka.topic", topic),
+		attribute.String("kafka.key", string(key)),
+	)
+	sendResult, err := p.producer.SendSync(ctx, msg)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	log.Debugf("Delivered message to topic %s [%v] at offset %v", topic, sendResult.RegionID, sendResult.OffsetMsgID)
+	return nil
+}
+
 func (p *rocketProducer) Close() error {
 	return p.producer.Shutdown()
 }

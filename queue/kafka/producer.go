@@ -2,10 +2,10 @@ package kafka
 
 import (
 	"context"
-	"github.com/go-bamboo/pkg/queue"
 
 	"github.com/go-bamboo/pkg/log"
 	otelext "github.com/go-bamboo/pkg/otel"
+	"github.com/go-bamboo/pkg/queue"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -46,6 +46,26 @@ func (p *Producer) Name() string {
 }
 
 func (p *Producer) Push(ctx context.Context, topic string, key, value []byte) error {
+	msg := kafka.Message{
+		Key:   key,
+		Value: value,
+	}
+	operation := "pub:" + topic
+	ctx, span := p.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindProducer))
+	p.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
+	span.SetAttributes(
+		attribute.String("kafka.topic", topic),
+		attribute.String("kafka.key", string(msg.Key)),
+	)
+	if err := p.pub.WriteMessages(ctx, msg); err != nil {
+		span.RecordError(err)
+		err = WrapError(err)
+		return err
+	}
+	return nil
+}
+
+func (p *Producer) PushWithPartition(ctx context.Context, topic string, key, value []byte, partition int32) error {
 	msg := kafka.Message{
 		Key:   key,
 		Value: value,

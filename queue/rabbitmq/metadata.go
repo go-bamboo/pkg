@@ -2,11 +2,12 @@ package rabbitmq
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/protox"
 	"github.com/go-kratos/kratos/v2/metadata"
-	"strings"
-	"time"
 )
 
 func Server(msg []byte) (context.Context, context.CancelFunc, []byte, error) {
