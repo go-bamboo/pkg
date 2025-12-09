@@ -9,7 +9,7 @@ import (
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/rescue"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )

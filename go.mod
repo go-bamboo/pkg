@@ -1,6 +1,6 @@
 module github.com/go-bamboo/pkg
 
-go 1.20
+go 1.22
 
 require (
 	cloud.google.com/go/storage v1.30.1
@@ -15,7 +15,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/felixge/fgprof v0.9.3
 	github.com/fluent/fluent-logger-golang v1.9.0
-	github.com/go-kratos/kratos/v2 v2.8.0
+	github.com/go-kratos/kratos/v2 v2.9.2
 	github.com/go-redis/cache/v8 v8.4.3
 	github.com/go-redis/redis/extra/rediscmd/v8 v8.11.5
 	github.com/go-redis/redis/v8 v8.11.5
@@ -28,8 +28,8 @@ require (
 	github.com/nacos-group/nacos-sdk-go v1.1.2
 	github.com/philchia/agollo/v4 v4.1.4
 	github.com/prometheus/client_golang v1.17.0
+	github.com/rabbitmq/amqp091-go v1.8.1
 	github.com/segmentio/kafka-go v0.4.34
-	github.com/streadway/amqp v1.0.1-0.20220518090600-2aa28536587a
 	github.com/stretchr/testify v1.9.0
 	go.etcd.io/etcd/client/v3 v3.5.5
 	go.mongodb.org/mongo-driver v1.10.1
@@ -47,8 +47,8 @@ require (
 	go.opentelemetry.io/otel/trace v1.24.0
 	go.uber.org/automaxprocs v1.5.3
 	go.uber.org/zap v1.23.0
-	golang.org/x/crypto v0.23.0
-	golang.org/x/net v0.23.0
+	golang.org/x/crypto v0.31.0
+	golang.org/x/net v0.33.0
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af
 	google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917
 	google.golang.org/grpc v1.61.1
@@ -201,10 +201,10 @@ require (
 	golang.org/x/exp v0.0.0-20210916165020-5cb4fee858ee // indirect
 	golang.org/x/image v0.13.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
-	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/term v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	google.golang.org/api v0.149.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20231212172506-995d672761c0 // indirect
