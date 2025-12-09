@@ -20,7 +20,7 @@ import (
 )
 
 func init() {
-	queue.RegisterConsumer("redis", NewQueue)
+	queue.RegisterConsumer("rocketmq", NewQueue)
 }
 
 type rocketQueue struct {

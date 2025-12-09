@@ -2,8 +2,9 @@ package config
 
 import (
 	"fmt"
-	"github.com/go-kratos/kratos/v2/config"
 	"net/url"
+
+	"github.com/go-kratos/kratos/v2/config"
 )
 
 var globalRegistry = NewRegistry()

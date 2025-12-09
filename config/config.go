@@ -2,9 +2,10 @@ package config
 
 import (
 	"flag"
-	"github.com/go-kratos/kratos/v2/config"
 	"net/url"
 	"os"
+
+	"github.com/go-kratos/kratos/v2/config"
 )
 
 var (
