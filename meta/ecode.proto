@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package meta;
+
+import "errors/errors.proto";
+
+option go_package = "github.com/go-bamboo/pkg/meta;meta";
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (errors.default_code) = 500;
+
+  // 为某个枚举单独设置错误码
+  MD_NOT_FOUND = 0;
+
+  DP_NOT_FOUND = 1;
+
+  TOKEN_NOT_FOUND = 2;
+
+  UA_NOT_FOUND = 3;
+
+  REMOTE_ADDR_NOT_FOUND = 4;
+}

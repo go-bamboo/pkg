@@ -7,11 +7,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/go-bamboo/pkg/log"
 	"io"
 	"mime/multipart"
 	"net"
@@ -23,6 +18,13 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/go-bamboo/pkg/fs"
+	"github.com/go-bamboo/pkg/log"
 )
 
 var (
@@ -39,12 +41,12 @@ var (
 )
 
 type S3Session struct {
-	c      *Conf
+	c      *fs.Conf
 	s3     *s3.Client
 	domain string
 }
 
-func New(c *Conf) (s3Sess *S3Session, err error) {
+func New(c *fs.Conf) (s3Sess *S3Session, err error) {
 	if c == nil {
 		return nil, ErrorConfigNotFound("c is nil")
 	}

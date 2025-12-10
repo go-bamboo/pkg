@@ -47,6 +47,26 @@ api:
 		   ./api/status/status.proto \
 		   ./api/sys/sys.proto
 
+.PHONY: conf
+conf:
+	protoc --proto_path=. \
+		   --proto_path=$(KRATOS) \
+           --proto_path=$(KRATOS)/api \
+           --proto_path=$(KRATOS)/third_party \
+           --proto_path=$(PWD)/../third_party \
+           --go_out=paths=source_relative:. \
+           --validate_out=lang=go,paths=source_relative:. \
+           ./otel/conf.proto \
+           ./registry/conf.proto \
+           ./log/core/conf.proto \
+           ./rpc/conf.proto \
+           ./queue/conf.proto \
+           ./rest/conf.proto \
+           ./store/mongox/conf.proto \
+           ./store/gormx/conf/conf.proto \
+           ./store/redis/conf.proto \
+           ./fs/conf.proto
+
 .PHONY: proto
 proto:
 	protoc --proto_path=. \
@@ -56,19 +76,19 @@ proto:
            --proto_path=$(PWD)/../third_party \
            --go_out=paths=source_relative:. \
            --validate_out=lang=go,paths=source_relative:. \
+           ./meta/meta.proto
+
+.PHONY: ecode
+ecode:
+	protoc --proto_path=. \
+		   --proto_path=$(KRATOS) \
+           --proto_path=$(KRATOS)/api \
+           --proto_path=$(KRATOS)/third_party \
+           --proto_path=$(PWD)/../third_party \
            --go-errors_out=paths=source_relative:. \
-           ./otel/conf.proto \
-           ./meta/meta.proto \
-           ./registry/conf.proto \
-           ./log/core/conf.proto \
-           ./rpc/conf.proto \
-           ./queue/conf.proto \
-           ./rest/conf.proto \
-           ./store/mongox/conf.proto \
-           ./store/gormx/conf/conf.proto \
-           ./store/redis/conf.proto \
-           ./fs/s3/conf.proto \
-           ./fs/google/conf.proto
+           ./meta/ecode.proto \
+           ./fs/s3/ecode.proto \
+           ./fs/google/ecode.proto
 
 .PHONY: swift
 swift:

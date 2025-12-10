@@ -11,15 +11,16 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/go-bamboo/pkg/fs"
 	"github.com/go-bamboo/pkg/log"
 )
 
 type Client struct {
-	c      *Conf
+	c      *fs.Conf
 	client *storage.Client
 }
 
-func New(c *Conf) *Client {
+func New(c *fs.Conf) *Client {
 	client, err := storage.NewClient(context.TODO())
 	if err != nil {
 		log.Fatal(err)

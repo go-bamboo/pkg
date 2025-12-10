@@ -1,6 +1,8 @@
 package base64
 
 import (
+	"encoding/base64"
+
 	"github.com/go-kratos/kratos/v2/encoding"
 )
 
@@ -11,11 +13,13 @@ func init() {
 	encoding.RegisterCodec(codec{})
 }
 
-// codec is a Codec implementation with yaml.
+// codec is a Codec implementation with base64.
 type codec struct{}
 
 func (codec) Marshal(v interface{}) ([]byte, error) {
-	return []byte(""), nil
+	var dst []byte
+	base64.StdEncoding.Encode(dst, v.([]byte))
+	return dst, nil
 }
 
 func (codec) Unmarshal(data []byte, v interface{}) error {

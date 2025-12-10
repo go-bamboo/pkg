@@ -1,0 +1,14 @@
+syntax = "proto3";
+package fs.s3;
+
+option go_package = "github.com/go-bamboo/pkg/fs;fs";
+
+message Conf {
+  string key = 1;
+  string secret = 2;
+  string region = 3;
+  string bucket = 4;
+  string dir = 5;
+  optional string cloud_front = 6; // google
+}
+
