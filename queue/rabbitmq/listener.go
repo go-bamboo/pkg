@@ -13,21 +13,16 @@ import (
 )
 
 type (
-	ConsumeHandle func(ctx context.Context, topic string, key, message []byte) error
-
-	ConsumeHandler interface {
-		Consume(ctx context.Context, topic string, key, message []byte) error
-	}
 	RabbitListener struct {
 		c       *ListenerConf
-		handler ConsumeHandler
+		handler queue.ConsumeHandler
 		ctx     context.Context
 		cf      context.CancelFunc
 		wg      sync.WaitGroup
 	}
 )
 
-func MustNewListener(c *ListenerConf, handler ConsumeHandler) queue.MessageQueue {
+func MustNewListener(c *ListenerConf, handler queue.ConsumeHandler) queue.MessageQueue {
 	listener, err := NewListener(c, handler)
 	if err != nil {
 		log.Fatal(err)
@@ -35,7 +30,7 @@ func MustNewListener(c *ListenerConf, handler ConsumeHandler) queue.MessageQueue
 	return listener
 }
 
-func NewListener(c *ListenerConf, handler ConsumeHandler) (consumer queue.MessageQueue, err error) {
+func NewListener(c *ListenerConf, handler queue.ConsumeHandler) (consumer queue.MessageQueue, err error) {
 	ctx, cf := context.WithCancel(context.Background())
 	listener := &RabbitListener{
 		c:       c,
@@ -43,6 +38,12 @@ func NewListener(c *ListenerConf, handler ConsumeHandler) (consumer queue.Messag
 		ctx:     ctx,
 		cf:      cf,
 	}
+	for i := 0; i < len(listener.c.Queues); i++ {
+		q := listener.c.Queues[i]
+		listener.wg.Add(1)
+		go listener.reconnect(q)
+	}
+	log.Infof("[rabbitmq][listener] start consume %d queue.", len(listener.c.Queues))
 	return listener, nil
 }
 
@@ -50,17 +51,11 @@ func (s *RabbitListener) Name() string {
 	return "rabbitListener"
 }
 
-func (s *RabbitListener) Start(context.Context) error {
-	for i := 0; i < len(s.c.Queues); i++ {
-		q := s.c.Queues[i]
-		s.wg.Add(1)
-		go s.reconnect(q)
-	}
-	log.Infof("[rabbitmq][listener] start consume %d queue.", len(s.c.Queues))
-	return nil
+func (c *RabbitListener) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
+	return nil, nil
 }
 
-func (s *RabbitListener) Stop(context.Context) error {
+func (s *RabbitListener) Close() error {
 	s.cf() // 停掉reconnect
 	s.wg.Wait()
 	log.Infof("[rabbitmq][listener] consumer stopping.")

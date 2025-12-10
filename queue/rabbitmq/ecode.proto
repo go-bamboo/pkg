@@ -1,0 +1,17 @@
+syntax = "proto3";
+package queue.rabbitmq;
+
+import "errors/errors.proto";
+
+option go_package = "github.com/go-bamboo/pkg/queue/rabbitmq;rabbitmq";
+
+enum ErrorReason {
+  // 设置缺省错误码
+  option (errors.default_code) = 500;
+
+  UNKOWN = 0;
+
+  DISCONNECT= 1; // 断链接了
+
+  CHANNEL_CLOSED = 2;  // channel 断了
+}

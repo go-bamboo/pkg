@@ -64,3 +64,11 @@ func RegisterConsumer(name string, factory ConsumerFactory) {
 func CreateConsumer(name string, c *Conf, handler ConsumeHandler) (MessageQueue, error) {
 	return globalRegistry.CreateConsumer(name, c, handler)
 }
+
+func RegisterPusher(name string, factory PusherFactory) {
+	globalRegistry.RegisterPusher(name, factory)
+}
+
+func CreatePusher(name string, c *Conf) (Pusher, error) {
+	return globalRegistry.CreatePusher(name, c)
+}

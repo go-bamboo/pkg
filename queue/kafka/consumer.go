@@ -27,16 +27,14 @@ func init() {
 }
 
 type Consumer struct {
-	c       *queue.Conf
-	handler queue.ConsumeHandler
-
+	c          *queue.Conf
+	handler    map[string]queue.ConsumeHandler
 	sub        *kafka.Reader
 	tracer     trace.Tracer
 	propagator propagation.TextMapPropagator
-
-	wg  sync.WaitGroup
-	ctx context.Context
-	cf  context.CancelFunc
+	wg         sync.WaitGroup
+	ctx        context.Context
+	cf         context.CancelFunc
 }
 
 func MustNewQueue(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
@@ -82,16 +80,17 @@ func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueu
 	}
 	sub := kafka.NewReader(config)
 	tracingSub := &Consumer{
-		c:       c,
-		handler: handler,
-
+		c:          c,
+		handler:    map[string]queue.ConsumeHandler{},
 		sub:        sub,
 		tracer:     otel.Tracer("kafka"),
 		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
-
-		ctx: ctx,
-		cf:  cf,
+		ctx:        ctx,
+		cf:         cf,
 	}
+	tracingSub.wg.Add(1)
+	go tracingSub.consumGroupTopic(tracingSub.ctx)
+	log.Infof("start kafka consumer, topic[%s]", tracingSub.c.Topic)
 	return tracingSub, nil
 }
 
@@ -99,14 +98,11 @@ func (c *Consumer) Name() string {
 	return "kafka"
 }
 
-func (c *Consumer) Start(context.Context) error {
-	c.wg.Add(1)
-	go c.consumGroupTopic(c.ctx)
-	log.Infof("start kafka consumer, topic[%s]", c.c.Topic)
-	return nil
+func (c *Consumer) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
+	return nil, nil
 }
 
-func (c *Consumer) Stop(context.Context) error {
+func (c *Consumer) Close() error {
 	c.cf()
 	c.wg.Wait()
 	c.sub.Close()
@@ -146,7 +142,8 @@ func (c *Consumer) consumGroupTopic(ctx context.Context) {
 				cf()
 				continue
 			}
-			if err := c.handler.Consume(cCtx, c.c.Topic, msg.Key, msg.Value); err != nil {
+			handler := c.handler[msg.Topic]
+			if err := handler.Consume(cCtx, c.c.Topic, msg.Key, msg.Value); err != nil {
 				// 直接放弃的消息
 				se := errors.FromError(err)
 				log.Errorw(fmt.Sprintf("%+v", err), "code", se.Code, "reason", se.Reason, "topic", msg.Topic, "partition", msg.Partition, "offset", msg.Offset)

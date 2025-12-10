@@ -2,7 +2,6 @@ package queue
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/v2/transport"
 )
 
 type (
@@ -13,10 +12,23 @@ type (
 	}
 )
 
+// Subscriber .
+type Subscriber interface {
+	// Options .
+	Options() SubscribeOptions
+
+	// Topic .
+	Topic() string
+
+	// Unsubscribe .
+	Unsubscribe(removeFromManager bool) error
+}
+
 type (
 	// A MessageQueue interface represents a message queue.
 	MessageQueue interface {
-		transport.Server
 		Name() string
+		Subscribe(topic string, handler ConsumeHandle, opts ...SubscribeOption) (Subscriber, error)
+		Close() error
 	}
 )

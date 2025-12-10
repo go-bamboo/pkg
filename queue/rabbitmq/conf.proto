@@ -54,16 +54,7 @@ message AdminQueueConf {
   bool noWait = 6;
 }
 
-enum ErrorReason {
-  // 设置缺省错误码
-  option (errors.default_code) = 500;
 
-  UNKOWN = 0;
-
-  DISCONNECT= 1; // 断链接了
-
-  CHANNEL_CLOSED = 2;  // channel 断了
-}
 
 message Data {
   map<string, string> md = 1;

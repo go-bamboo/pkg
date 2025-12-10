@@ -1,23 +1,16 @@
 package redis
 
 import (
+	"context"
+
 	"github.com/go-bamboo/pkg/log"
-	otelext "github.com/go-bamboo/pkg/otel"
 	"github.com/go-bamboo/pkg/queue"
-	"github.com/go-redis/redis/v8"
-	"github.com/segmentio/kafka-go"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
+	"github.com/go-bamboo/pkg/store/redis"
 )
 
 // Producer 生产者
 type Producer struct {
-	pub        *redis.Client
-	topic      string
-	tracer     trace.Tracer
-	propagator propagation.TextMapPropagator
+	pub *redis.Client
 }
 
 func MustNewProducer(c *queue.Conf) queue.Pusher {
@@ -29,56 +22,39 @@ func MustNewProducer(c *queue.Conf) queue.Pusher {
 }
 
 func NewProducer(c *queue.Conf) (*Producer, error) {
-	pub := kafka.Writer{
-		Addr: kafka.TCP("localhost:9092", "localhost:9093", "localhost:9094"),
+	opts := redis.Conf{
+		Addrs: c.Brokers,
 	}
+	pub := redis.New(&opts)
 	tracingPub := &Producer{
-		tracer:     otel.Tracer("kafka"),
-		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
-		pub:        &pub,
+		pub: pub,
 	}
 	return tracingPub, nil
 }
 
 func (p *Producer) Name() string {
-	return "kafka"
+	return "redis"
 }
 
 func (p *Producer) Push(ctx context.Context, topic string, key, value []byte) error {
-	msg := kafka.Message{
-		Key:   key,
-		Value: value,
+	msg := redis.XAddArgs{
+		Stream: topic,
+		Approx: true,
+		Values: value,
 	}
-	operation := "pub:" + topic
-	ctx, span := p.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindProducer))
-	p.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
-	span.SetAttributes(
-		attribute.String("kafka.topic", topic),
-		attribute.String("kafka.key", string(msg.Key)),
-	)
-	if err := p.pub.WriteMessages(ctx, msg); err != nil {
-		span.RecordError(err)
-		err = WrapError(err)
+	if err := p.pub.XAdd(ctx, &msg).Err(); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (p *Producer) PushWithPartition(ctx context.Context, topic string, key, value []byte, partition int32) error {
-	msg := kafka.Message{
-		Key:   key,
-		Value: value,
+	msg := redis.XAddArgs{
+		Stream: topic,
+		Approx: true,
+		Values: value,
 	}
-	operation := "pub:" + topic
-	ctx, span := p.tracer.Start(ctx, operation, trace.WithSpanKind(trace.SpanKindProducer))
-	p.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
-	span.SetAttributes(
-		attribute.String("kafka.topic", topic),
-		attribute.String("kafka.key", string(msg.Key)),
-	)
-	if err := p.pub.WriteMessages(ctx, msg); err != nil {
-		span.RecordError(err)
-		err = WrapError(err)
+	if err := p.pub.XAdd(ctx, &msg).Err(); err != nil {
 		return err
 	}
 	return nil
