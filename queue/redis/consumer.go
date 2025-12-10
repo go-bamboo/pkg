@@ -48,6 +48,9 @@ func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueu
 		ctx:     ctx,
 		cf:      cf,
 	}
+	tracingSub.wg.Add(1)
+	go tracingSub.consumGroupTopic(ctx)
+	log.Infof("start redis consumer, topic[%s]", tracingSub.c.Topic)
 	return tracingSub, nil
 }
 
@@ -55,14 +58,11 @@ func (c *Consumer) Name() string {
 	return "redis"
 }
 
-func (c *Consumer) Start(context.Context) error {
-	c.wg.Add(1)
-	go c.consumGroupTopic(c.ctx)
-	log.Infof("start redis consumer, topic[%s]", c.c.Topic)
-	return nil
+func (c *Consumer) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
+	return nil, nil
 }
 
-func (c *Consumer) Stop(context.Context) error {
+func (c *Consumer) Close() error {
 	c.cf()
 	c.wg.Wait()
 	c.sub.Close()
