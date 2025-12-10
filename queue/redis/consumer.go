@@ -8,12 +8,9 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/log"
-	otelext "github.com/go-bamboo/pkg/otel"
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
-	"github.com/go-redis/redis/v8"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
+	"github.com/go-bamboo/pkg/store/redis"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -22,41 +19,34 @@ func init() {
 }
 
 type Consumer struct {
-	c          *queue.Conf
-	handler    queue.ConsumeHandler
-	sub        *redis.Client
-	tracer     trace.Tracer
-	propagator propagation.TextMapPropagator
-
-	wg  sync.WaitGroup
-	ctx context.Context
-	cf  context.CancelFunc
+	c       *queue.Conf
+	handler queue.ConsumeHandler
+	sub     *redis.Client
+	wg      sync.WaitGroup
+	ctx     context.Context
+	cf      context.CancelFunc
 }
 
-func MustNewQueue(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
+func MustNewQueue(c *queue.Conf, handler queue.ConsumeHandler) queue.MessageQueue {
 	q, err := NewConsumer(c, handler)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return q, nil
+	return q
 }
 
 func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
 	ctx, cf := context.WithCancel(context.Background())
-	opts := redis.Options{
-		Addr: strings.Join(c.Brokers, ","),
+	opts := redis.Conf{
+		Addrs: c.Brokers,
 	}
-	sub := redis.NewClient(&opts)
+	sub := redis.New(&opts)
 	tracingSub := &Consumer{
 		c:       c,
 		handler: handler,
-
-		sub:        sub,
-		tracer:     otel.Tracer("kafka"),
-		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
-
-		ctx: ctx,
-		cf:  cf,
+		sub:     sub,
+		ctx:     ctx,
+		cf:      cf,
 	}
 	return tracingSub, nil
 }
