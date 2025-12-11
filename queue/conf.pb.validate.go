@@ -245,8 +245,6 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for Namespace
 
-	// no validation rules for Topic
-
 	// no validation rules for Expression
 
 	// no validation rules for Group

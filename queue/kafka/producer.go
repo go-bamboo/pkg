@@ -29,7 +29,7 @@ func MustNewProducer(c *queue.Conf) queue.Pusher {
 	return pub
 }
 
-func NewProducer(c *queue.Conf) (*Producer, error) {
+func NewProducer(c *queue.Conf) (queue.Pusher, error) {
 	pub := kafka.Writer{
 		Addr: kafka.TCP("localhost:9092", "localhost:9093", "localhost:9094"),
 	}

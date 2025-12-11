@@ -14,28 +14,32 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// Name is the name registered for redis
+const Name = "redis"
+
 func init() {
-	queue.RegisterConsumer("redis", NewConsumer)
+	queue.RegisterConsumer(Name, NewConsumer)
+	queue.RegisterPusher(Name, NewProducer)
 }
 
 type Consumer struct {
 	c       *queue.Conf
-	handler queue.ConsumeHandler
+	handler map[string]queue.ConsumeHandle
 	sub     *redis.Client
 	wg      sync.WaitGroup
 	ctx     context.Context
 	cf      context.CancelFunc
 }
 
-func MustNewQueue(c *queue.Conf, handler queue.ConsumeHandler) queue.MessageQueue {
-	q, err := NewConsumer(c, handler)
+func MustNewQueue(c *queue.Conf) queue.MessageQueue {
+	q, err := NewConsumer(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return q
 }
 
-func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
+func NewConsumer(c *queue.Conf) (queue.MessageQueue, error) {
 	ctx, cf := context.WithCancel(context.Background())
 	opts := redis.Conf{
 		Addrs: c.Brokers,
@@ -43,14 +47,13 @@ func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueu
 	sub := redis.New(&opts)
 	tracingSub := &Consumer{
 		c:       c,
-		handler: handler,
+		handler: make(map[string]queue.ConsumeHandle),
 		sub:     sub,
 		ctx:     ctx,
 		cf:      cf,
 	}
-	tracingSub.wg.Add(1)
-	go tracingSub.consumGroupTopic(ctx)
-	log.Infof("start redis consumer, topic[%s]", tracingSub.c.Topic)
+
+	log.Infof("start redis consumer")
 	return tracingSub, nil
 }
 
@@ -59,23 +62,30 @@ func (c *Consumer) Name() string {
 }
 
 func (c *Consumer) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
+	c.handler[topic] = handler
+	c.wg.Add(1)
+	go c.consumGroupTopic(c.ctx, topic)
 	return nil, nil
 }
 
 func (c *Consumer) Close() error {
 	c.cf()
 	c.wg.Wait()
-	c.sub.Close()
-	log.Info("stop redis consumer. topic[%s]", c.c.Topic)
+	err := c.sub.Close()
+	if err != nil {
+		log.Errorf("stop redis consumer: %v", err)
+		return err
+	}
+	log.Info("stop redis consumer")
 	return nil
 }
 
-func (c *Consumer) poll(ctx context.Context, timeoutMs time.Duration) (cctx context.Context, span trace.Span, err error) {
+func (c *Consumer) poll(ctx context.Context, topic string, timeoutMs time.Duration) (cctx context.Context, span trace.Span, err error) {
 	serverTag, _ := os.Hostname()
 	read, err := c.sub.XReadGroup(ctx, &redis.XReadGroupArgs{
 		Group:    c.c.Group,
 		Consumer: serverTag,
-		Streams:  []string{c.c.Topic, ">"},
+		Streams:  []string{topic, ">"},
 		Block:    timeoutMs,
 	}).Result()
 	if err != nil {
@@ -91,15 +101,15 @@ func (c *Consumer) poll(ctx context.Context, timeoutMs time.Duration) (cctx cont
 	return
 }
 
-func (c *Consumer) consumGroupTopic(ctx context.Context) {
+func (c *Consumer) consumGroupTopic(ctx context.Context, topic string) {
 	defer rescue.Recover(func() {
 		c.wg.Done()
 		log.Warnf("redis consumGroupTopic done")
 	})
 	serverTag, _ := os.Hostname()
-	_, err := c.sub.XGroupCreateConsumer(c.ctx, c.c.Topic, c.c.Group, serverTag).Result()
+	_, err := c.sub.XGroupCreateConsumer(c.ctx, topic, c.c.Group, serverTag).Result()
 	if err != nil && !strings.Contains(err.Error(), "BUSYGROUP Consumer Group name already exists") {
-		log.Errorf("StreamGroupCreateConsumer[%v], err: %v", c.c.Topic, err)
+		log.Errorf("StreamGroupCreateConsumer[%v], err: %v", topic, err)
 		return
 	}
 	for {
@@ -109,7 +119,7 @@ func (c *Consumer) consumGroupTopic(ctx context.Context) {
 		default:
 			// ms
 			cCtx, cf := context.WithTimeout(context.TODO(), 60*time.Second)
-			cCtx, _, err := c.poll(cCtx, 100)
+			cCtx, _, err := c.poll(cCtx, topic, 100)
 			if err != nil {
 				log.Errorf("err: %v", err)
 				cf()

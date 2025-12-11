@@ -29,7 +29,6 @@ message Conf {
   Net net = 2;
   bool broadcast = 3;
   string namespace = 4;
-  string topic = 5;
   string expression = 6;
   string group = 7;
   string offset = 8;

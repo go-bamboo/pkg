@@ -15,51 +15,57 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type (
-	RabbitMqSender struct {
-		c           *ProducerConf
-		ContentType string
+type RabbitMqSender struct {
+	c *queue.Conf
+	//ContentType string
 
-		isConnected     atomic.Bool
-		isChannelOpen   atomic.Bool
-		conn            *amqp.Connection
-		channel         *amqp.Channel
-		connCloseErr    chan *amqp.Error
-		channelCloseErr chan *amqp.Error
+	isConnected     atomic.Bool
+	isChannelOpen   atomic.Bool
+	conn            *amqp.Connection
+	channel         *amqp.Channel
+	connCloseErr    chan *amqp.Error
+	channelCloseErr chan *amqp.Error
 
-		tracer     trace.Tracer
-		propagator propagation.TextMapPropagator
+	tracer     trace.Tracer
+	propagator propagation.TextMapPropagator
 
-		wg  sync.WaitGroup
-		ctx context.Context
-		cf  context.CancelFunc
+	wg  sync.WaitGroup
+	ctx context.Context
+	cf  context.CancelFunc
+}
+
+func MustNewSender(c *queue.Conf) queue.Pusher {
+	p, err := NewSender(c)
+	if err != nil {
+		log.Fatalf("new producer err: %v", err)
 	}
-)
+	return p
+}
 
-func MustNewSender(c *ProducerConf) queue.Pusher {
+func NewSender(c *queue.Conf) (queue.Pusher, error) {
 	ctx, cf := context.WithCancel(context.TODO())
 	sender := &RabbitMqSender{
-		c:               c,
-		ContentType:     c.ContentType,
+		c: c,
+		//ContentType:     c.ContentType,
 		connCloseErr:    make(chan *amqp.Error),
 		channelCloseErr: make(chan *amqp.Error),
 
 		ctx: ctx,
 		cf:  cf,
 	}
-	if len(sender.ContentType) <= 0 {
-		sender.ContentType = "text/plain"
-	}
+	//if len(sender.ContentType) <= 0 {
+	//	sender.ContentType = "text/plain"
+	//}
 
 	if err := sender.connect(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	if err := sender.open(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	sender.wg.Add(1)
 	go sender.reconnect()
-	return sender
+	return sender, nil
 }
 
 func (q *RabbitMqSender) Name() string {
@@ -68,10 +74,10 @@ func (q *RabbitMqSender) Name() string {
 
 func (q *RabbitMqSender) Push(ctx context.Context, exchange string, routeKey []byte, msg []byte) error {
 	if !q.isConnected.Load() {
-		return ErrorDisconnect("%v", q.c.Rabbit)
+		return ErrorDisconnect("%v", q.c.Brokers)
 	}
 	if !q.isChannelOpen.Load() {
-		return ErrorChannelClosed("%v", q.c.Rabbit)
+		return ErrorChannelClosed("%v", q.c.Brokers)
 	}
 	header := map[string]interface{}{}
 	body := Client(ctx, msg)
@@ -82,7 +88,7 @@ func (q *RabbitMqSender) Push(ctx context.Context, exchange string, routeKey []b
 		false,
 		amqp.Publishing{
 			Headers:      header,
-			ContentType:  q.ContentType,
+			ContentType:  "text/plain",
 			Body:         body,
 			DeliveryMode: amqp.Persistent,
 		},
@@ -96,10 +102,10 @@ func (q *RabbitMqSender) Push(ctx context.Context, exchange string, routeKey []b
 
 func (q *RabbitMqSender) PushWithPartition(ctx context.Context, exchange string, routeKey []byte, msg []byte, partition int32) error {
 	if !q.isConnected.Load() {
-		return ErrorDisconnect("%v", q.c.Rabbit)
+		return ErrorDisconnect("%v", q.c.Brokers)
 	}
 	if !q.isChannelOpen.Load() {
-		return ErrorChannelClosed("%v", q.c.Rabbit)
+		return ErrorChannelClosed("%v", q.c.Brokers)
 	}
 	header := map[string]interface{}{}
 	body := Client(ctx, msg)
@@ -110,7 +116,7 @@ func (q *RabbitMqSender) PushWithPartition(ctx context.Context, exchange string,
 		false,
 		amqp.Publishing{
 			Headers:      header,
-			ContentType:  q.ContentType,
+			ContentType:  "text/plain",
 			Body:         body,
 			DeliveryMode: amqp.Persistent,
 		},
@@ -141,7 +147,7 @@ func (q *RabbitMqSender) Close() error {
 }
 
 func (q *RabbitMqSender) connect() error {
-	conn, err := amqp.Dial(q.c.Rabbit.URL())
+	conn, err := amqp.Dial(q.c.Brokers[0])
 	if err != nil {
 		return err
 	}

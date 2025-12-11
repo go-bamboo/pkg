@@ -6,13 +6,13 @@ import (
 
 var globalRegistry = NewRegistry()
 
-type ConsumerFactory func(c *Conf, handler ConsumeHandler) (MessageQueue, error)
+type ConsumerFactory func(c *Conf) (MessageQueue, error)
 type PusherFactory func(c *Conf) (Pusher, error)
 
 // Registry is the interface for callers to get registered middleware.
 type Registry interface {
 	RegisterConsumer(name string, factory ConsumerFactory)
-	CreateConsumer(name string, c *Conf, handler ConsumeHandler) (MessageQueue, error)
+	CreateConsumer(name string, c *Conf) (MessageQueue, error)
 	RegisterPusher(name string, factory PusherFactory)
 	CreatePusher(name string, c *Conf) (Pusher, error)
 }
@@ -34,13 +34,13 @@ func (d *discoveryRegistry) RegisterConsumer(name string, factory ConsumerFactor
 	d.c[name] = factory
 }
 
-func (d *discoveryRegistry) CreateConsumer(name string, c *Conf, handler ConsumeHandler) (MessageQueue, error) {
+func (d *discoveryRegistry) CreateConsumer(name string, c *Conf) (MessageQueue, error) {
 	factory, ok := d.c[name]
 	if !ok {
 		return nil, fmt.Errorf("provider %s has not been registered", name)
 	}
 
-	consumer, err := factory(c, handler)
+	consumer, err := factory(c)
 	if err != nil {
 		return nil, fmt.Errorf("create provider error: %s", err)
 	}
@@ -61,8 +61,8 @@ func RegisterConsumer(name string, factory ConsumerFactory) {
 }
 
 // CreateConsumer instantiates a discovery based on `discoveryDSN`.
-func CreateConsumer(name string, c *Conf, handler ConsumeHandler) (MessageQueue, error) {
-	return globalRegistry.CreateConsumer(name, c, handler)
+func CreateConsumer(name string, c *Conf) (MessageQueue, error) {
+	return globalRegistry.CreateConsumer(name, c)
 }
 
 func RegisterPusher(name string, factory PusherFactory) {

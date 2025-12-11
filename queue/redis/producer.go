@@ -21,7 +21,7 @@ func MustNewProducer(c *queue.Conf) queue.Pusher {
 	return pub
 }
 
-func NewProducer(c *queue.Conf) (*Producer, error) {
+func NewProducer(c *queue.Conf) (queue.Pusher, error) {
 	opts := redis.Conf{
 		Addrs: c.Brokers,
 	}

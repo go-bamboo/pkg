@@ -88,7 +88,8 @@ ecode:
            --go-errors_out=paths=source_relative:. \
            ./meta/ecode.proto \
            ./fs/s3/ecode.proto \
-           ./fs/google/ecode.proto
+           ./fs/google/ecode.proto \
+           ./queue/rabbitmq/ecode.proto
 
 .PHONY: swift
 swift:

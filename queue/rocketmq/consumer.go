@@ -19,29 +19,33 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// Name is the name registered for redis
+const Name = "rocketmq"
+
 func init() {
-	queue.RegisterConsumer("rocketmq", NewQueue)
+	queue.RegisterConsumer(Name, NewQueue)
+	queue.RegisterPusher(Name, NewPusher)
 }
 
 type rocketQueue struct {
 	c          *queue.Conf
-	handler    queue.ConsumeHandler
+	handler    map[string]queue.ConsumeHandler
 	sub        v2.PushConsumer
 	tracer     trace.Tracer
 	propagator propagation.TextMapPropagator
 	subCounter metric.Int64Counter // 发送次数
 }
 
-func MustNewQueue(c *queue.Conf, handler queue.ConsumeHandler) queue.MessageQueue {
-	q, err := NewQueue(c, handler)
+func MustNewQueue(c *queue.Conf) queue.MessageQueue {
+	q, err := NewQueue(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return q
 }
 
-func NewQueue(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
-	cc, err := newKafkaQueue(c, handler)
+func NewQueue(c *queue.Conf) (queue.MessageQueue, error) {
+	cc, err := newKafkaQueue(c)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -49,7 +53,7 @@ func NewQueue(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, 
 	return cc, nil
 }
 
-func newKafkaQueue(config *queue.Conf, handler queue.ConsumeHandler) (k *rocketQueue, err error) {
+func newKafkaQueue(config *queue.Conf) (k *rocketQueue, err error) {
 	model := consumer.Clustering
 	if config.Broadcast {
 		model = consumer.BroadCasting
@@ -75,7 +79,7 @@ func newKafkaQueue(config *queue.Conf, handler queue.ConsumeHandler) (k *rocketQ
 	}
 	k = &rocketQueue{
 		c:          config,
-		handler:    handler,
+		handler:    make(map[string]queue.ConsumeHandler),
 		sub:        cs,
 		tracer:     otel.Tracer("rocketmq"),
 		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
@@ -84,23 +88,23 @@ func newKafkaQueue(config *queue.Conf, handler queue.ConsumeHandler) (k *rocketQ
 }
 
 func (c *rocketQueue) Name() string {
-	return "rocketmq"
+	return Name
 }
 
-func (c *rocketQueue) Start(context.Context) error {
+func (c *rocketQueue) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
 	log.Infof("start consumer topic:%v", c.c.Topic)
 	if err := c.consumeGroupTopic(c.c.Topic, c.c.Expression); err != nil {
-		return err
+		return nil, err
 	}
 	if err := c.sub.Start(); err != nil {
 		log.Error(err)
-		return err
+		return nil, err
 	}
 	log.Infof("start rocket consumer.")
-	return nil
+	return nil, nil
 }
 
-func (c *rocketQueue) Stop(context.Context) error {
+func (c *rocketQueue) Close() error {
 	if err := c.sub.Shutdown(); err != nil {
 		return err
 	}
@@ -126,7 +130,8 @@ func (c *rocketQueue) handleMsg(ctx context.Context, msgs ...*primitive.MessageE
 			attribute.String("kafka.topic", msg.Topic),
 			attribute.String("kafka.key", string(msg.GetKeys())),
 		)
-		if err := c.handler.Consume(ctx, msg.Topic, []byte(msg.GetKeys()), msg.Body); err != nil {
+		handler := c.handler[msg.Topic]
+		if err := handler.Consume(ctx, msg.Topic, []byte(msg.GetKeys()), msg.Body); err != nil {
 			span.RecordError(err)
 			se := errors.FromError(err)
 			log.Errorw(fmt.Sprintf("%+v", err), "code", se.Code, "reason", se.Reason)

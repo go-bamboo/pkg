@@ -22,13 +22,17 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// Name is the name registered for kafka
+const Name = "kafka"
+
 func init() {
-	queue.RegisterConsumer("kafka", NewConsumer)
+	queue.RegisterConsumer(Name, NewConsumer)
+	queue.RegisterPusher(Name, NewProducer)
 }
 
 type Consumer struct {
 	c          *queue.Conf
-	handler    map[string]queue.ConsumeHandler
+	handler    map[string]queue.ConsumeHandle
 	sub        *kafka.Reader
 	tracer     trace.Tracer
 	propagator propagation.TextMapPropagator
@@ -37,15 +41,15 @@ type Consumer struct {
 	cf         context.CancelFunc
 }
 
-func MustNewQueue(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
-	q, err := NewConsumer(c, handler)
+func MustNewQueue(c *queue.Conf) (queue.MessageQueue, error) {
+	q, err := NewConsumer(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return q, nil
 }
 
-func NewConsumer(c *queue.Conf, handler queue.ConsumeHandler) (queue.MessageQueue, error) {
+func NewConsumer(c *queue.Conf) (queue.MessageQueue, error) {
 	// Load client cert
 	//cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	//if err != nil {
@@ -106,7 +110,7 @@ func (c *Consumer) Close() error {
 	c.cf()
 	c.wg.Wait()
 	c.sub.Close()
-	log.Info("stop kafka consumer. topic[%s]", c.c.Topic)
+	log.Info("stop kafka consumer. topic")
 	return nil
 }
 
@@ -143,7 +147,7 @@ func (c *Consumer) consumGroupTopic(ctx context.Context) {
 				continue
 			}
 			handler := c.handler[msg.Topic]
-			if err := handler.Consume(cCtx, c.c.Topic, msg.Key, msg.Value); err != nil {
+			if err := handler(cCtx, msg.Topic, msg.Key, msg.Value); err != nil {
 				// 直接放弃的消息
 				se := errors.FromError(err)
 				log.Errorw(fmt.Sprintf("%+v", err), "code", se.Code, "reason", se.Reason, "topic", msg.Topic, "partition", msg.Partition, "offset", msg.Offset)

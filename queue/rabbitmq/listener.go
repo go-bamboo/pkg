@@ -3,47 +3,50 @@ package rabbitmq
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
-	"github.com/go-kratos/kratos/v2/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type (
-	RabbitListener struct {
-		c       *ListenerConf
-		handler queue.ConsumeHandler
-		ctx     context.Context
-		cf      context.CancelFunc
-		wg      sync.WaitGroup
-	}
-)
+// Name is the name registered for kafka
+const Name = "rabbitmq"
 
-func MustNewListener(c *ListenerConf, handler queue.ConsumeHandler) queue.MessageQueue {
-	listener, err := NewListener(c, handler)
+func init() {
+	queue.RegisterConsumer(Name, NewListener)
+	queue.RegisterPusher(Name, NewSender)
+}
+
+type RabbitListener struct {
+	c       *queue.Conf
+	topic   chan string
+	handler map[string]queue.ConsumeHandle
+	ctx     context.Context
+	cf      context.CancelFunc
+	wg      sync.WaitGroup
+}
+
+func MustNewListener(c *queue.Conf) queue.MessageQueue {
+	listener, err := NewListener(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return listener
 }
 
-func NewListener(c *ListenerConf, handler queue.ConsumeHandler) (consumer queue.MessageQueue, err error) {
+func NewListener(c *queue.Conf) (consumer queue.MessageQueue, err error) {
 	ctx, cf := context.WithCancel(context.Background())
 	listener := &RabbitListener{
 		c:       c,
-		handler: handler,
+		topic:   make(chan string),
+		handler: make(map[string]queue.ConsumeHandle),
 		ctx:     ctx,
 		cf:      cf,
 	}
-	for i := 0; i < len(listener.c.Queues); i++ {
-		q := listener.c.Queues[i]
-		listener.wg.Add(1)
-		go listener.reconnect(q)
-	}
-	log.Infof("[rabbitmq][listener] start consume %d queue.", len(listener.c.Queues))
+	listener.wg.Add(1)
+	go listener.reconnect()
+	log.Infof("[rabbitmq][listener] start consume queue.")
 	return listener, nil
 }
 
@@ -51,7 +54,9 @@ func (s *RabbitListener) Name() string {
 	return "rabbitListener"
 }
 
-func (c *RabbitListener) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
+func (s *RabbitListener) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
+	s.handler[topic] = handler
+	s.topic <- topic
 	return nil, nil
 }
 
@@ -123,51 +128,6 @@ func (s *RabbitListener) consume(ctx context.Context, topic string, msg *amqp.De
 	defer rescue.Recover(func() {
 		cf()
 	})
-	return s.handler.Consume(c, topic, []byte(msg.RoutingKey), d)
-}
-
-func (s *RabbitListener) reconnect(c *ConsumerConf) {
-	defer rescue.Recover(func() {
-		s.wg.Done()
-	})
-handleReconnect:
-	var connCloseErr chan *amqp.Error = make(chan *amqp.Error)
-	var channelCloseErr chan *amqp.Error = make(chan *amqp.Error)
-	conn, err := amqp.Dial(s.c.Rabbit.URL())
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	conn.NotifyClose(connCloseErr)
-	channel, err := conn.Channel()
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	channel.NotifyClose(channelCloseErr)
-	s.wg.Add(1)
-	go s.run(context.TODO(), channel, c)
-	for {
-		select {
-		case <-s.ctx.Done():
-			log.Infof("[rabbitmq][listener] listener reconnect close")
-			return
-		case err := <-channelCloseErr:
-			if err != nil && errors.Is(err, amqp.ErrClosed) {
-				log.Errorf("[rabbitmq][listener] channel close notify: %v", err)
-			} else if err != nil {
-				log.Error(err)
-			}
-			time.Sleep(1 * time.Second)
-			goto handleReconnect
-		case err := <-connCloseErr:
-			if err != nil && errors.Is(err, amqp.ErrClosed) {
-				log.Errorf("[rabbitmq][listener] conn close notify: %v", err)
-			} else if err != nil {
-				log.Error(err)
-			}
-			time.Sleep(1 * time.Second)
-			goto handleReconnect
-		}
-	}
+	handler := s.handler[topic]
+	return handler(c, topic, []byte(msg.RoutingKey), d)
 }
