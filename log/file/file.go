@@ -1,6 +1,9 @@
 package file
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/go-bamboo/pkg/log/core"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -56,32 +59,17 @@ func NewFileCore(opts ...Option) core.Logger {
 	}
 	hooks := make([]*lumberjack.Logger, 0)
 	cores := make([]zapcore.Core, 0)
-	if _options.l <= zapcore.ErrorLevel {
-		c, hook := newCore(&_options, zapcore.ErrorLevel)
-		cores = append(cores, c)
-		hooks = append(hooks, hook)
-	}
-	if _options.l <= zapcore.WarnLevel {
-		c, hook := newCore(&_options, zapcore.WarnLevel)
-		cores = append(cores, c)
-		hooks = append(hooks, hook)
-	}
-	if _options.l <= zapcore.InfoLevel {
-		c, hook := newCore(&_options, zapcore.InfoLevel)
-		cores = append(cores, c)
-		hooks = append(hooks, hook)
-	}
-	if _options.l <= zapcore.DebugLevel {
-		c, hook := newCore(&_options, zapcore.DebugLevel)
-		cores = append(cores, c)
-		hooks = append(hooks, hook)
-	}
-	c := zapcore.NewTee(cores...)
-	return &fileCore{
+	c, hook := newCore(&_options, _options.l)
+	cores = append(cores, c)
+	hooks = append(hooks, hook)
+	tee := zapcore.NewTee(cores...)
+	fc := &fileCore{
 		opts:  _options,
 		hooks: hooks,
-		core:  c,
+		core:  tee,
 	}
+	go fc.rotate()
+	return fc
 }
 
 func (c *fileCore) Close() {
@@ -96,11 +84,11 @@ func (c *fileCore) Enabled(lvl zapcore.Level) bool {
 
 // With 复制操作
 func (c *fileCore) With(fields []zapcore.Field) zapcore.Core {
-	core := c.core.With(fields)
+	co := c.core.With(fields)
 	return &fileCore{
 		opts:  c.opts,
 		hooks: c.hooks,
-		core:  core,
+		core:  co,
 	}
 }
 
@@ -115,4 +103,22 @@ func (c *fileCore) Write(ent zapcore.Entry, fields []zapcore.Field) error {
 
 func (c *fileCore) Sync() error {
 	return c.core.Sync()
+}
+
+func (c *fileCore) rotate() {
+	for {
+		now := time.Now()
+		// 计算距离明天 00:00:01 的时间差
+		next := now.Add(time.Hour * 24)
+		next = time.Date(next.Year(), next.Month(), next.Day(), 0, 0, 1, 0, next.Location())
+		t := time.NewTimer(next.Sub(now))
+
+		<-t.C
+		// 触发滚动
+		for _, hook := range c.hooks {
+			if err := hook.Rotate(); err != nil {
+				fmt.Printf("rotate hook err: %v\n", err)
+			}
+		}
+	}
 }
