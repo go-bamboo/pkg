@@ -37,9 +37,9 @@ func WithPath(path string) Option {
 
 // wrap tee
 type fileCore struct {
-	opts  options
-	hooks []*lumberjack.Logger
-	core  zapcore.Core
+	opts options
+	hook *lumberjack.Logger
+	core zapcore.Core
 }
 
 // NewFileCore new a zap logger with options.
@@ -57,25 +57,18 @@ func NewFileCore(opts ...Option) core.Logger {
 	if len(_options.name) < 0 {
 		_options.name = "default"
 	}
-	hooks := make([]*lumberjack.Logger, 0)
-	cores := make([]zapcore.Core, 0)
 	c, hook := newCore(&_options, _options.l)
-	cores = append(cores, c)
-	hooks = append(hooks, hook)
-	tee := zapcore.NewTee(cores...)
 	fc := &fileCore{
-		opts:  _options,
-		hooks: hooks,
-		core:  tee,
+		opts: _options,
+		hook: hook,
+		core: c,
 	}
 	go fc.rotate()
 	return fc
 }
 
 func (c *fileCore) Close() {
-	for _, hook := range c.hooks {
-		hook.Close()
-	}
+	c.hook.Close()
 }
 
 func (c *fileCore) Enabled(lvl zapcore.Level) bool {
@@ -86,9 +79,9 @@ func (c *fileCore) Enabled(lvl zapcore.Level) bool {
 func (c *fileCore) With(fields []zapcore.Field) zapcore.Core {
 	co := c.core.With(fields)
 	return &fileCore{
-		opts:  c.opts,
-		hooks: c.hooks,
-		core:  co,
+		opts: c.opts,
+		hook: c.hook,
+		core: co,
 	}
 }
 
@@ -108,17 +101,14 @@ func (c *fileCore) Sync() error {
 func (c *fileCore) rotate() {
 	for {
 		now := time.Now()
-		// 计算距离明天 00:00:01 的时间差
-		next := now.Add(time.Hour * 24)
-		next = time.Date(next.Year(), next.Month(), next.Day(), 0, 0, 1, 0, next.Location())
+		// 计算距离今天 23:59:59 的时间差
+		next := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
 		t := time.NewTimer(next.Sub(now))
 
 		<-t.C
 		// 触发滚动
-		for _, hook := range c.hooks {
-			if err := hook.Rotate(); err != nil {
-				fmt.Printf("rotate hook err: %v\n", err)
-			}
+		if err := c.hook.Rotate(); err != nil {
+			fmt.Printf("rotate hook err: %v\n", err)
 		}
 	}
 }
