@@ -15,7 +15,7 @@ func getFilePath(dir, prefix string) string {
 func getWriter(path, prefix string) (zapcore.WriteSyncer, *lumberjack.Logger) {
 	hook := lumberjack.Logger{
 		Filename:   getFilePath(path, prefix), // 日志文件路径
-		MaxSize:    128,                       // 每个日志文件保存的最大尺寸 单位：M
+		MaxSize:    24,                        // 每个日志文件保存的最大尺寸 单位：M
 		MaxBackups: 300,                       // 日志文件最多保存多少个备份
 		MaxAge:     365,                       // 文件最多保存多少天
 		Compress:   false,                     // 是否压缩
