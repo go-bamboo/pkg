@@ -14,5 +14,8 @@ func Create(c *core.Conf) (core.Logger, error) {
 		Level(zapcore.Level(c.Level)),
 		WithPath(c.Path),
 		WithName(c.LogGroupName),
+		WithMaxSize(int(c.FileMaxSize)),
+		WithMaxAge(int(c.FileMaxAge)),
+		WithMaxBackups(int(c.FileMaxBackups)),
 	), nil
 }

@@ -12,9 +12,12 @@ import (
 type Option func(*options)
 
 type options struct {
-	l    zapcore.Level
-	name string
-	path string
+	l          zapcore.Level
+	name       string
+	path       string
+	maxSize    int
+	maxBackups int
+	maxAge     int
 }
 
 func Level(l zapcore.Level) Option {
@@ -35,6 +38,30 @@ func WithPath(path string) Option {
 	}
 }
 
+func WithMaxSize(maxSize int) Option {
+	return func(c *options) {
+		if maxSize > 0 {
+			c.maxSize = maxSize
+		}
+	}
+}
+
+func WithMaxBackups(maxBackups int) Option {
+	return func(c *options) {
+		if maxBackups > 0 {
+			c.maxBackups = maxBackups
+		}
+	}
+}
+
+func WithMaxAge(maxAge int) Option {
+	return func(c *options) {
+		if maxAge > 0 {
+			c.maxAge = maxAge
+		}
+	}
+}
+
 // wrap tee
 type fileCore struct {
 	opts options
@@ -45,8 +72,11 @@ type fileCore struct {
 // NewFileCore new a zap logger with options.
 func NewFileCore(opts ...Option) core.Logger {
 	_options := options{
-		l:    zapcore.DebugLevel,
-		name: "default",
+		l:          zapcore.DebugLevel,
+		name:       "default",
+		maxSize:    64,
+		maxBackups: 1000,
+		maxAge:     365,
 	}
 	for _, o := range opts {
 		o(&_options)

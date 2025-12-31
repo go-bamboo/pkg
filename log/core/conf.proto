@@ -24,4 +24,7 @@ message Conf {
   string region = 7;
   string profile = 8;
   string logGroupName = 9;
+  int32 fileMaxSize = 10;
+  int32 fileMaxBackups = 11;
+  int32 fileMaxAge = 12;
 }

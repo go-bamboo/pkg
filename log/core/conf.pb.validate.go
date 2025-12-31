@@ -74,6 +74,12 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for LogGroupName
 
+	// no validation rules for FileMaxSize
+
+	// no validation rules for FileMaxBackups
+
+	// no validation rules for FileMaxAge
+
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
 	}
