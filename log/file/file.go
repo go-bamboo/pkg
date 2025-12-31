@@ -110,5 +110,6 @@ func (c *fileCore) rotate() {
 		if err := c.hook.Rotate(); err != nil {
 			fmt.Printf("rotate hook err: %v\n", err)
 		}
+		time.Sleep(time.Minute * 2)
 	}
 }
