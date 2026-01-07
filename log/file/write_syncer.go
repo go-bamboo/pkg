@@ -27,7 +27,7 @@ func getWriter(path, prefix string, maxSize int, maxBackups int, maxAge int) (za
 
 func newCore(_options *options, lvl zapcore.Level) (zapcore.Core, *lumberjack.Logger) {
 	encoderConfig := zap.NewDevelopmentEncoderConfig()
-	w, hook := getWriter(_options.path, _options.name)
+	w, hook := getWriter(_options.path, _options.name, _options.maxSize, _options.maxBackups, _options.maxAge)
 	return zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderConfig), // 编码器配置
 		w,
