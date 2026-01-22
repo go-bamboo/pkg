@@ -17,6 +17,7 @@ type options struct {
 	metaAddr       string
 	skipLocalCache bool
 	logger         agollo.Logger
+	format         string
 }
 
 func AppID(appID string) Option {
@@ -53,6 +54,12 @@ func SkipLocalCache() Option {
 func WithLogger(logger agollo.Logger) Option {
 	return func(o *options) {
 		o.logger = logger
+	}
+}
+
+func WithFormat(format string) Option {
+	return func(o *options) {
+		o.format = format
 	}
 }
 
@@ -96,13 +103,13 @@ func (c *Config) Load() ([]*config.KeyValue, error) {
 		{
 			Key:    c.opts.namespaceNames[0],
 			Value:  []byte(content),
-			Format: "yaml",
+			Format: c.opts.format,
 		},
 	}, nil
 }
 
 func (c *Config) Watch() (config.Watcher, error) {
-	watcher := newWatcher(c.opts.logger, c.opts.namespaceNames[0])
+	watcher := newWatcher(c.opts.logger, c.opts.namespaceNames[0], c.opts.format)
 	c.client.OnUpdate(func(ce *agollo.ChangeEvent) {
 		watcher.onChange(ce)
 	})
@@ -111,15 +118,17 @@ func (c *Config) Watch() (config.Watcher, error) {
 
 type Watcher struct {
 	namespaceID string
+	format      string
 	content     chan string
 
 	context.Context
 	cancel context.CancelFunc
 }
 
-func newWatcher(logger agollo.Logger, namespaceID string) *Watcher {
+func newWatcher(logger agollo.Logger, namespaceID string, format string) *Watcher {
 	w := &Watcher{
 		namespaceID: namespaceID,
+		format:      format,
 		content:     make(chan string),
 	}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -148,7 +157,7 @@ func (w *Watcher) Next() ([]*config.KeyValue, error) {
 			{
 				Key:    w.namespaceID,
 				Value:  []byte(content),
-				Format: "yaml",
+				Format: w.format,
 			},
 		}, nil
 	}

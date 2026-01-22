@@ -1,10 +1,11 @@
 package apollo
 
 import (
+	"net/url"
+
 	"github.com/go-bamboo/pkg/config"
 	"github.com/go-bamboo/pkg/log"
-	"gopkg.in/yaml.v3"
-	"net/url"
+	"github.com/go-kratos/kratos/v2/encoding"
 )
 
 func init() {
@@ -25,7 +26,7 @@ func Create(uri *url.URL, v interface{}) (config.Config, error) {
 				WithLogger(log.GetLogger())),
 		),
 		config.WithDecoder(func(kv *config.KeyValue, v map[string]interface{}) error {
-			return yaml.Unmarshal(kv.Value, v)
+			return encoding.GetCodec(kv.Format).Unmarshal(kv.Value, v)
 		}))
 	if err := c.Load(); err != nil {
 		return nil, err

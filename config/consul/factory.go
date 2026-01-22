@@ -1,10 +1,11 @@
 package consul
 
 import (
-	"github.com/go-bamboo/pkg/config"
-	"github.com/hashicorp/consul/api"
-	"gopkg.in/yaml.v3"
 	"net/url"
+
+	"github.com/go-bamboo/pkg/config"
+	"github.com/go-kratos/kratos/v2/encoding"
+	"github.com/hashicorp/consul/api"
 )
 
 func init() {
@@ -25,7 +26,7 @@ func Create(uri *url.URL, v interface{}) (config.Config, error) {
 	c := config.New(
 		config.WithSource(cs),
 		config.WithDecoder(func(kv *config.KeyValue, v map[string]interface{}) error {
-			return yaml.Unmarshal(kv.Value, v)
+			return encoding.GetCodec(kv.Format).Unmarshal(kv.Value, v)
 		}))
 	if err := c.Load(); err != nil {
 		panic(err)
