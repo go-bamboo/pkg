@@ -65,8 +65,6 @@ func (codec) Unmarshal(data []byte, v interface{}) error {
 			for _, key := range section.Keys() {
 				val := key.Value()
 				keyName := key.Name()
-				fmt.Println("keyName:", keyName, "val:", val, "section:", section.Name())
-
 				// 2. 判断是否有双引号包裹
 				if strings.HasPrefix(val, `"`) && strings.HasSuffix(val, `"`) {
 					// 发现引号：说明用户想强行指定为字符串
