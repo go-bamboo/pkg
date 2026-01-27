@@ -16,7 +16,11 @@ var (
 const KEY_NACOS = "NACOS_ADDRESS"
 
 func init() {
-	flag.StringVar(&conf, "conf", "file:///../../configs/conf.yaml", "url for config eg: file:///../../configs/conf.yaml")
+	defaultConf := os.Getenv("APP_CONF")
+	if defaultConf == "" {
+		defaultConf = "file:///../../configs/conf.yaml" // 默认值
+	}
+	flag.StringVar(&conf, "conf", defaultConf, "url for config eg: file:///../../configs/conf.yaml")
 }
 
 type Value = config.Value
@@ -29,38 +33,38 @@ var New = config.New
 var WithSource = config.WithSource
 var WithDecoder = config.WithDecoder
 
-func Load(conf string, v interface{}) config.Config {
+func Load(conf string, v interface{}, format string) config.Config {
 	uri, err := url.Parse(conf)
 	if err != nil {
 		panic(err)
 	}
-	c, err := Create(uri, v)
+	c, err := Create(uri, v, format)
 	if err != nil {
 		panic(err)
 	}
 	return c
 }
 
-func LoadEnv(v interface{}) config.Config {
+func LoadEnv(v interface{}, format string) config.Config {
 	conf := os.Getenv(KEY_NACOS)
 	uri, err := url.Parse(conf)
 	if err != nil {
 		panic(err)
 	}
-	c, err := Create(uri, v)
+	c, err := Create(uri, v, format)
 	if err != nil {
 		panic(err)
 	}
 	return c
 }
 
-func LoadFlag(v interface{}) config.Config {
+func LoadFlag(v interface{}, format string) config.Config {
 	flag.Parse()
 	uri, err := url.Parse(conf)
 	if err != nil {
 		panic(err)
 	}
-	c, err := Create(uri, v)
+	c, err := Create(uri, v, format)
 	if err != nil {
 		panic(err)
 	}

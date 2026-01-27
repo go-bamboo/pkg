@@ -11,10 +11,10 @@ import (
 )
 
 func init() {
-	config.Register("file", Create)
+	config.Register("nacos", Create)
 }
 
-func Create(uri *url.URL, v interface{}) (config.Config, error) {
+func Create(uri *url.URL, v interface{}, format string) (config.Config, error) {
 	q := uri.Query()
 	namespace := q.Get("namespace")
 	group := q.Get("group")
@@ -40,7 +40,7 @@ func Create(uri *url.URL, v interface{}) (config.Config, error) {
 	if err != nil {
 		panic(err)
 	}
-	source := NewConfigSource(client, WithGroup(group), WithDataID(dataId+".yaml"))
+	source := NewConfigSource(client, WithGroup(group), WithDataID(dataId+"."+format))
 	c := config.New(
 		config.WithSource(source),
 		config.WithDecoder(func(kv *config.KeyValue, v map[string]interface{}) error {

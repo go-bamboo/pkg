@@ -9,10 +9,10 @@ import (
 )
 
 func init() {
-	config.Register("file", Create)
+	config.Register("consul", Create)
 }
 
-func Create(uri *url.URL, v interface{}) (config.Config, error) {
+func Create(uri *url.URL, v interface{}, format string) (config.Config, error) {
 	consulConfig := api.DefaultConfig()
 	consulConfig.Address = uri.Host
 	consulClient, err := api.NewClient(consulConfig)

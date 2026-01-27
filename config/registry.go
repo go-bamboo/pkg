@@ -9,12 +9,12 @@ import (
 
 var globalRegistry = NewRegistry()
 
-type Factory func(dsn *url.URL, v interface{}) (config.Config, error)
+type Factory func(dsn *url.URL, v interface{}, format string) (config.Config, error)
 
 // Registry is the interface for callers to get registered middleware.
 type Registry interface {
 	Register(name string, factory Factory)
-	Create(dsn *url.URL, v interface{}) (config.Config, error)
+	Create(dsn *url.URL, v interface{}, format string) (config.Config, error)
 }
 
 type configRegistry struct {
@@ -32,16 +32,14 @@ func (d *configRegistry) Register(name string, factory Factory) {
 	d.discovery[name] = factory
 }
 
-func (d *configRegistry) Create(dsn *url.URL, v interface{}) (config.Config, error) {
-
+func (d *configRegistry) Create(dsn *url.URL, v interface{}, format string) (config.Config, error) {
 	factory, ok := d.discovery[dsn.Scheme]
 	if !ok {
-		return nil, fmt.Errorf("discovery %s has not been registered", dsn.Scheme)
+		return nil, fmt.Errorf("config source %s has not been registered", dsn.Scheme)
 	}
-
-	impl, err := factory(dsn, v)
+	impl, err := factory(dsn, v, format)
 	if err != nil {
-		return nil, fmt.Errorf("create discovery error: %s", err)
+		return nil, fmt.Errorf("create config error: %s", err)
 	}
 	return impl, nil
 }
@@ -52,6 +50,6 @@ func Register(name string, factory Factory) {
 }
 
 // Create instantiates a discovery based on `discoveryDSN`.
-func Create(dsn *url.URL, v interface{}) (config.Config, error) {
-	return globalRegistry.Create(dsn, v)
+func Create(dsn *url.URL, v interface{}, format string) (config.Config, error) {
+	return globalRegistry.Create(dsn, v, format)
 }

@@ -12,7 +12,7 @@ func init() {
 	config.Register("apollo", Create)
 }
 
-func Create(uri *url.URL, v interface{}) (config.Config, error) {
+func Create(uri *url.URL, v interface{}, format string) (config.Config, error) {
 	q := uri.Query()
 	appId := q.Get("appid")
 	namespace := q.Get("ns")
@@ -20,10 +20,12 @@ func Create(uri *url.URL, v interface{}) (config.Config, error) {
 		config.WithSource(
 			NewConfigSource(
 				AppID(appId),
-				Namespaces(namespace+".yaml"),
+				Namespaces(namespace+"."+format),
 				MetaAddr("http://"+uri.Host),
 				SkipLocalCache(),
-				WithLogger(log.GetLogger())),
+				WithLogger(log.GetLogger()),
+				WithFormat(format),
+			),
 		),
 		config.WithDecoder(func(kv *config.KeyValue, v map[string]interface{}) error {
 			return encoding.GetCodec(kv.Format).Unmarshal(kv.Value, v)

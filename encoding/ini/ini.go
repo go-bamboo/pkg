@@ -1,7 +1,11 @@
-package yaml
+package ini
 
 import (
 	"bytes"
+	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/go-kratos/kratos/v2/encoding"
 	"gopkg.in/ini.v1"
@@ -41,17 +45,59 @@ func (codec) Marshal(v interface{}) ([]byte, error) {
 }
 
 func (codec) Unmarshal(data []byte, v interface{}) error {
-	cfg, err := ini.Load(data)
+	cfg, err := ini.LoadSources(ini.LoadOptions{
+		PreserveSurroundedQuote:  true, // 设置为 false，保留引号和转义符
+		SpaceBeforeInlineComment: true,
+	}, data)
 	if err != nil {
+		fmt.Println("load err:", err)
 		return err
 	}
+	rv := reflect.ValueOf(v)
+	// 基础检查：必须是指针且不为空
+	if rv.Kind() == reflect.Ptr {
+		return cfg.MapTo(v)
+	} else if rv.Kind() == reflect.Map {
+		// 遍历所有 Section
+		for _, section := range cfg.Sections() {
+			sectionMap := make(map[string]any)
 
-	// 3. 映射到结构体
-	err = cfg.MapTo(v)
-	if err != nil {
-		return err
+			for _, key := range section.Keys() {
+				val := key.Value()
+				keyName := key.Name()
+				fmt.Println("keyName:", keyName, "val:", val, "section:", section.Name())
+
+				// 2. 判断是否有双引号包裹
+				if strings.HasPrefix(val, `"`) && strings.HasSuffix(val, `"`) {
+					// 发现引号：说明用户想强行指定为字符串
+					// 我们去掉引号后，直接存入 Map，跳过后续的 bool/int 转换
+					sectionMap[keyName] = strings.Trim(val, `"`)
+				} else {
+					// 无引号：进入自动类型匹配逻辑
+					if boolVal, err := strconv.ParseBool(val); err == nil && val != "0" {
+						sectionMap[keyName] = boolVal
+					} else if intVal, err := strconv.ParseInt(val, 10, 64); err == nil {
+						sectionMap[keyName] = intVal
+					} else {
+						// 兜底：普通的字符串
+						sectionMap[keyName] = val
+					}
+				}
+			}
+			// 注意：INI 默认有一个 "DEFAULT" section
+			if section.Name() == "DEFAULT" {
+				for key, value := range sectionMap {
+					rv.SetMapIndex(reflect.ValueOf(key), reflect.ValueOf(value))
+				}
+			} else {
+				// 将 Section 存入主 Map
+				rv.SetMapIndex(reflect.ValueOf(section.Name()), reflect.ValueOf(sectionMap))
+			}
+		}
+		return nil
+	} else {
+		return fmt.Errorf("v(%v) must be a non-nil pointer", rv.Kind())
 	}
-	return nil
 }
 
 func (codec) Name() string {

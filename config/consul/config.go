@@ -14,8 +14,9 @@ import (
 type Option func(o *options)
 
 type options struct {
-	ctx  context.Context
-	path string
+	ctx    context.Context
+	path   string
+	format string
 }
 
 // WithContext with registry context.
@@ -29,6 +30,12 @@ func WithContext(ctx context.Context) Option {
 func WithPath(p string) Option {
 	return func(o *options) {
 		o.path = p
+	}
+}
+
+func WithFormat(f string) Option {
+	return func(o *options) {
+		o.format = f
 	}
 }
 
