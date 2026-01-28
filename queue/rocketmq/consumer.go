@@ -29,7 +29,7 @@ func init() {
 
 type rocketQueue struct {
 	c          *queue.Conf
-	handler    map[string]queue.ConsumeHandler
+	handler    map[string]queue.ConsumeHandle
 	sub        v2.PushConsumer
 	tracer     trace.Tracer
 	propagator propagation.TextMapPropagator
@@ -79,7 +79,7 @@ func newKafkaQueue(config *queue.Conf) (k *rocketQueue, err error) {
 	}
 	k = &rocketQueue{
 		c:          config,
-		handler:    make(map[string]queue.ConsumeHandler),
+		handler:    make(map[string]queue.ConsumeHandle),
 		sub:        cs,
 		tracer:     otel.Tracer("rocketmq"),
 		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
@@ -92,8 +92,8 @@ func (c *rocketQueue) Name() string {
 }
 
 func (c *rocketQueue) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
-	log.Infof("start consumer topic:%v", c.c.Topic)
-	if err := c.consumeGroupTopic(c.c.Topic, c.c.Expression); err != nil {
+	log.Infof("start consumer topic:%v", topic)
+	if err := c.consumeGroupTopic(topic, c.c.Expression); err != nil {
 		return nil, err
 	}
 	if err := c.sub.Start(); err != nil {
@@ -131,7 +131,7 @@ func (c *rocketQueue) handleMsg(ctx context.Context, msgs ...*primitive.MessageE
 			attribute.String("kafka.key", string(msg.GetKeys())),
 		)
 		handler := c.handler[msg.Topic]
-		if err := handler.Consume(ctx, msg.Topic, []byte(msg.GetKeys()), msg.Body); err != nil {
+		if err := handler(ctx, msg.Topic, []byte(msg.GetKeys()), msg.Body); err != nil {
 			span.RecordError(err)
 			se := errors.FromError(err)
 			log.Errorw(fmt.Sprintf("%+v", err), "code", se.Code, "reason", se.Reason)
