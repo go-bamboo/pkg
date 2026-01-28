@@ -14,7 +14,7 @@ type Logger struct {
 }
 
 func NewLogger(core zapcore.Core, enabled bool) *Logger {
-	logger := log.NewLogger(core, 1)
+	logger := log.NewLogger(core, log.WithSkip(1))
 	l := &Logger{
 		ZapLogger: *logger,
 		enabled:   enabled,
