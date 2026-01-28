@@ -85,6 +85,7 @@ ecode:
            --proto_path=$(KRATOS)/api \
            --proto_path=$(KRATOS)/third_party \
            --proto_path=$(PWD)/../third_party \
+           --go_out=paths=source_relative:. \
            --go-errors_out=paths=source_relative:. \
            ./meta/ecode.proto \
            ./fs/s3/ecode.proto \
