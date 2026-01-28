@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/go-bamboo/pkg/store/gormx/conf"
-	"github.com/go-bamboo/pkg/store/gormx/ecode"
 	"github.com/go-kratos/kratos/v2/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -153,7 +152,7 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 	}
 	elapsed := time.Since(begin)
 	switch {
-	case err != nil && l.level >= logger.Error && (!ecode.IsGormErrRecordNotFound(err) || !l.c.IgnoreRecordNotFoundError):
+	case err != nil && l.level >= logger.Error && (!errors.Is(err, gorm.ErrRecordNotFound) || !l.c.IgnoreRecordNotFoundError):
 		if errors.Is(err, gorm.ErrRecordNotFound) && l.c.IgnoreRecordNotFoundError {
 			return
 		}

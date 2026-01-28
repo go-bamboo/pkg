@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: isbang/compose-action@v1.5.1
+    - uses: hoverkraft-tech/compose-action@05da55b2bb8a5a759d1c4732095044bd9018c050
       with:
         compose-file: "./docker/docker-compose.yml"
 
