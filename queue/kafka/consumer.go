@@ -31,14 +31,11 @@ func init() {
 }
 
 type Consumer struct {
-	c          *queue.Conf
-	handler    map[string]queue.ConsumeHandle
-	sub        *kafka.Reader
-	tracer     trace.Tracer
-	propagator propagation.TextMapPropagator
-	wg         sync.WaitGroup
-	ctx        context.Context
-	cf         context.CancelFunc
+	c       *queue.Conf
+	handler map[string]queue.ConsumeHandle
+	wg      sync.WaitGroup
+	ctx     context.Context
+	cf      context.CancelFunc
 }
 
 func MustNewQueue(c *queue.Conf) (queue.MessageQueue, error) {
@@ -50,6 +47,22 @@ func MustNewQueue(c *queue.Conf) (queue.MessageQueue, error) {
 }
 
 func NewConsumer(c *queue.Conf) (queue.MessageQueue, error) {
+	ctx, cf := context.WithCancel(context.Background())
+	tracingSub := &Consumer{
+		c:       c,
+		handler: map[string]queue.ConsumeHandle{},
+		ctx:     ctx,
+		cf:      cf,
+	}
+	log.Infof("start kafka consumer")
+	return tracingSub, nil
+}
+
+func (c *Consumer) Name() string {
+	return "kafka"
+}
+
+func (c *Consumer) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
 	// Load client cert
 	//cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	//if err != nil {
@@ -75,52 +88,39 @@ func NewConsumer(c *queue.Conf) (queue.MessageQueue, error) {
 			InsecureSkipVerify: true,
 		},
 	}
-	ctx, cf := context.WithCancel(context.Background())
 	config := kafka.ReaderConfig{
-		Brokers: c.Brokers,
-		GroupID: c.Group,
-		Topic:   c.Topic,
+		Brokers: c.c.Brokers,
+		GroupID: c.c.Group,
+		Topic:   topic,
 		Dialer:  &dialer,
 	}
 	sub := kafka.NewReader(config)
-	tracingSub := &Consumer{
-		c:          c,
-		handler:    map[string]queue.ConsumeHandler{},
+	s := Subscriber{
+		topic:      topic,
 		sub:        sub,
 		tracer:     otel.Tracer("kafka"),
 		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
-		ctx:        ctx,
-		cf:         cf,
+		handler:    handler,
 	}
-	tracingSub.wg.Add(1)
-	go tracingSub.consumGroupTopic(tracingSub.ctx)
-	log.Infof("start kafka consumer, topic[%s]", tracingSub.c.Topic)
-	return tracingSub, nil
-}
-
-func (c *Consumer) Name() string {
-	return "kafka"
-}
-
-func (c *Consumer) Subscribe(topic string, handler queue.ConsumeHandle, opts ...queue.SubscribeOption) (queue.Subscriber, error) {
-	return nil, nil
+	c.wg.Add(1)
+	go c.consumGroupTopic(c.ctx, &s)
+	return &s, nil
 }
 
 func (c *Consumer) Close() error {
 	c.cf()
 	c.wg.Wait()
-	c.sub.Close()
 	log.Info("stop kafka consumer. topic")
 	return nil
 }
 
-func (c *Consumer) poll(ctx context.Context, timeoutMs int) (cctx context.Context, span trace.Span, msg kafka.Message, err error) {
-	msg, err = c.sub.ReadMessage(ctx)
+func (c *Consumer) poll(ctx context.Context, sub *Subscriber, timeoutMs int) (cctx context.Context, span trace.Span, msg kafka.Message, err error) {
+	msg, err = sub.sub.ReadMessage(ctx)
 	if err != nil {
 		return
 	}
-	cctx, span = c.tracer.Start(ctx, "sub:"+msg.Topic, trace.WithSpanKind(trace.SpanKindConsumer))
-	c.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
+	cctx, span = sub.tracer.Start(ctx, "sub:"+msg.Topic, trace.WithSpanKind(trace.SpanKindConsumer))
+	sub.propagator.Inject(ctx, &KafkaMessageTextMapCarrier{msg: msg})
 	span.SetAttributes(
 		attribute.String("kafka.topic", msg.Topic),
 		attribute.String("kafka.key", string(msg.Key)),
@@ -128,7 +128,7 @@ func (c *Consumer) poll(ctx context.Context, timeoutMs int) (cctx context.Contex
 	return
 }
 
-func (c *Consumer) consumGroupTopic(ctx context.Context) {
+func (c *Consumer) consumGroupTopic(ctx context.Context, sub *Subscriber) {
 	defer rescue.Recover(func() {
 		c.wg.Done()
 		log.Warnf("kafka consumGroupTopic done")
@@ -140,7 +140,7 @@ func (c *Consumer) consumGroupTopic(ctx context.Context) {
 		default:
 			// ms
 			cCtx, cf := context.WithTimeout(context.TODO(), 60*time.Second)
-			cCtx, span, msg, err := c.poll(cCtx, 100)
+			cCtx, span, msg, err := c.poll(cCtx, sub, 100)
 			if err != nil {
 				log.Errorf("err: %v", err)
 				cf()
@@ -153,7 +153,7 @@ func (c *Consumer) consumGroupTopic(ctx context.Context) {
 				log.Errorw(fmt.Sprintf("%+v", err), "code", se.Code, "reason", se.Reason, "topic", msg.Topic, "partition", msg.Partition, "offset", msg.Offset)
 			}
 			// 确认消费
-			if err := c.sub.CommitMessages(ctx, msg); err != nil {
+			if err := sub.sub.CommitMessages(ctx, msg); err != nil {
 				span.RecordError(err)
 			}
 			cf()
