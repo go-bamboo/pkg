@@ -61,6 +61,7 @@ conf:
            ./log/core/conf.proto \
            ./rpc/conf.proto \
            ./queue/conf.proto \
+           ./queue/rabbitmq/conf.proto \
            ./rest/conf.proto \
            ./store/mongox/conf.proto \
            ./store/gormx/conf/conf.proto \

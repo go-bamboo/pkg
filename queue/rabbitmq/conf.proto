@@ -1,8 +1,6 @@
 syntax = "proto3";
 package queue.rabbitmq;
 
-import "errors/errors.proto";
-
 option go_package = "github.com/go-bamboo/pkg/queue/rabbitmq;rabbitmq";
 
 message RabbitConf {
@@ -53,8 +51,6 @@ message AdminQueueConf {
   bool exclusive = 5;
   bool noWait = 6;
 }
-
-
 
 message Data {
   map<string, string> md = 1;
