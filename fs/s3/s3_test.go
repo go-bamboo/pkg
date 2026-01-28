@@ -1,17 +1,20 @@
-package s3
+package s3_test
 
 import (
 	"context"
 	"os"
 	"testing"
+
+	"github.com/go-bamboo/pkg/fs"
+	. "github.com/go-bamboo/pkg/fs/s3"
 )
 
-var s *S3Session
+var s fs.FileStorage
 var ctx = context.Background()
 
 func TestMain(m *testing.M) {
 	var err error
-	c := Conf{}
+	c := fs.Conf{}
 	s, err = New(&c)
 	if err != nil {
 		return
