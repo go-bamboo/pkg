@@ -17,7 +17,7 @@ services:
     environment:
       COLLECTOR_ZIPKIN_HTTP_PORT: 9411
     networks:
-      apisix:
+      pkg:
 
   consul:
     image: consul:1.10.2
@@ -31,7 +31,7 @@ services:
     volumes:
       - ./consul/data:/consul/data
     networks:
-      apisix:
+      pkg:
 
   nacos:
     image: nacos/nacos-server:v2.2.2-slim
@@ -42,8 +42,8 @@ services:
     environment:
       MODE: standalone
     networks:
-      apisix:
+      pkg:
 
 networks:
-  apisix:
+  pkg:
     driver: bridge
