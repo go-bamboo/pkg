@@ -6,12 +6,12 @@ import (
 
 var globalRegistry = NewRegistry()
 
-type Factory func(c *Conf, serviceName string, uuid string, version string) error
+type Factory func(c *Conf) (FileStorage, error)
 
 // Registry is the interface for callers to get registered middleware.
 type Registry interface {
 	Register(name string, factory Factory)
-	Create(c *Conf, serviceName string, uuid string, version string) error
+	Create(c *Conf, name string) (FileStorage, error)
 }
 
 type discoveryRegistry struct {
@@ -29,18 +29,17 @@ func (d *discoveryRegistry) Register(name string, factory Factory) {
 	d.discovery[name] = factory
 }
 
-func (d *discoveryRegistry) Create(c *Conf, serviceName string, uuid string, version string) error {
-	key := fmt.Sprintf("%s:%s", ProviderType_name[int32(c.ProviderType)], Type_name[int32(c.Type)])
-	factory, ok := d.discovery[key]
+func (d *discoveryRegistry) Create(c *Conf, name string) (FileStorage, error) {
+	factory, ok := d.discovery[name]
 	if !ok {
-		return fmt.Errorf("provider %s has not been registered", key)
+		return nil, fmt.Errorf("provider %s has not been registered", name)
 	}
 
-	err := factory(c, serviceName, uuid, version)
+	impl, err := factory(c)
 	if err != nil {
-		return fmt.Errorf("create provider error: %s", err)
+		return nil, fmt.Errorf("create provider error: %s", err)
 	}
-	return nil
+	return impl, nil
 }
 
 // Register registers one discovery.
@@ -49,6 +48,6 @@ func Register(name string, factory Factory) {
 }
 
 // Create instantiates a discovery based on `discoveryDSN`.
-func Create(c *Conf, serviceName string, uuid string, version string) error {
-	return globalRegistry.Create(c, serviceName, uuid, version)
+func Create(c *Conf, name string) (FileStorage, error) {
+	return globalRegistry.Create(c, name)
 }

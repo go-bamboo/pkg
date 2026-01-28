@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+
 	kreg "github.com/go-kratos/kratos/v2/registry"
 )
 

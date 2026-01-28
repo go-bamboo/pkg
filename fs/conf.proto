@@ -1,5 +1,5 @@
 syntax = "proto3";
-package fs.s3;
+package fs;
 
 option go_package = "github.com/go-bamboo/pkg/fs;fs";
 

@@ -40,13 +40,17 @@ var (
 	contentTypeReg = regexp.MustCompile("(video|image|audio)/.+")
 )
 
+func init() {
+	fs.Register("s3", New)
+}
+
 type S3Session struct {
 	c      *fs.Conf
 	s3     *s3.Client
 	domain string
 }
 
-func New(c *fs.Conf) (s3Sess *S3Session, err error) {
+func New(c *fs.Conf) (s3Sess fs.FileStorage, err error) {
 	if c == nil {
 		return nil, ErrorConfigNotFound("c is nil")
 	}
