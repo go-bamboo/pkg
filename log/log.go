@@ -13,22 +13,32 @@ import (
 var _ log.Logger = (*ZapLogger)(nil)
 
 type ZapLogger struct {
+	opts Options
 	// zap logger
 	logger  *zap.Logger
 	slogger *zap.SugaredLogger
 }
 
-func NewLogger(core zapcore.Core, n int) *ZapLogger {
+func NewLogger(core zapcore.Core, opts ...Option) *ZapLogger {
+	defaultOptions := Options{
+		ver:  "1.0.0",
+		skip: 1,
+	}
+	for _, opt := range opts {
+		opt(&defaultOptions)
+	}
 	// 开启开发模式，堆栈跟踪
 	caller := zap.AddCaller()
-	skip := zap.AddCallerSkip(n)
+	skip := zap.AddCallerSkip(defaultOptions.skip)
 
+	core = WithCore(core, "version", defaultOptions.ver)
 	// 构造日志
 	logger := zap.New(core, caller, skip)
 	slogger := logger.Sugar()
 
 	// copy
 	return &ZapLogger{
+		opts:    defaultOptions,
 		logger:  logger,
 		slogger: slogger,
 	}
@@ -53,7 +63,21 @@ func NewZapLogger(core zapcore.Core, n int) *ZapLogger {
 func (s *ZapLogger) With(kv ...interface{}) *ZapLogger {
 	core := s.logger.Core()
 	core = WithCore(core, kv...)
-	return NewLogger(core, 1)
+
+	// 开启开发模式，堆栈跟踪
+	caller := zap.AddCaller()
+	skip := zap.AddCallerSkip(s.opts.skip)
+
+	core = WithCore(core, "version", s.opts.ver)
+	// 构造日志
+	logger := zap.New(core, caller, skip)
+	slogger := logger.Sugar()
+
+	return &ZapLogger{
+		opts:    s.opts,
+		logger:  logger,
+		slogger: slogger,
+	}
 }
 
 // Log print the kv pairs log.

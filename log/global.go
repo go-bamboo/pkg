@@ -11,10 +11,10 @@ import (
 )
 
 // DefaultLogger is default logger.
-var DefaultLogger = std.NewStdCore(zapcore.DebugLevel)
+var defaultLogger = std.NewStdCore(zapcore.DebugLevel)
 
 func init() {
-	SetLogger(NewLogger(DefaultLogger, 1))
+	SetLogger(NewLogger(defaultLogger, WithSkip(1)))
 }
 
 // globalLogger is designed as a global logger in current process.
@@ -53,9 +53,7 @@ func GetCore() zapcore.Core {
 }
 
 func With(kv ...interface{}) *ZapLogger {
-	core := global.ZapLogger.logger.Core()
-	core = WithCore(core, kv...)
-	return NewLogger(core, 1)
+	return global.GetLogger().With(kv...)
 }
 
 // Debug logs a message at debug level.

@@ -9,7 +9,7 @@ type ZapLoggerEx struct {
 }
 
 func NewZapLoggerEx(core zapcore.Core) *ZapLoggerEx {
-	logger := NewLogger(core, 1)
+	logger := NewLogger(core, WithSkip(1))
 	l := &ZapLoggerEx{
 		ZapLogger: *logger,
 	}

@@ -45,7 +45,7 @@ func WithCore(c zapcore.Core, kv ...interface{}) zapcore.Core {
 	return c.With(keysAndValues)
 }
 
-func Init(c []*core.Conf) core.Logger {
+func Init(c []*core.Conf, opts ...Option) core.Logger {
 	hooks := make([]core.Logger, 0)
 	for _, conf := range c {
 		co, err := core.Create(conf)
@@ -60,7 +60,7 @@ func Init(c []*core.Conf) core.Logger {
 	}
 
 	// global
-	logger := NewLogger(co, 1)
+	logger := NewLogger(co, opts...)
 	SetLogger(logger)
 	return co
 }
