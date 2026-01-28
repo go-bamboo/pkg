@@ -2,6 +2,7 @@ package redis
 
 import (
 	"crypto/tls"
+
 	"github.com/go-bamboo/pkg/log"
 	"github.com/go-redis/redis/v8"
 )

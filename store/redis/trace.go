@@ -2,7 +2,8 @@ package redis
 
 import (
 	"context"
-	
+	"errors"
+
 	"github.com/go-bamboo/pkg/log"
 	otelext "github.com/go-bamboo/pkg/otel"
 	"github.com/go-redis/redis/extra/rediscmd/v8"
@@ -48,20 +49,18 @@ func (h *tracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (conte
 
 func (h *tracingHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 	span, ok := SpanFromContext(ctx)
-	if !ok {
-		return ErrSpanLost("span is lost")
-	}
-	var err error
-	if err = cmd.Err(); err != nil {
-		recordError(ctx, span, err)
-		cmd.SetErr(wrapRedisError(err))
-		if h.debug {
-			log.Debugw("redis hook", "err", err)
+	if ok {
+		var err error
+		if err = cmd.Err(); err != nil {
+			recordError(ctx, span, err)
+			cmd.SetErr(err)
+			if h.debug {
+				log.Debugw("redis hook", "err", err)
+			}
+		} else {
+			span.SetAttributes(attribute.Key("redis.name").String(cmd.Name()))
 		}
-	} else {
-		span.SetAttributes(attribute.Key("redis.name").String(cmd.Name()))
 	}
-
 	return nil
 }
 
@@ -84,26 +83,25 @@ func (h *tracingHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cm
 
 func (h *tracingHook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
 	span, ok := SpanFromContext(ctx)
-	if !ok {
-		return ErrSpanLost("not found span")
-	}
-	var err error
-	for _, cmd := range cmds {
-		if err = cmd.Err(); err != nil {
-			recordError(ctx, span, err)
-			cmd.SetErr(wrapRedisError(err))
-			if h.debug {
-				log.Debugw("redis hook", "err", err)
+	if ok {
+		var err error
+		for _, cmd := range cmds {
+			if err = cmd.Err(); err != nil {
+				recordError(ctx, span, err)
+				cmd.SetErr(err)
+				if h.debug {
+					log.Debugw("redis hook", "err", err)
+				}
+			} else {
+				span.SetAttributes(attribute.Key("redis.name").String(cmd.Name()))
 			}
-		} else {
-			span.SetAttributes(attribute.Key("redis.name").String(cmd.Name()))
 		}
 	}
 	return nil
 }
 
 func recordError(ctx context.Context, span trace.Span, err error) {
-	if err != redis.Nil {
+	if !errors.Is(err, redis.Nil) {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 	}
