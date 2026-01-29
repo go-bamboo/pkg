@@ -121,7 +121,7 @@ type Watcher struct {
 	format      string
 	content     chan string
 
-	context.Context
+	ctx    context.Context
 	cancel context.CancelFunc
 }
 
@@ -132,7 +132,7 @@ func newWatcher(logger agollo.Logger, namespaceID string, format string) *Watche
 		content:     make(chan string),
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	w.Context = ctx
+	w.ctx = ctx
 	w.cancel = cancel
 	return w
 }
@@ -150,7 +150,7 @@ func (w *Watcher) onChange(ce *agollo.ChangeEvent) {
 
 func (w *Watcher) Next() ([]*config.KeyValue, error) {
 	select {
-	case <-w.Context.Done():
+	case <-w.ctx.Done():
 		return nil, nil
 	case content := <-w.content:
 		return []*config.KeyValue{
