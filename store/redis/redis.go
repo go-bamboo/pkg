@@ -3,7 +3,6 @@ package redis
 import (
 	"crypto/tls"
 
-	"github.com/go-bamboo/pkg/log"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -54,7 +53,7 @@ func New(c *Conf) *Client {
 	rdb := redis.NewClient(opts)
 	rdb.AddHook(NewRedisTracingHook(c.Debug))
 	if c.Debug {
-		redis.SetLogger(NewLogger(log.GetCore()))
+		redis.SetLogger(NewLogger())
 	}
 	return &Client{
 		Client: *rdb,
@@ -80,7 +79,7 @@ func NewCluster(c *Conf) *ClusterClient {
 	rdb := redis.NewClusterClient(opts)
 	rdb.AddHook(NewRedisTracingHook(c.Debug))
 	if c.Debug {
-		redis.SetLogger(NewLogger(log.GetCore()))
+		redis.SetLogger(NewLogger())
 	}
 	return &ClusterClient{
 		ClusterClient: *rdb,

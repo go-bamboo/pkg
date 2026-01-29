@@ -33,9 +33,8 @@ func New(c *conf.Conf) (*DB, error) {
 	} else if conf.DBType(c.Driver) == conf.DBType_sqlserver {
 		dialector = sqlserver.Open(c.Source)
 	}
-	core := log.GetCore()
 	db, err := gorm.Open(dialector, &gorm.Config{
-		Logger: logger.NewLogger(c.Logger, core),
+		Logger: logger.NewLogger(c.Logger),
 	})
 	if err != nil {
 		return nil, err

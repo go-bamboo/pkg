@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/log/sugar"
 	"github.com/go-bamboo/pkg/store/gormx/conf"
 	"github.com/go-kratos/kratos/v2/errors"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -35,11 +35,10 @@ type Logger struct {
 	traceStr, traceErrStr, traceWarnStr string
 
 	level   logger.LogLevel
-	logger  *zap.Logger
-	slogger *zap.SugaredLogger
+	slogger *sugar.ZapLogger
 }
 
-func NewLogger(config *conf.LoggerConf, core zapcore.Core) logger.Interface {
+func NewLogger(config *conf.LoggerConf) logger.Interface {
 	defaultConf := conf.LoggerConf{
 		Colorful:                  true,
 		IgnoreRecordNotFoundError: true,
@@ -76,15 +75,6 @@ func NewLogger(config *conf.LoggerConf, core zapcore.Core) logger.Interface {
 		traceErrStr = RedBold + "%s " + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
 	}
 
-	// 开启开发模式，堆栈跟踪
-	caller := zap.AddCaller()
-	skip := zap.AddCallerSkip(1)
-	//level := zap.IncreaseLevel(zapcore.LevelOf(config.LogLevel))
-
-	// 构造日志
-	zapLogger := zap.New(core, caller, skip)
-	zapSugarLogger := zapLogger.Sugar()
-
 	l := &Logger{
 		c: &defaultConf,
 		// gorm
@@ -99,8 +89,7 @@ func NewLogger(config *conf.LoggerConf, core zapcore.Core) logger.Interface {
 		level: logger.LogLevel(defaultConf.LogLevel),
 
 		// zap
-		logger:  zapLogger,
-		slogger: zapSugarLogger,
+		slogger: log.WithOpts(sugar.WithSkip(3)),
 	}
 	return l
 }
