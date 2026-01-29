@@ -1,11 +1,13 @@
 package log
 
 import (
+	"context"
 	"fmt"
 	"runtime"
 	"sync"
 
 	"github.com/go-bamboo/pkg/log/std"
+	"github.com/go-bamboo/pkg/log/sugar"
 	"github.com/go-kratos/kratos/v2/errors"
 	"go.uber.org/zap/zapcore"
 )
@@ -14,7 +16,7 @@ import (
 var defaultLogger = std.NewStdCore(zapcore.DebugLevel)
 
 func init() {
-	SetLogger(NewLogger(defaultLogger, WithSkip(1)))
+	SetLogger(sugar.NewLogger(defaultLogger, sugar.WithSkip(1)))
 }
 
 // globalLogger is designed as a global logger in current process.
@@ -24,100 +26,116 @@ var global = &loggerAppliance{}
 // make logger change will affect all sub-logger.
 type loggerAppliance struct {
 	lock sync.Mutex
-	ZapLogger
+	sugar.ZapLogger
 }
 
-func (a *loggerAppliance) SetLogger(in *ZapLogger) {
+func (a *loggerAppliance) SetLogger(in *sugar.ZapLogger) {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 	a.ZapLogger = *in
 }
 
-func (a *loggerAppliance) GetLogger() *ZapLogger {
+func (a *loggerAppliance) GetLogger() *sugar.ZapLogger {
 	return &a.ZapLogger
 }
 
 // SetLogger should be called before any other log call.
 // And it is NOT THREAD SAFE.
-func SetLogger(logger *ZapLogger) {
+func SetLogger(logger *sugar.ZapLogger) {
 	global.SetLogger(logger)
 }
 
 // GetLogger returns global logger appliance as logger in current process.
-func GetLogger() *ZapLogger {
+func GetLogger() *sugar.ZapLogger {
 	return global.GetLogger()
 }
 
-func GetCore() zapcore.Core {
-	return global.GetLogger().logger.Core()
-}
-
-func With(kv ...interface{}) *ZapLogger {
+func With(kv ...interface{}) *sugar.ZapLogger {
 	return global.GetLogger().With(kv...)
 }
 
-func WithOpts(opts ...Option) *ZapLogger {
+func WithOpts(opts ...sugar.Option) *sugar.ZapLogger {
 	return global.GetLogger().WithOpts(opts...)
 }
 
 // Debug logs a message at debug level.
 func Debug(a ...interface{}) {
-	global.slogger.Debug(a...)
+	global.Debug(a...)
 }
 
 // Debugf logs a message at debug level.
 func Debugf(format string, a ...interface{}) {
-	global.slogger.Debugf(format, a...)
+	global.Debugf(format, a...)
 }
 
 // Debugw logs a message at debug level.
 func Debugw(msg string, keyvals ...interface{}) {
-	global.slogger.Debugw(msg, keyvals...)
+	global.Debugw(msg, keyvals...)
+}
+
+// DebugwCtx logs a message at debug level.
+func DebugwCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	global.DebugwCtx(ctx, msg, keyvals...)
 }
 
 // Info logs a message at info level.
 func Info(a ...interface{}) {
-	global.slogger.Info(a...)
+	global.Info(a...)
 }
 
 // Infof logs a message at info level.
 func Infof(format string, a ...interface{}) {
-	global.slogger.Infof(format, a...)
+	global.Infof(format, a...)
 }
 
 // Infow logs a message at info level.
 func Infow(msg string, keyvals ...interface{}) {
-	global.slogger.Infow(msg, keyvals...)
+	global.Infow(msg, keyvals...)
+}
+
+// InfowCtx logs a message at info level.
+func InfowCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	global.InfowCtx(ctx, msg, keyvals...)
 }
 
 // Warn logs a message at warn level.
 func Warn(a ...interface{}) {
-	global.slogger.Warn(a...)
+	global.Warn(a...)
 }
 
 // Warnf logs a message at warnf level.
 func Warnf(format string, a ...interface{}) {
-	global.slogger.Warnf(format, a...)
+	global.Warnf(format, a...)
 }
 
 // Warnw logs a message at warnf level.
 func Warnw(msg string, keyvals ...interface{}) {
-	global.slogger.Warnw(msg, keyvals...)
+	global.Warnw(msg, keyvals...)
+}
+
+// WarnwCtx logs a message at warnf level.
+func WarnwCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	global.WarnwCtx(ctx, msg, keyvals...)
 }
 
 // Error logs a message at error level.
 func Error(a ...interface{}) {
-	global.slogger.Error(a...)
+	global.Error(a...)
 }
 
 // Errorf logs a message at error level.
 func Errorf(format string, a ...interface{}) {
-	global.slogger.Errorf(format, a...)
+	global.Errorf(format, a...)
 }
 
 // Errorw logs a message at error level.
 func Errorw(msg string, keyvals ...interface{}) {
-	global.slogger.Errorw(msg, keyvals...)
+	global.Errorw(msg, keyvals...)
+}
+
+// ErrorwCtx logs a message at error level.
+func ErrorwCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	global.ErrorwCtx(ctx, msg, keyvals...)
 }
 
 // ErrorPanic logs a message at error level.
@@ -126,30 +144,30 @@ func ErrorPanic(err interface{}) {
 	buf := make([]byte, size)
 	buf = buf[:runtime.Stack(buf, false)]
 	pl := fmt.Sprintf("scan call panic: %v\n%s\n", err, buf)
-	global.slogger.Errorf("%s", pl)
+	global.Errorf("%s", pl)
 }
 
 // ErrorStack logs a message at error level.
 func ErrorStack(err error) {
 	se := errors.FromError(err)
 	if se == nil {
-		global.slogger.Error(err)
+		global.Error(err)
 		return
 	}
-	global.slogger.Errorw(fmt.Sprintf("%+v", err), "code", se.Code, "reason", se.Reason, "msg", se.Message, "md", se.Metadata)
+	global.Errorw(fmt.Sprintf("%+v", err), "code", se.Code, "reason", se.Reason, "msg", se.Message, "md", se.Metadata)
 }
 
 // Fatal logs a message at fatal level.
 func Fatal(a ...interface{}) {
-	global.slogger.Fatal(a...)
+	global.Fatal(a...)
 }
 
 // Fatalf logs a message at fatal level.
 func Fatalf(format string, a ...interface{}) {
-	global.slogger.Fatalf(format, a...)
+	global.Fatalf(format, a...)
 }
 
 // Fatalw logs a message at fatal level.
 func Fatalw(msg string, keyvals ...interface{}) {
-	global.slogger.Fatalw(msg, keyvals...)
+	global.Fatalw(msg, keyvals...)
 }

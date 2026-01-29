@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-bamboo/pkg/log"
+	"github.com/go-bamboo/pkg/log/sugar"
 	"go.uber.org/zap/zapcore"
 )
 
 type Logger struct {
-	log.ZapLogger
+	sugar.ZapLogger
 	enabled bool
 }
 
 func NewLogger(core zapcore.Core, enabled bool) *Logger {
-	logger := log.NewLogger(core, log.WithSkip(1))
+	logger := sugar.NewLogger(core, sugar.WithSkip(1))
 	l := &Logger{
 		ZapLogger: *logger,
 		enabled:   enabled,

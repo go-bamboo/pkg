@@ -1,10 +1,12 @@
-package log
+package sugar
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/go-bamboo/pkg/meta"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -22,7 +24,7 @@ type ZapLogger struct {
 func NewLogger(core zapcore.Core, opts ...Option) *ZapLogger {
 	defaultOptions := Options{
 		ver:  "1.0.0",
-		skip: 1,
+		skip: 2,
 	}
 	for _, opt := range opts {
 		opt(&defaultOptions)
@@ -147,6 +149,19 @@ func (s *ZapLogger) Debugw(msg string, keyvals ...interface{}) {
 	s.slogger.Debugw(msg, keyvals...)
 }
 
+func (s *ZapLogger) DebugwCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	if len(keyvals) != 0 && len(keyvals)%2 != 0 {
+		keyvals = append(keyvals, "")
+	}
+	var keysAndValues []interface{}
+	keysAndValues = append(keysAndValues, keyvals...)
+	realIP, _ := meta.GetRealIP(ctx)
+	if len(realIP) > 0 {
+		keysAndValues = append(keysAndValues, "real-ip", realIP)
+	}
+	s.slogger.Debugw(msg, keysAndValues...)
+}
+
 // Info logs a message at info level.
 func (s *ZapLogger) Info(a ...interface{}) {
 	s.slogger.Info(a...)
@@ -160,6 +175,19 @@ func (s *ZapLogger) Infof(format string, a ...interface{}) {
 // Infow logs a message at info level.
 func (s *ZapLogger) Infow(msg string, keyvals ...interface{}) {
 	s.slogger.Infow(msg, keyvals...)
+}
+
+func (s *ZapLogger) InfowCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	if len(keyvals) != 0 && len(keyvals)%2 != 0 {
+		keyvals = append(keyvals, "")
+	}
+	var keysAndValues []interface{}
+	keysAndValues = append(keysAndValues, keyvals...)
+	realIP, _ := meta.GetRealIP(ctx)
+	if len(realIP) > 0 {
+		keysAndValues = append(keysAndValues, "real-ip", realIP)
+	}
+	s.slogger.Infow(msg, keysAndValues...)
 }
 
 // Warn logs a message at warn level.
@@ -177,6 +205,19 @@ func (s *ZapLogger) Warnw(msg string, keyvals ...interface{}) {
 	s.slogger.Warnw(msg, keyvals...)
 }
 
+func (s *ZapLogger) WarnwCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	if len(keyvals) != 0 && len(keyvals)%2 != 0 {
+		keyvals = append(keyvals, "")
+	}
+	var keysAndValues []interface{}
+	keysAndValues = append(keysAndValues, keyvals...)
+	realIP, _ := meta.GetRealIP(ctx)
+	if len(realIP) > 0 {
+		keysAndValues = append(keysAndValues, "real-ip", realIP)
+	}
+	s.slogger.Warnw(msg, keysAndValues...)
+}
+
 // Error logs a message at error level.
 func (s *ZapLogger) Error(a ...interface{}) {
 	s.slogger.Error(a...)
@@ -190,6 +231,19 @@ func (s *ZapLogger) Errorf(format string, a ...interface{}) {
 // Errorw logs a message at error level.
 func (s *ZapLogger) Errorw(msg string, keyvals ...interface{}) {
 	s.slogger.Errorw(msg, keyvals...)
+}
+
+func (s *ZapLogger) ErrorwCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	if len(keyvals) != 0 && len(keyvals)%2 != 0 {
+		keyvals = append(keyvals, "")
+	}
+	var keysAndValues []interface{}
+	keysAndValues = append(keysAndValues, keyvals...)
+	realIP, _ := meta.GetRealIP(ctx)
+	if len(realIP) > 0 {
+		keysAndValues = append(keysAndValues, "real-ip", realIP)
+	}
+	s.slogger.Errorw(msg, keysAndValues...)
 }
 
 // Fatal logs a message at fatal level.

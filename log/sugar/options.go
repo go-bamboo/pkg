@@ -1,4 +1,4 @@
-package log
+package sugar
 
 // Options is Log Options.
 type Options struct {

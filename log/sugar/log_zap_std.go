@@ -1,4 +1,4 @@
-package log
+package sugar
 
 import (
 	"go.uber.org/zap/zapcore"

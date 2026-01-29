@@ -1,8 +1,6 @@
-package log
+package sugar
 
 import (
-	"github.com/go-bamboo/pkg/log/core"
-	"github.com/go-bamboo/pkg/log/multi"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -43,24 +41,4 @@ func withCore(c zapcore.Core, kv ...interface{}) zapcore.Core {
 		}
 	}
 	return c.With(keysAndValues)
-}
-
-func Init(c []*core.Conf, opts ...Option) core.Logger {
-	hooks := make([]core.Logger, 0)
-	for _, conf := range c {
-		co, err := core.Create(conf)
-		if err != nil {
-			Fatal(err)
-		}
-		hooks = append(hooks, co)
-	}
-	co, err := multi.NewMultiCore(hooks...)
-	if err != nil {
-		panic(err)
-	}
-
-	// global
-	logger := NewLogger(co, opts...)
-	SetLogger(logger)
-	return co
 }
