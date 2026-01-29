@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func WithCore(c zapcore.Core, kv ...interface{}) zapcore.Core {
+func withCore(c zapcore.Core, kv ...interface{}) zapcore.Core {
 	if len(kv) == 0 {
 		return c
 	}

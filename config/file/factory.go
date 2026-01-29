@@ -1,7 +1,6 @@
 package file
 
 import (
-	"fmt"
 	"net/url"
 	"path"
 
@@ -25,7 +24,6 @@ func Create(uri *url.URL, v interface{}, format string) (config.Config, error) {
 			if format == "" {
 				format = kv.Format
 			}
-			fmt.Println(kv.Key, kv.Format, format)
 			if err := encoding.GetCodec(format).Unmarshal(kv.Value, v); err != nil {
 				return err
 			}

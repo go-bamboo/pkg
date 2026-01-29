@@ -27,11 +27,12 @@ func NewLogger(core zapcore.Core, opts ...Option) *ZapLogger {
 	for _, opt := range opts {
 		opt(&defaultOptions)
 	}
+	core = withCore(core, "version", defaultOptions.ver)
+
 	// 开启开发模式，堆栈跟踪
 	caller := zap.AddCaller()
 	skip := zap.AddCallerSkip(defaultOptions.skip)
 
-	core = WithCore(core, "version", defaultOptions.ver)
 	// 构造日志
 	logger := zap.New(core, caller, skip)
 	slogger := logger.Sugar()
@@ -44,37 +45,48 @@ func NewLogger(core zapcore.Core, opts ...Option) *ZapLogger {
 	}
 }
 
-func NewZapLogger(core zapcore.Core, n int) *ZapLogger {
-	// 开启开发模式，堆栈跟踪
-	caller := zap.AddCaller()
-	skip := zap.AddCallerSkip(n)
-
-	// 构造日志
-	logger := zap.New(core, caller, skip)
-	slogger := logger.Sugar()
-
-	// copy
-	return &ZapLogger{
-		logger:  logger,
-		slogger: slogger,
-	}
+func NewZapLogger(core zapcore.Core, opts ...Option) *ZapLogger {
+	return NewLogger(core, opts...)
 }
 
 func (s *ZapLogger) With(kv ...interface{}) *ZapLogger {
 	core := s.logger.Core()
-	core = WithCore(core, kv...)
+	core = withCore(core, kv...)
+	core = withCore(core, "version", s.opts.ver)
 
 	// 开启开发模式，堆栈跟踪
 	caller := zap.AddCaller()
 	skip := zap.AddCallerSkip(s.opts.skip)
 
-	core = WithCore(core, "version", s.opts.ver)
 	// 构造日志
 	logger := zap.New(core, caller, skip)
 	slogger := logger.Sugar()
 
 	return &ZapLogger{
 		opts:    s.opts,
+		logger:  logger,
+		slogger: slogger,
+	}
+}
+
+func (s *ZapLogger) WithOpts(opts ...Option) *ZapLogger {
+	core := s.logger.Core()
+
+	defaultOptions := s.opts
+	for _, opt := range opts {
+		opt(&defaultOptions)
+	}
+
+	// 开启开发模式，堆栈跟踪
+	caller := zap.AddCaller()
+	skip := zap.AddCallerSkip(defaultOptions.skip)
+
+	// 构造日志
+	logger := zap.New(core, caller, skip)
+	slogger := logger.Sugar()
+
+	return &ZapLogger{
+		opts:    defaultOptions,
 		logger:  logger,
 		slogger: slogger,
 	}

@@ -56,6 +56,10 @@ func With(kv ...interface{}) *ZapLogger {
 	return global.GetLogger().With(kv...)
 }
 
+func WithOpts(opts ...Option) *ZapLogger {
+	return global.GetLogger().WithOpts(opts...)
+}
+
 // Debug logs a message at debug level.
 func Debug(a ...interface{}) {
 	global.slogger.Debug(a...)
