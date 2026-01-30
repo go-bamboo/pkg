@@ -49,38 +49,59 @@ func isPrivateAddress(address string) (bool, error) {
 	return false, nil
 }
 
-// FromRequest return client's real public IP address from http request headers.
+// FromRequest returns the client's real IP from http request headers.
+// Priority: X-Forwarded-For (leftmost) > X-Real-IP > CF-Connecting-IP > True-Client-IP > X-Client-IP > RemoteAddr
+// X-Forwarded-For format is "client, proxy1, proxy2", so the leftmost IP is the real client.
 func FromRequest(r *http.Request) string {
-	// Fetch header value
-	xRealIP := r.Header.Get("X-Real-Ip")
-	xForwardedFor := r.Header.Get("X-Forwarded-For")
-
-	// If both empty, return IP from remote address
-	if xRealIP == "" && xForwardedFor == "" {
-		var remoteIP string
-
-		// If there are colon in remote address, remove the port number
-		// otherwise, return remote address as is
-		if strings.ContainsRune(r.RemoteAddr, ':') {
-			remoteIP, _, _ = net.SplitHostPort(r.RemoteAddr)
-		} else {
-			remoteIP = r.RemoteAddr
-		}
-
-		return remoteIP
-	}
-
-	// Check list of IP in X-Forwarded-For and return the first global address
-	for _, address := range strings.Split(xForwardedFor, ",") {
-		address = strings.TrimSpace(address)
-		isPrivate, err := isPrivateAddress(address)
-		if !isPrivate && err == nil {
-			return address
+	// 1. X-Forwarded-For: 标准格式为 "客户端IP, 代理1, 代理2"，最左侧为真实客户端
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		if len(parts) > 0 {
+			for i := len(parts) - 1; i >= 0; i-- {
+				addr := strings.TrimSpace(parts[i])
+				if isPrivate, err := isPrivateAddress(addr); !isPrivate && err == nil {
+					return addr
+				}
+			}
 		}
 	}
 
-	// If nothing succeed, return X-Real-IP
-	return xRealIP
+	// 2. X-Real-IP（常见于 Nginx 等）
+	if xri := r.Header.Get("X-Real-IP"); xri != "" {
+		xri = strings.TrimSpace(xri)
+		if err := net.ParseIP(xri); err == nil {
+			if isPrivate, err := isPrivateAddress(xri); !isPrivate && err == nil {
+				return xri
+			}
+		}
+	}
+
+	// 4. True-Client-IP（Akamai/Cloudflare 等）
+	if tc := r.Header.Get("True-Client-IP"); tc != "" {
+		tc = strings.TrimSpace(tc)
+		if net.ParseIP(tc) != nil {
+			if isPrivate, err := isPrivateAddress(tc); !isPrivate && err == nil {
+				return tc
+			}
+		}
+	}
+
+	// 5. X-Client-IP
+	if xc := r.Header.Get("X-Client-IP"); xc != "" {
+		xc = strings.TrimSpace(xc)
+		if net.ParseIP(xc) != nil {
+			if isPrivate, err := isPrivateAddress(xc); !isPrivate && err == nil {
+				return xc
+			}
+		}
+	}
+
+	// 6. 最后回退到 RemoteAddr
+	remoteIP := r.RemoteAddr
+	if strings.ContainsRune(r.RemoteAddr, ':') {
+		remoteIP, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+	return remoteIP
 }
 
 // RealIP is depreciated, use FromRequest instead
