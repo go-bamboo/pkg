@@ -25,15 +25,33 @@ func (codec) Marshal(v interface{}) ([]byte, error) {
 	// 2. 创建一个空的空配置对象
 	cfg := ini.Empty()
 
-	// 3. 将结构体反射(Reflect)到配置对象中
-	err := ini.ReflectFrom(cfg, v)
-	if err != nil {
-		return nil, err
+	// 3. 将结构体或 map 反射到配置对象中
+	if v == nil {
+		return nil, fmt.Errorf("v is nil")
+	}
+	rv := reflect.ValueOf(v)
+	for rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Interface {
+		if rv.IsNil() {
+			return nil, fmt.Errorf("v is nil")
+		}
+		rv = rv.Elem()
+	}
+	switch rv.Kind() {
+	case reflect.Struct:
+		if err := ini.ReflectFrom(cfg, v); err != nil {
+			return nil, err
+		}
+	case reflect.Map:
+		if err := reflectMapToIni(cfg, rv); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unsupported kind: %v", rv.Kind())
 	}
 
 	// 4. 将配置对象写入字节缓冲区
 	var buf bytes.Buffer
-	_, err = cfg.WriteTo(&buf)
+	_, err := cfg.WriteTo(&buf)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +60,53 @@ func (codec) Marshal(v interface{}) ([]byte, error) {
 	dst := buf.Bytes()
 
 	return dst, nil
+}
+
+func reflectMapToIni(cfg *ini.File, rv reflect.Value) error {
+	if rv.Type().Key().Kind() != reflect.String {
+		return fmt.Errorf("map key must be string")
+	}
+	defaultSection := cfg.Section("DEFAULT")
+	for _, key := range rv.MapKeys() {
+		sectionName := key.String()
+		value := unwrapValue(rv.MapIndex(key))
+		if !value.IsValid() {
+			continue
+		}
+		if value.Kind() == reflect.Map {
+			section := cfg.Section(sectionName)
+			if err := reflectSectionFromMap(section, value); err != nil {
+				return err
+			}
+			continue
+		}
+		defaultSection.Key(sectionName).SetValue(fmt.Sprint(value.Interface()))
+	}
+	return nil
+}
+
+func reflectSectionFromMap(section *ini.Section, rv reflect.Value) error {
+	if rv.Type().Key().Kind() != reflect.String {
+		return fmt.Errorf("section map key must be string")
+	}
+	for _, key := range rv.MapKeys() {
+		value := unwrapValue(rv.MapIndex(key))
+		if !value.IsValid() {
+			continue
+		}
+		section.Key(key.String()).SetValue(fmt.Sprint(value.Interface()))
+	}
+	return nil
+}
+
+func unwrapValue(v reflect.Value) reflect.Value {
+	for v.IsValid() && (v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface) {
+		if v.IsNil() {
+			return reflect.Value{}
+		}
+		v = v.Elem()
+	}
+	return v
 }
 
 func (codec) Unmarshal(data []byte, v interface{}) error {
