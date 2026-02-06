@@ -69,8 +69,8 @@ func FromRequest(r *http.Request) string {
 	// 2. X-Real-IP（常见于 Nginx 等）
 	if xri := r.Header.Get("X-Real-IP"); xri != "" {
 		xri = strings.TrimSpace(xri)
-		if err := net.ParseIP(xri); err == nil {
-			if isPrivate, err := isPrivateAddress(xri); !isPrivate && err == nil {
+		if ip := net.ParseIP(xri); ip != nil && !ip.IsPrivate() {
+			if isPrivate, err := isPrivateAddress(xri); err == nil && !isPrivate {
 				return xri
 			}
 		}
@@ -79,8 +79,8 @@ func FromRequest(r *http.Request) string {
 	// 4. True-Client-IP（Akamai/Cloudflare 等）
 	if tc := r.Header.Get("True-Client-IP"); tc != "" {
 		tc = strings.TrimSpace(tc)
-		if net.ParseIP(tc) != nil {
-			if isPrivate, err := isPrivateAddress(tc); !isPrivate && err == nil {
+		if ip := net.ParseIP(tc); ip != nil && !ip.IsPrivate() {
+			if isPrivate, err := isPrivateAddress(tc); err == nil && !isPrivate {
 				return tc
 			}
 		}
@@ -89,8 +89,8 @@ func FromRequest(r *http.Request) string {
 	// 5. X-Client-IP
 	if xc := r.Header.Get("X-Client-IP"); xc != "" {
 		xc = strings.TrimSpace(xc)
-		if net.ParseIP(xc) != nil {
-			if isPrivate, err := isPrivateAddress(xc); !isPrivate && err == nil {
+		if ip := net.ParseIP(xc); ip != nil && !ip.IsPrivate() {
+			if isPrivate, err := isPrivateAddress(xc); err == nil && !isPrivate {
 				return xc
 			}
 		}

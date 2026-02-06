@@ -87,9 +87,9 @@ func TestRealIP(t *testing.T) {
 	}
 
 	// Run test
-	for _, v := range testData {
+	for i, v := range testData {
 		if actual := FromRequest(v.request); v.expected != actual {
-			t.Errorf("%s: expected %s but get %s", v.name, v.expected, actual)
+			t.Errorf("i: %d, %s: expected %s but get %s", i, v.name, v.expected, actual)
 		}
 	}
 }
