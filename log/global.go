@@ -16,7 +16,7 @@ import (
 var defaultLogger = std.NewStdCore(zapcore.DebugLevel)
 
 func init() {
-	SetLogger(sugar.NewLogger(defaultLogger, sugar.WithSkip(1)))
+	SetLogger(sugar.NewLogger(defaultLogger, sugar.WithSkip(2)))
 }
 
 // globalLogger is designed as a global logger in current process.
