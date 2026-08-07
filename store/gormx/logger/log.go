@@ -46,6 +46,7 @@ func NewLogger(config *conf.LoggerConf) logger.Interface {
 		LogLevel:                  int32(logger.Warn),
 	}
 	if config != nil {
+		defaultConf.SlowThreshold = config.SlowThreshold
 		if defaultConf.Colorful != config.Colorful {
 			defaultConf.Colorful = config.Colorful
 		}
@@ -58,29 +59,20 @@ func NewLogger(config *conf.LoggerConf) logger.Interface {
 	}
 	// gorm
 	var (
-		//infoStr      = "%s\n"
-		//warnStr      = "%s\n"
-		//errStr       = "%s\n"
 		traceStr     = "[%.3fms] [rows:%v] %s"
 		traceWarnStr = "%s [%.3fms] [rows:%v] %s"
 		traceErrStr  = "%s [%.3fms] [rows:%v] %s"
 	)
 
 	if defaultConf.Colorful {
-		//infoStr = Green + "%s\n" + Reset + Green
-		//warnStr = BlueBold + "%s\n" + Reset + Magenta
-		//errStr = Magenta + "%s\n" + Reset + Red
 		traceStr = Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
-		traceWarnStr = Green + "%s " + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v]" + Magenta + " %s"
+		traceWarnStr = Green + "%s " + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v]" + Magenta + " %s" + Reset
 		traceErrStr = RedBold + "%s " + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v]" + Reset + " %s"
 	}
 
 	l := &Logger{
 		c: &defaultConf,
 		// gorm
-		//infoStr:      infoStr,
-		//warnStr:      warnStr,
-		//errStr:       errStr,
 		traceStr:     traceStr,
 		traceWarnStr: traceWarnStr,
 		traceErrStr:  traceErrStr,
@@ -105,9 +97,9 @@ func (l *Logger) LogMode(level logger.LogLevel) logger.Interface {
 func (l *Logger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.level >= logger.Info {
 		if l.c.Colorful {
-			l.slogger.Debugf(Green+msg+Reset+Green, data...)
+			l.slogger.Infof(Green+msg+Reset, data...)
 		} else {
-			l.slogger.Debugf(msg, data...)
+			l.slogger.Infof(msg, data...)
 		}
 	}
 }
@@ -116,7 +108,7 @@ func (l *Logger) Info(ctx context.Context, msg string, data ...interface{}) {
 func (l *Logger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if l.level >= logger.Warn {
 		if l.c.Colorful {
-			l.slogger.Warnf(BlueBold+msg+Reset+RedBold, data...)
+			l.slogger.Warnf(BlueBold+msg+Reset, data...)
 		} else {
 			l.slogger.Warnf(msg, data...)
 		}
@@ -127,7 +119,7 @@ func (l *Logger) Warn(ctx context.Context, msg string, data ...interface{}) {
 func (l *Logger) Error(ctx context.Context, msg string, data ...interface{}) {
 	if l.level >= logger.Error {
 		if l.c.Colorful {
-			l.slogger.Errorf(Magenta+msg+Reset+Yellow, data...)
+			l.slogger.Errorf(Magenta+msg+Reset, data...)
 		} else {
 			l.slogger.Errorf(msg, data...)
 		}
@@ -162,9 +154,9 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, 
 	case l.level == logger.Info:
 		sql, rows := fc()
 		if rows == -1 {
-			l.slogger.Debugf(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
+			l.slogger.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, "-", sql)
 		} else {
-			l.slogger.Debugf(l.traceStr, float64(elapsed.Nanoseconds())/1e6, rows, sql)
+			l.slogger.Infof(l.traceStr, float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
 	}
 }
