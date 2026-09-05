@@ -11,6 +11,7 @@ enum ProviderType {
   Consul = 2;
   Kube = 3;
   Nacos = 4;
+  Redis = 5;
 }
 
 message Conf {
