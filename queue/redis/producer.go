@@ -22,42 +22,36 @@ func MustNewProducer(c *queue.Conf) queue.Pusher {
 }
 
 func NewProducer(c *queue.Conf) (queue.Pusher, error) {
+	if c == nil || len(c.Brokers) == 0 {
+		return nil, errBrokersEmpty
+	}
 	opts := redis.Conf{
-		Addrs: c.Brokers,
+		Addrs:        c.Brokers,
+		ReadTimeout:  c.ReadTimeout,
+		WriteTimeout: c.WriteTimeout,
 	}
-	pub := redis.New(&opts)
-	tracingPub := &Producer{
-		pub: pub,
-	}
-	return tracingPub, nil
+	return &Producer{
+		pub: redis.New(&opts),
+	}, nil
 }
 
 func (p *Producer) Name() string {
-	return "redis"
+	return Name
 }
 
 func (p *Producer) Push(ctx context.Context, topic string, key, value []byte) error {
 	msg := redis.XAddArgs{
 		Stream: topic,
-		Approx: true,
-		Values: value,
+		Values: map[string]interface{}{
+			fieldKey:   string(key),
+			fieldValue: string(value),
+		},
 	}
-	if err := p.pub.XAdd(ctx, &msg).Err(); err != nil {
-		return err
-	}
-	return nil
+	return p.pub.XAdd(ctx, &msg).Err()
 }
 
-func (p *Producer) PushWithPartition(ctx context.Context, topic string, key, value []byte, partition int32) error {
-	msg := redis.XAddArgs{
-		Stream: topic,
-		Approx: true,
-		Values: value,
-	}
-	if err := p.pub.XAdd(ctx, &msg).Err(); err != nil {
-		return err
-	}
-	return nil
+func (p *Producer) PushWithPartition(ctx context.Context, topic string, key, value []byte, _ int32) error {
+	return p.Push(ctx, topic, key, value)
 }
 
 func (p *Producer) Close() error {

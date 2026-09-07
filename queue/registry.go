@@ -52,7 +52,16 @@ func (d *discoveryRegistry) RegisterPusher(name string, factory PusherFactory) {
 }
 
 func (d *discoveryRegistry) CreatePusher(name string, c *Conf) (Pusher, error) {
-	return nil, nil
+	factory, ok := d.p[name]
+	if !ok {
+		return nil, fmt.Errorf("pusher %s has not been registered", name)
+	}
+
+	pusher, err := factory(c)
+	if err != nil {
+		return nil, fmt.Errorf("create pusher error: %s", err)
+	}
+	return pusher, nil
 }
 
 // RegisterConsumer registers one discovery.
