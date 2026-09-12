@@ -29,7 +29,6 @@ func newTestRegistry(t *testing.T, opts ...Option) *Registry {
 	}
 	t.Cleanup(func() { _ = rdb.Close() })
 	defaults := []Option{
-		WithHealthCheckInterval(1),
 		WithTimeout(2 * time.Second),
 	}
 	return New(rdb, append(defaults, opts...)...)
@@ -48,7 +47,7 @@ func testInstance(t *testing.T) *registry.ServiceInstance {
 }
 
 func TestRegisterGetService(t *testing.T) {
-	r := newTestRegistry(t, WithHeartbeat(false))
+	r := newTestRegistry(t)
 	ctx := context.Background()
 	svc := testInstance(t)
 	t.Cleanup(func() { _ = r.Deregister(ctx, svc) })
@@ -65,7 +64,7 @@ func TestRegisterGetService(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	r := newTestRegistry(t, WithHeartbeat(false))
+	r := newTestRegistry(t)
 	ctx := context.Background()
 	svc := testInstance(t)
 	t.Cleanup(func() { _ = r.Deregister(ctx, svc) })
@@ -83,7 +82,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDeregister(t *testing.T) {
-	r := newTestRegistry(t, WithHeartbeat(false))
+	r := newTestRegistry(t)
 	ctx := context.Background()
 	svc := testInstance(t)
 	require.NoError(t, r.Register(ctx, svc))
@@ -93,40 +92,8 @@ func TestDeregister(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestTTLExpireWithoutHeartbeat(t *testing.T) {
-	r := newTestRegistry(t, WithHeartbeat(false), WithHealthCheckInterval(1))
-	ctx := context.Background()
-	svc := testInstance(t)
-	t.Cleanup(func() { _ = r.Deregister(ctx, svc) })
-	require.NoError(t, r.Register(ctx, svc))
-
-	got, err := r.GetService(ctx, svc.Name)
-	require.NoError(t, err)
-	require.Len(t, got, 1)
-
-	time.Sleep(3 * time.Second)
-
-	_, err = r.GetService(ctx, svc.Name)
-	require.Error(t, err)
-}
-
-func TestHeartbeatRenewsTTL(t *testing.T) {
-	r := newTestRegistry(t, WithHealthCheckInterval(1))
-	ctx := context.Background()
-	svc := testInstance(t)
-	t.Cleanup(func() { _ = r.Deregister(ctx, svc) })
-	require.NoError(t, r.Register(ctx, svc))
-
-	// TTL is 2s; without heartbeat the key would be gone after 2.5s.
-	time.Sleep(2500 * time.Millisecond)
-
-	got, err := r.GetService(ctx, svc.Name)
-	require.NoError(t, err)
-	require.Len(t, got, 1)
-}
-
 func TestWatchRegisterAndDeregister(t *testing.T) {
-	r := newTestRegistry(t, WithHeartbeat(false))
+	r := newTestRegistry(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	svc := testInstance(t)
@@ -204,7 +171,7 @@ func TestFactoryCreate(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	if err := disc.(*Registry).cli.rdb.Ping(ctx).Err(); err != nil {
+	if err := disc.(*Registry).rdb.Ping(ctx).Err(); err != nil {
 		t.Skipf("redis not available: %v", err)
 	}
 

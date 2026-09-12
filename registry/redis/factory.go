@@ -12,14 +12,14 @@ func init() {
 }
 
 func Create(c *registry.Conf) (registry.Registrar, registry.Discovery, error) {
-	if c == nil || len(c.Endpoints) == 0 {
+	if len(c.Endpoints) == 0 {
 		return nil, nil, fmt.Errorf("redis registry: endpoints is empty")
 	}
 	rdb := redis.New(&redis.Conf{
 		Addrs:       c.Endpoints,
 		DialTimeout: c.DialTimeout,
 	})
-	ropts := []Option{WithHealthCheck(c.EnableHealthCheck)}
+	var ropts []Option
 	if c.Namespace != "" {
 		ropts = append(ropts, WithNamespace(c.Namespace))
 	}

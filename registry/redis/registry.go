@@ -2,7 +2,12 @@ package redis
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -19,12 +24,24 @@ var (
 // Option is redis registry option.
 type Option func(*Registry)
 
-// WithHealthCheck with registry health check option.
-func WithHealthCheck(enable bool) Option {
-	return func(o *Registry) {
-		o.enableHealthCheck = enable
-	}
-}
+var (
+	registerScript = redis.NewScript(`
+local ttl = tonumber(ARGV[2])
+if ttl ~= nil and ttl > 0 then
+  redis.call('SET', KEYS[1], ARGV[1], 'EX', ttl)
+else
+  redis.call('SET', KEYS[1], ARGV[1])
+end
+redis.call('SADD', KEYS[2], ARGV[3])
+return 1
+`)
+
+	deregisterScript = redis.NewScript(`
+redis.call('DEL', KEYS[1])
+redis.call('SREM', KEYS[2], ARGV[1])
+return 1
+`)
+)
 
 // WithTimeout with get services timeout option.
 func WithTimeout(timeout time.Duration) Option {
@@ -33,65 +50,29 @@ func WithTimeout(timeout time.Duration) Option {
 	}
 }
 
-// WithHeartbeat enable or disable heartbeat.
-func WithHeartbeat(enable bool) Option {
-	return func(o *Registry) {
-		if o.cli != nil {
-			o.cli.heartbeat = enable
-		}
-	}
-}
-
-// WithHealthCheckInterval with healthcheck interval in seconds.
-func WithHealthCheckInterval(interval int) Option {
-	return func(o *Registry) {
-		if o.cli != nil {
-			o.cli.healthcheckInterval = interval
-		}
-	}
-}
-
 // WithNamespace with registry namespace.
 func WithNamespace(ns string) Option {
 	return func(o *Registry) {
-		if o.cli != nil {
-			o.cli.namespace = ns
-		}
-	}
-}
-
-// WithTTL with register ttl.
-func WithTTL(ttl time.Duration) Option {
-	return func(o *Registry) {
-		if o.cli != nil {
-			o.cli.ttl = ttl
-		}
+		o.namespace = ns
 	}
 }
 
 // Registry is redis registry.
 type Registry struct {
-	cli               *Client
-	enableHealthCheck bool
-	registry          map[string]*serviceSet
-	lock              sync.RWMutex
-	timeout           time.Duration
+	rdb       *redis.Client
+	namespace string
+	registry  map[string]*serviceSet
+	lock      sync.RWMutex
+	timeout   time.Duration
 }
 
 // New creates redis registry.
 func New(rdb *redis.Client, opts ...Option) *Registry {
 	r := &Registry{
-		registry:          make(map[string]*serviceSet),
-		enableHealthCheck: true,
-		timeout:           10 * time.Second,
-		cli: &Client{
-			rdb:                 rdb,
-			namespace:           "/microservices",
-			healthcheckInterval: 10,
-			heartbeat:           true,
-			instances:           make(map[string]*instRecord),
-			heartbeats:          make(map[string]context.CancelFunc),
-		},
+		rdb:       rdb,
+		namespace: "microservices",
+		registry:  make(map[string]*serviceSet),
+		timeout:   10 * time.Second,
 	}
 	for _, o := range opts {
 		o(r)
@@ -101,17 +82,29 @@ func New(rdb *redis.Client, opts ...Option) *Registry {
 
 // Register register service.
 func (r *Registry) Register(ctx context.Context, svc *registry.ServiceInstance) error {
-	return r.cli.Register(ctx, svc, r.enableHealthCheck)
+	value, err := json.Marshal(svc)
+	if err != nil {
+		return err
+	}
+	_, err = registerScript.Run(ctx, &r.rdb.Client, []string{
+		r.instanceKey(svc.Name, svc.ID),
+		r.indexKey(svc.Name),
+	}, value, 0, svc.ID).Result()
+	return err
 }
 
 // Update update service.
 func (r *Registry) Update(ctx context.Context, svc *registry.ServiceInstance) error {
-	return r.cli.Update(ctx, svc, r.enableHealthCheck)
+	return r.Register(ctx, svc)
 }
 
 // Deregister deregister service.
 func (r *Registry) Deregister(ctx context.Context, svc *registry.ServiceInstance) error {
-	return r.cli.Deregister(ctx, svc)
+	_, err := deregisterScript.Run(ctx, &r.rdb.Client, []string{
+		r.instanceKey(svc.Name, svc.ID),
+		r.indexKey(svc.Name),
+	}, svc.ID).Result()
+	return err
 }
 
 // GetService return service by name.
@@ -123,7 +116,7 @@ func (r *Registry) GetService(ctx context.Context, name string) ([]*registry.Ser
 	getRemote := func() []*registry.ServiceInstance {
 		timeoutCtx, cancel := context.WithTimeout(ctx, r.timeout)
 		defer cancel()
-		services, _, err := r.cli.Service(timeoutCtx, name)
+		services, _, err := r.Service(timeoutCtx, name)
 		if err == nil && len(services) > 0 {
 			return services
 		}
@@ -190,7 +183,7 @@ func (r *Registry) resolve(ctx context.Context, ss *serviceSet) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	services, fp, err := r.cli.Service(timeoutCtx, ss.serviceName)
+	services, fp, err := r.Service(timeoutCtx, ss.serviceName)
 	if err != nil {
 		return err
 	}
@@ -204,7 +197,7 @@ func (r *Registry) resolve(ctx context.Context, ss *serviceSet) error {
 			select {
 			case <-ticker.C:
 				timeoutCtx, cancel := context.WithTimeout(context.Background(), r.timeout)
-				tmpService, tmpFp, err := r.cli.Service(timeoutCtx, ss.serviceName)
+				tmpService, tmpFp, err := r.Service(timeoutCtx, ss.serviceName)
 				cancel()
 				if err != nil {
 					time.Sleep(time.Second)
@@ -221,4 +214,68 @@ func (r *Registry) resolve(ctx context.Context, ss *serviceSet) error {
 	}()
 
 	return nil
+}
+
+func (r *Registry) instanceKey(name, id string) string {
+	return fmt.Sprintf("%s:%s:%s", r.namespace, name, id)
+}
+
+func (r *Registry) indexKey(name string) string {
+	return fmt.Sprintf("%s:%s", r.namespace, name)
+}
+
+func (r *Registry) Service(ctx context.Context, name string) ([]*registry.ServiceInstance, string, error) {
+	indexKey := r.indexKey(name)
+	ids, err := r.rdb.SMembers(ctx, indexKey).Result()
+	if err != nil {
+		return nil, "", err
+	}
+	if len(ids) == 0 {
+		return []*registry.ServiceInstance{}, "", nil
+	}
+	keys := make([]string, len(ids))
+	for i, id := range ids {
+		keys[i] = r.instanceKey(name, id)
+	}
+	vals, err := r.rdb.MGet(ctx, keys...).Result()
+	if err != nil {
+		return nil, "", err
+	}
+	services := make([]*registry.ServiceInstance, 0, len(vals))
+	stale := make([]interface{}, 0)
+	for i, v := range vals {
+		if v == nil {
+			stale = append(stale, ids[i])
+			continue
+		}
+		raw, ok := v.(string)
+		if !ok {
+			stale = append(stale, ids[i])
+			continue
+		}
+		var si registry.ServiceInstance
+		if err := json.Unmarshal([]byte(raw), &si); err != nil {
+			return nil, "", err
+		}
+		services = append(services, &si)
+	}
+	if len(stale) > 0 {
+		_ = r.rdb.SRem(ctx, indexKey, stale...).Err()
+	}
+	return services, fingerprint(services), nil
+}
+
+func fingerprint(ss []*registry.ServiceInstance) string {
+	if len(ss) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(ss))
+	for _, s := range ss {
+		eps := append([]string(nil), s.Endpoints...)
+		sort.Strings(eps)
+		parts = append(parts, strings.Join([]string{s.ID, s.Version, strings.Join(eps, ",")}, "|"))
+	}
+	sort.Strings(parts)
+	sum := sha256.Sum256([]byte(strings.Join(parts, ";")))
+	return hex.EncodeToString(sum[:])
 }
