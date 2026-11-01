@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-bamboo/pkg/cache"
 	"github.com/go-bamboo/pkg/store/redis"
-	redc "github.com/go-redis/cache/v8"
+	redc "github.com/go-redis/cache/v9"
 )
 
 type redisCache struct {

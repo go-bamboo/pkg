@@ -10,6 +10,7 @@ import (
 
 // Producer 生产者
 type Producer struct {
+	c   *queue.Conf
 	pub *redis.Client
 }
 
@@ -25,12 +26,16 @@ func NewProducer(c *queue.Conf) (queue.Pusher, error) {
 	if c == nil || len(c.Brokers) == 0 {
 		return nil, errBrokersEmpty
 	}
+	if c.MaxLen < 10000 {
+		c.MaxLen = 10000
+	}
 	opts := redis.Conf{
 		Addrs:        c.Brokers,
 		ReadTimeout:  c.ReadTimeout,
 		WriteTimeout: c.WriteTimeout,
 	}
 	return &Producer{
+		c:   c,
 		pub: redis.New(&opts),
 	}, nil
 }
@@ -42,6 +47,8 @@ func (p *Producer) Name() string {
 func (p *Producer) Push(ctx context.Context, topic string, key, value []byte) error {
 	msg := redis.XAddArgs{
 		Stream: topic,
+		MaxLen: int64(p.c.MaxLen),
+		Approx: true,
 		Values: map[string]interface{}{
 			fieldKey:   string(key),
 			fieldValue: string(value),

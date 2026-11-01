@@ -311,6 +311,8 @@ func (m *Conf) validate(all bool) error {
 
 	// no validation rules for Acks
 
+	// no validation rules for MaxLen
+
 	if len(errors) > 0 {
 		return ConfMultiError(errors)
 	}

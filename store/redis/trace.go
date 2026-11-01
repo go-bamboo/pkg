@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-bamboo/pkg/log"
 	otelext "github.com/go-bamboo/pkg/otel"
-	"github.com/go-redis/redis/extra/rediscmd/v8"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/extra/rediscmd/v9"
+	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -30,6 +30,17 @@ func NewRedisTracingHook(debug bool) *tracingHook {
 		propagator: propagation.NewCompositeTextMapPropagator(otelext.Metadata{}, propagation.Baggage{}, otelext.TraceContext{}),
 		debug:      debug,
 	}
+}
+
+func (h *tracingHook) DialHook(next redis.DialHook) redis.DialHook {
+	return next
+}
+
+func (h *tracingHook) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
+	return next
+}
+func (h *tracingHook) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return next
 }
 
 func (h *tracingHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {

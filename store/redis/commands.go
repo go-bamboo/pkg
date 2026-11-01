@@ -1,6 +1,8 @@
 package redis
 
-import "github.com/go-redis/redis/v8"
+import (
+	"github.com/redis/go-redis/v9"
+)
 
 //import (
 //	"context"
@@ -388,4 +390,5 @@ import "github.com/go-redis/redis/v8"
 //	GeoHash(ctx context.Context, key string, members ...string) *StringSliceCmd
 //}
 
-type StringStringMapCmd = redis.StringStringMapCmd
+type StringStringMapCmd = redis.MapStringStringCmd
+type MapStringStringCmd = redis.MapStringStringCmd

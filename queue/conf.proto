@@ -35,6 +35,7 @@ message Conf {
   google.protobuf.Duration read_timeout = 9;
   google.protobuf.Duration write_timeout = 10;
   int32 acks = 11;
+  int32 max_len = 12;
 }
 
 

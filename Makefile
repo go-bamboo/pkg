@@ -37,7 +37,7 @@ api:
 		   --proto_path=$(KRATOS) \
 		   --proto_path=$(KRATOS)/api \
 		   --proto_path=$(KRATOS)/third_party \
-		   --proto_path=$(PWD)/../third_party \
+		   --proto_path=$(PWD)/../../third_party \
 		   --go_out=paths=source_relative:. \
 		   --go-grpc_out=paths=source_relative:. \
 		   --go-http_out=paths=source_relative:. \
@@ -53,7 +53,7 @@ conf:
 		   --proto_path=$(KRATOS) \
            --proto_path=$(KRATOS)/api \
            --proto_path=$(KRATOS)/third_party \
-           --proto_path=$(PWD)/../third_party \
+           --proto_path=$(PWD)/../../third_party \
            --go_out=paths=source_relative:. \
            --validate_out=lang=go,paths=source_relative:. \
            ./otel/conf.proto \
@@ -74,7 +74,7 @@ proto:
 		   --proto_path=$(KRATOS) \
            --proto_path=$(KRATOS)/api \
            --proto_path=$(KRATOS)/third_party \
-           --proto_path=$(PWD)/../third_party \
+           --proto_path=$(PWD)/../../third_party \
            --go_out=paths=source_relative:. \
            --validate_out=lang=go,paths=source_relative:. \
            ./meta/meta.proto

@@ -13,7 +13,7 @@ import (
 	"github.com/go-bamboo/pkg/queue"
 	"github.com/go-bamboo/pkg/rescue"
 	"github.com/go-bamboo/pkg/store/redis"
-	stdredis "github.com/go-redis/redis/v8"
+	stdredis "github.com/redis/go-redis/v9"
 )
 
 // Name is the name registered for redis
